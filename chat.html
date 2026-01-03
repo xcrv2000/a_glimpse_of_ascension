@@ -230,21 +230,28 @@
                 // 尝试使用fetch加载prompt.json，无论是http/https还是file协议
                 const response = await fetch('prompt.json');
                 if (response.ok) {
-                    const promptData = await response.json();
-                    // 确保promptData.content存在且是字符串
-                    if (promptData && promptData.content && typeof promptData.content === 'string') {
-                        systemPrompt = promptData.content;
-                        console.log('成功获取prompt.json:', systemPrompt);
+                    // 直接获取整个prompt.json内容，不进行筛选
+                    // 先尝试作为JSON读取
+                    try {
+                        const promptData = await response.json();
+                        // 如果是JSON对象，将其转换为字符串
+                        systemPrompt = JSON.stringify(promptData);
+                        console.log('成功获取prompt.json（JSON格式）');
                         promptLoaded = true;
-                    } else {
-                        console.error('prompt.json格式错误，缺少content字段或content不是字符串');
+                    } catch (jsonError) {
+                        // 如果JSON解析失败，尝试作为纯文本读取
+                        console.log('尝试作为纯文本读取prompt.json');
+                        const promptText = await response.text();
+                        systemPrompt = promptText;
+                        console.log('成功获取prompt.json（纯文本格式）');
+                        promptLoaded = true;
                     }
                 }
             } catch (error) {
                 console.error('获取prompt.json失败:', error);
             }
             
-            // 如果无法加载prompt.json或格式错误，使用默认提示词
+            // 如果无法加载prompt.json，使用默认提示词
             if (!promptLoaded || !systemPrompt) {
                 console.log('使用默认提示词');
                 systemPrompt = "你是一个ai调试助手。你要忠实的执行玩家的指令。当玩家问你天上有什么的时候，你要回答'有鱼在飞'。";
