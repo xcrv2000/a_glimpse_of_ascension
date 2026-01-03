@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>擢升一瞥 - 设置</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .btn {
+            background-color: white;
+            color: #4CAF50;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        
+        .btn:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .container {
+            flex: 1;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .section {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h2 {
+            color: #333;
+            margin-top: 0;
+            font-size: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .setting-group {
+            margin-bottom: 15px;
+        }
+        
+        .setting-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .setting-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        .setting-select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            background-color: white;
+            box-sizing: border-box;
+        }
+        
+        .action-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .action-btn:hover {
+            background-color: #45a049;
+        }
+        
+        .action-btn.secondary {
+            background-color: #2196F3;
+        }
+        
+        .action-btn.secondary:hover {
+            background-color: #0b7dda;
+        }
+        
+        .action-btn.danger {
+            background-color: #f44336;
+        }
+        
+        .action-btn.danger:hover {
+            background-color: #da190b;
+        }
+        
+        .footer {
+            background-color: #f0f0f0;
+            color: #666;
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <button class="btn" onclick="goBack()">返回</button>
+        <span>设置</span>
+        <a href="index.html" class="btn">首页</a>
+    </div>
+    
+    <div class="container">
+        <div class="section">
+            <h2>AI模型配置</h2>
+            <div class="setting-group">
+                <label class="setting-label" for="ai-model">AI模型</label>
+                <select class="setting-select" id="ai-model" disabled>
+                    <option value="deepseek" selected>DeepSeek</option>
+                </select>
+            </div>
+            
+            <div class="setting-group">
+                <label class="setting-label" for="api-key">API密钥</label>
+                <input type="password" class="setting-input" id="api-key" placeholder="输入DeepSeek API密钥...">
+            </div>
+            
+            <button class="action-btn" onclick="saveSettings()">保存设置</button>
+        </div>
+        
+        <div class="section">
+            <h2>数据管理</h2>
+            <button class="action-btn" onclick="exportChat()">导出对话记录</button>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>擢升一瞥 &copy; 2025</p>
+    </div>
+    
+    <script>
+        // 返回上一页
+        function goBack() {
+            window.history.back();
+        }
+        
+        // 导出聊天记录
+        function exportChat() {
+            // 从localStorage读取聊天历史
+            const chatHistoryJson = localStorage.getItem('chatHistory');
+            let chatHistory = [];
+            
+            if (chatHistoryJson) {
+                chatHistory = JSON.parse(chatHistoryJson);
+            }
+            
+            // 格式化聊天记录为纯文本，只包含对话正文
+            let chatText = "擢升一瞥 - 对话记录\n";
+            chatText += "导出时间: " + new Date().toLocaleString() + "\n";
+            chatText += "================================\n\n";
+            
+            chatHistory.forEach(message => {
+                const role = message.role === 'user' ? '我' : 'AI';
+                chatText += `${role}: ${message.content}\n\n`;
+            });
+            
+            // 创建纯文本文件并下载
+            const dataBlob = new Blob([chatText], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `chat_export_${new Date().getTime()}.txt`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        // 加载设置
+        function loadSettings() {
+            // 从本地存储加载API密钥
+            const savedSettings = localStorage.getItem('gameSettings');
+            if (savedSettings) {
+                const settings = JSON.parse(savedSettings);
+                if (settings.apiKey) {
+                    document.getElementById('api-key').value = settings.apiKey;
+                }
+            }
+        }
+        
+        // 保存设置
+        function saveSettings() {
+            // 将API密钥保存到本地存储
+            const settings = {
+                aiModel: "deepseek",
+                apiKey: document.getElementById('api-key').value
+            };
+            
+            localStorage.setItem('gameSettings', JSON.stringify(settings));
+            alert('设置已保存');
+        }
+        
+        // 页面加载时加载设置
+        window.addEventListener('load', loadSettings);
+    </script>
+</body>
+</html>
