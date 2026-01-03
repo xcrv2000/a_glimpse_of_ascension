@@ -147,14 +147,31 @@
         // 聊天记录，用于上下文管理
         let chatHistory = [];
         
-        // 初始化函数
-        function init() {
+        // 检查API密钥状态并更新UI
+        function checkApiKeyStatus() {
             // 从本地存储获取API密钥
             const savedSettings = localStorage.getItem('gameSettings');
-            if (!savedSettings) {
+            if (savedSettings) {
+                const settings = JSON.parse(savedSettings);
+                if (settings.apiKey) {
+                    // 有API密钥，启用控件
+                    sendBtn.disabled = false;
+                    messageInput.disabled = false;
+                    return true;
+                }
+            }
+            // 没有API密钥，禁用控件
+            sendBtn.disabled = true;
+            messageInput.disabled = true;
+            return false;
+        }
+
+        // 初始化函数
+        function init() {
+            // 检查API密钥状态
+            const hasApiKey = checkApiKeyStatus();
+            if (!hasApiKey) {
                 addMessage('请先在设置页面配置DeepSeek API密钥', false);
-                sendBtn.disabled = true;
-                messageInput.disabled = true;
             }
         }
         
@@ -332,6 +349,15 @@
         
         // 页面加载完成后初始化
         window.addEventListener('load', init);
+        
+        // 当页面获得焦点时，重新检查API密钥状态
+        window.addEventListener('focus', function() {
+            const hasApiKey = checkApiKeyStatus();
+            if (hasApiKey) {
+                // 如果之前没有API密钥，现在有了，显示提示消息
+                console.log('API密钥已配置，控件已启用');
+            }
+        });
     </script>
 </body>
 </html>
