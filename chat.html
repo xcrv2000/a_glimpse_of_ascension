@@ -63,23 +63,25 @@
         
         .message {
             margin-bottom: 15px;
-            max-width: 80%;
-            padding: 10px 15px;
-            border-radius: 18px;
+            max-width: 100%;
             word-wrap: break-word;
         }
         
         .message.user {
             background-color: #4CAF50;
             color: white;
+            padding: 10px 15px;
+            border-radius: 18px;
             align-self: flex-end;
             margin-left: auto;
+            max-width: 80%;
         }
         
         .message.ai {
-            background-color: #e0e0e0;
             color: #333;
             align-self: flex-start;
+            font-size: 16px;
+            line-height: 1.6;
         }
         
         .input-area {
@@ -144,8 +146,6 @@
         
         // 聊天记录，用于上下文管理
         let chatHistory = [];
-        // 系统提示
-        let systemPrompt = '';
         
         // 初始化函数
         function init() {
@@ -156,10 +156,6 @@
                 sendBtn.disabled = true;
                 messageInput.disabled = true;
             }
-            
-            // 添加初始消息到聊天历史
-            const initialMessage = messagesContainer.querySelector('.message.ai').textContent;
-            chatHistory.push({ role: 'assistant', content: initialMessage });
         }
         
         // 添加消息到聊天界面
@@ -227,34 +223,57 @@
             }
             
             // 从网站获取prompt.json
-            // 默认提示词，当无法获取prompt.json时使用
-            let systemPrompt = "你是一个ai调试助手。你要忠实的执行玩家的指令。当玩家问你天上有什么的时候，你要回答'有鱼在飞'。";
+            let systemPrompt = "";
+            let promptLoaded = false;
             
-            // 检查是否在http或https协议下运行
-            if (window.location.protocol.startsWith('http')) {
-                try {
-                    const response = await fetch('prompt.json');
-                    if (response.ok) {
-                        const promptData = await response.json();
-                        systemPrompt = promptData.content;
-                        console.log('成功获取prompt.json:', systemPrompt);
-                    }
-                } catch (error) {
-                    console.error('获取prompt.json失败:', error);
-                    // 使用默认提示词
+            try {
+                // 尝试使用fetch加载prompt.json，无论是http/https还是file协议
+                const response = await fetch('prompt.json');
+                if (response.ok) {
+                    const promptData = await response.json();
+                    systemPrompt = promptData.content;
+                    console.log('成功获取prompt.json:', systemPrompt);
+                    promptLoaded = true;
                 }
-            } else {
-                console.log('在本地文件系统运行，使用默认提示词');
+            } catch (error) {
+                console.error('获取prompt.json失败:', error);
             }
             
-            // 准备请求数据
+            // 如果无法加载prompt.json，使用默认提示词
+            if (!promptLoaded) {
+                console.log('使用默认提示词');
+                systemPrompt = "你是一个ai调试助手。你要忠实的执行玩家的指令。当玩家问你天上有什么的时候，你要回答'有鱼在飞'。";
+            }
+            
+            // 准备请求数据，确保格式正确
+            const messages = [];
+            
+            // 添加系统提示，确保不为空
+            if (systemPrompt.trim()) {
+                messages.push({ role: 'system', content: systemPrompt.trim() });
+            }
+            
+            // 添加聊天历史，确保格式正确
+            const historyToSend = chatHistory.slice(0, -1); // 排除刚刚添加的用户消息
+            historyToSend.forEach(msg => {
+                // 确保消息格式正确
+                if (msg.role && msg.content && typeof msg.content === 'string') {
+                    messages.push({
+                        role: msg.role,
+                        content: msg.content.trim()
+                    });
+                }
+            });
+            
+            // 添加当前用户消息，确保不为空
+            if (userMessage.trim()) {
+                messages.push({ role: 'user', content: userMessage.trim() });
+            }
+            
+            // 准备最终的请求数据
             const requestData = {
                 model: 'deepseek-chat',
-                messages: [
-                    { role: 'system', content: systemPrompt },
-                    ...chatHistory.slice(0, -1), // 排除刚刚添加的用户消息
-                    { role: 'user', content: userMessage }
-                ],
+                messages: messages,
                 temperature: 0.7,
                 max_tokens: 1024
             };
@@ -275,16 +294,25 @@
             // 调试日志：输出API响应状态
             console.log('DeepSeek API响应状态:', response.status, response.statusText);
             
-            if (!response.ok) {
-                throw new Error(`API请求失败: ${response.status} ${response.statusText}`);
+            // 获取响应数据，无论成功或失败
+            let responseData;
+            try {
+                responseData = await response.json();
+                console.log('DeepSeek API响应数据:', JSON.stringify(responseData, null, 2));
+            } catch (parseError) {
+                console.error('解析API响应失败:', parseError);
+                responseData = null;
             }
             
-            const data = await response.json();
+            if (!response.ok) {
+                // 提供更详细的错误信息
+                const errorMessage = responseData && responseData.error 
+                    ? `${response.status} ${response.statusText}: ${responseData.error.message}`
+                    : `API请求失败: ${response.status} ${response.statusText}`;
+                throw new Error(errorMessage);
+            }
             
-            // 调试日志：输出API返回的完整数据
-            console.log('DeepSeek API返回的数据:', JSON.stringify(data, null, 2));
-            
-            return data.choices[0].message.content;
+            return responseData.choices[0].message.content;
         }
         
         // 事件监听
