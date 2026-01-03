@@ -231,16 +231,21 @@
                 const response = await fetch('prompt.json');
                 if (response.ok) {
                     const promptData = await response.json();
-                    systemPrompt = promptData.content;
-                    console.log('成功获取prompt.json:', systemPrompt);
-                    promptLoaded = true;
+                    // 确保promptData.content存在且是字符串
+                    if (promptData && promptData.content && typeof promptData.content === 'string') {
+                        systemPrompt = promptData.content;
+                        console.log('成功获取prompt.json:', systemPrompt);
+                        promptLoaded = true;
+                    } else {
+                        console.error('prompt.json格式错误，缺少content字段或content不是字符串');
+                    }
                 }
             } catch (error) {
                 console.error('获取prompt.json失败:', error);
             }
             
-            // 如果无法加载prompt.json，使用默认提示词
-            if (!promptLoaded) {
+            // 如果无法加载prompt.json或格式错误，使用默认提示词
+            if (!promptLoaded || !systemPrompt) {
                 console.log('使用默认提示词');
                 systemPrompt = "你是一个ai调试助手。你要忠实的执行玩家的指令。当玩家问你天上有什么的时候，你要回答'有鱼在飞'。";
             }
@@ -249,7 +254,7 @@
             const messages = [];
             
             // 添加系统提示，确保不为空
-            if (systemPrompt.trim()) {
+            if (systemPrompt && typeof systemPrompt === 'string' && systemPrompt.trim()) {
                 messages.push({ role: 'system', content: systemPrompt.trim() });
             }
             
@@ -257,7 +262,7 @@
             const historyToSend = chatHistory.slice(0, -1); // 排除刚刚添加的用户消息
             historyToSend.forEach(msg => {
                 // 确保消息格式正确
-                if (msg.role && msg.content && typeof msg.content === 'string') {
+                if (msg && msg.role && msg.content && typeof msg.content === 'string') {
                     messages.push({
                         role: msg.role,
                         content: msg.content.trim()
@@ -266,7 +271,7 @@
             });
             
             // 添加当前用户消息，确保不为空
-            if (userMessage.trim()) {
+            if (userMessage && typeof userMessage === 'string' && userMessage.trim()) {
                 messages.push({ role: 'user', content: userMessage.trim() });
             }
             
