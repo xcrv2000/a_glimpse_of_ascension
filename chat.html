@@ -227,25 +227,12 @@
             let promptLoaded = false;
             
             try {
-                // 尝试使用fetch加载prompt.json，无论是http/https还是file协议
+                // 直接将prompt.json作为纯文本读取，不进行任何解析
                 const response = await fetch('prompt.json');
                 if (response.ok) {
-                    // 直接获取整个prompt.json内容，不进行筛选
-                    // 先尝试作为JSON读取
-                    try {
-                        const promptData = await response.json();
-                        // 如果是JSON对象，将其转换为字符串
-                        systemPrompt = JSON.stringify(promptData);
-                        console.log('成功获取prompt.json（JSON格式）');
-                        promptLoaded = true;
-                    } catch (jsonError) {
-                        // 如果JSON解析失败，尝试作为纯文本读取
-                        console.log('尝试作为纯文本读取prompt.json');
-                        const promptText = await response.text();
-                        systemPrompt = promptText;
-                        console.log('成功获取prompt.json（纯文本格式）');
-                        promptLoaded = true;
-                    }
+                    systemPrompt = await response.text();
+                    console.log('成功获取prompt.json（纯文本格式）');
+                    promptLoaded = true;
                 }
             } catch (error) {
                 console.error('获取prompt.json失败:', error);
