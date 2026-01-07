@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>擢升一瞥 - 欢迎页面</title>
+    <script src="storyStorage.js"></script>
     <style>
         body {
             font-family: 'Microsoft YaHei', Arial, sans-serif;
@@ -63,14 +64,246 @@
         .btn-secondary:hover {
             background-color: #0b7dda;
         }
+        
+        .btn-continue {
+            background-color: #ff9800;
+        }
+        
+        .btn-continue:hover {
+            background-color: #f57c00;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>擢升一瞥</h1>
         <p>欢迎来到一个由AI驱动的聊天冒险游戏。在这里，你的每一个选择都将影响故事的发展，探索未知的世界，揭开神秘的真相。</p>
-        <a href="chat.html" class="btn">开始游戏</a>
-        <a href="settings.html" class="btn btn-secondary">设置</a>
+        <div id="game-buttons">
+            <a href="chat.html" class="btn">开始游戏</a>
+            <a href="settings.html" class="btn btn-secondary">设置</a>
+        </div>
     </div>
+    
+    <style>
+        /* 模态对话框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .modal-buttons {
+            margin-top: 20px;
+            text-align: right;
+        }
+        
+        .modal-btn {
+            padding: 10px 20px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .modal-btn.cancel {
+            background-color: #ccc;
+            color: black;
+        }
+        
+        .modal-btn.export {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        .modal-btn.delete {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        .modal-btn:hover {
+            opacity: 0.8;
+        }
+    </style>
+    
+    <script>
+        // 全局调试属性
+        const admin = true;
+        // 防止修改
+        Object.defineProperty(window, 'admin', {
+            value: true,
+            writable: false,
+            configurable: false
+        });
+        
+        // 检查是否有未完成的故事
+        function checkForUnfinishedStory() {
+            try {
+                // 从StoryStorage加载未压缩故事
+                const uncompressedStory = StoryStorage.loadUncompressedStory();
+                
+                if (uncompressedStory && uncompressedStory.length > 0) {
+                    // 有未完成的故事，显示"继续故事"按钮
+                    const gameButtons = document.getElementById('game-buttons');
+                    gameButtons.innerHTML = `
+                        <a href="chat.html" class="btn btn-continue">继续故事</a>
+                        <button id="new-game-btn" class="btn">开始新游戏</button>
+                        <a href="settings.html" class="btn btn-secondary">设置</a>
+                    `;
+                    console.log('检测到未完成的故事，显示"继续故事"按钮');
+                    
+                    // 添加开始新游戏按钮的点击事件
+                    document.getElementById('new-game-btn').addEventListener('click', handleNewGameClick);
+                } else {
+                    // 没有未完成的故事，使用普通链接
+                    const gameButtons = document.getElementById('game-buttons');
+                    gameButtons.innerHTML = `
+                        <a href="chat.html" class="btn">开始游戏</a>
+                        <a href="settings.html" class="btn btn-secondary">设置</a>
+                    `;
+                }
+            } catch (error) {
+                console.error('检查未完成故事失败:', error);
+            }
+        }
+        
+        // 处理开始新游戏按钮点击
+        function handleNewGameClick() {
+            try {
+                // 检查是否有正在进行的故事
+                const compressedStory = StoryStorage.loadCompressedStory();
+                const uncompressedStory = StoryStorage.loadUncompressedStory();
+                
+                if ((compressedStory && compressedStory.length > 0) || (uncompressedStory && uncompressedStory.length > 0)) {
+                    // 有正在进行的故事，显示确认对话框
+                    showConfirmationModal();
+                } else {
+                    // 没有正在进行的故事，直接跳转到新游戏
+                    startNewGame();
+                }
+            } catch (error) {
+                console.error('检查游戏状态失败:', error);
+                // 出错时直接跳转到新游戏
+                startNewGame();
+            }
+        }
+        
+        // 显示确认对话框
+        function showConfirmationModal() {
+            // 创建模态对话框
+            const modal = document.createElement('div');
+            modal.id = 'confirmation-modal';
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h2>确认开始新游戏</h2>
+                    <p>确认要删除当前游戏并开始新游戏吗？</p>
+                    <div class="modal-buttons">
+                        <button class="modal-btn cancel" onclick="closeModal()">取消</button>
+                        <button class="modal-btn export" onclick="exportCurrentStory()">导出当前故事</button>
+                        <button class="modal-btn delete" onclick="deleteAndStartNewGame()">删除并开始新游戏</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // 显示模态对话框
+            modal.style.display = 'block';
+            
+            // 添加关闭事件
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    closeModal();
+                }
+            }
+        }
+        
+        // 关闭模态对话框
+        function closeModal() {
+            const modal = document.getElementById('confirmation-modal');
+            if (modal) {
+                modal.style.display = 'none';
+                modal.remove();
+            }
+        }
+        
+        // 导出当前故事
+        function exportCurrentStory() {
+            try {
+                // 加载所有故事数据
+                const allStories = StoryStorage.loadAll();
+                
+                // 创建导出内容
+                const exportData = {
+                    timestamp: new Date().toISOString(),
+                    stories: allStories
+                };
+                
+                // 创建下载链接
+                const dataStr = JSON.stringify(exportData, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `story_export_${new Date().getTime()}.json`;
+                link.click();
+                URL.revokeObjectURL(url);
+                
+                console.log('故事导出成功');
+                alert('故事导出成功！');
+                
+                // 关闭模态对话框
+                closeModal();
+            } catch (error) {
+                console.error('导出故事失败:', error);
+                alert('导出故事失败，请重试。');
+            }
+        }
+        
+        // 删除并开始新游戏
+        function deleteAndStartNewGame() {
+            try {
+                // 清空所有故事数据
+                const result = StoryStorage.clearAll();
+                
+                if (result) {
+                    console.log('故事数据已清空，开始新游戏');
+                    startNewGame();
+                } else {
+                    console.error('清空故事数据失败');
+                    alert('清空故事数据失败，请重试。');
+                }
+            } catch (error) {
+                console.error('删除故事失败:', error);
+                alert('删除故事失败，请重试。');
+            }
+        }
+        
+        // 开始新游戏
+        function startNewGame() {
+            // 跳转到聊天页面，带上newgame参数
+            window.location.href = 'chat.html?newgame=true';
+        }
+        
+        // 页面加载完成后检查
+        window.addEventListener('load', checkForUnfinishedStory);
+    </script>
 </body>
 </html>

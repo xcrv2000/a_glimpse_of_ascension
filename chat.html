@@ -5,7 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>擢升一瞥 - 游戏界面</title>
+    <script src="dataManager.js"></script>
+    <script src="responseParser.js"></script>
     <script src="engine.js"></script>
+    <script src="storyStorage.js"></script>
+    <script src="promptBuilder_storyteller.js"></script>
+    <script src="contextCompressor.js"></script>
     <style>
 
         body {
@@ -119,6 +124,71 @@
         #send-btn:hover {
             background-color: #45a049;
         }
+        
+        /* 调试悬浮窗样式 */
+        .debug-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 400px;
+            max-height: 500px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .debug-panel h3 {
+            margin-top: 0;
+            color: #4CAF50;
+            font-size: 16px;
+            border-bottom: 1px solid #555;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .debug-section {
+            margin-bottom: 15px;
+        }
+        
+        .debug-section h4 {
+            margin: 0 0 5px 0;
+            font-size: 14px;
+            color: #aaa;
+        }
+        
+        .debug-content {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            padding: 10px;
+            font-size: 12px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .debug-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            z-index: 1001;
+        }
+        
+        .debug-toggle:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 <body>
@@ -141,14 +211,57 @@
         </div>
     </div>
     
+    <!-- 调试悬浮窗 -->
+    <button class="debug-toggle" onclick="toggleDebugPanel()">调试面板</button>
+    <div class="debug-panel" id="debugPanel" style="display: none;">
+        <h3>调试信息</h3>
+        <div class="debug-section">
+            <h4>最后一次AI回复</h4>
+            <div class="debug-content" id="lastAiResponse">无数据</div>
+        </div>
+        <div class="debug-section">
+            <h4>最后一次完整请求</h4>
+            <div class="debug-content" id="lastApiRequest">无数据</div>
+        </div>
+    </div>
+    
     <script>
+        // 全局调试属性
+        const admin = true;
+        // 防止修改
+        Object.defineProperty(window, 'admin', {
+            value: true,
+            writable: false,
+            configurable: false
+        });
+        
         // 聊天逻辑
         const messagesContainer = document.getElementById('messages');
         const messageInput = document.getElementById('message-input');
         const sendBtn = document.getElementById('send-btn');
+        const debugPanel = document.getElementById('debugPanel');
+        const lastAiResponse = document.getElementById('lastAiResponse');
+        const lastApiRequest = document.getElementById('lastApiRequest');
+        const debugToggle = document.querySelector('.debug-toggle');
         
-        // 聊天记录，用于上下文管理
-        let chatHistory = [];
+        // 调试数据存储
+        let debugData = {
+            lastAiResponse: null,
+            lastApiRequest: null
+        };
+        
+        // 页面加载时检查admin权限并隐藏调试按钮
+        window.addEventListener('load', function() {
+            if (typeof admin === 'undefined' || !admin) {
+                debugToggle.style.display = 'none';
+            }
+        });
+        
+        // 故事数据
+        let fullStory = []; // 完整故事，不做删减
+        let compressedStory = []; // 压缩故事（由摘要组成）
+        let uncompressedStory = []; // 未压缩故事（实时故事）
+        let latestUserMessage = null; // 最新用户消息
         
         // 检查API密钥状态并更新UI
         function checkApiKeyStatus() {
@@ -170,40 +283,158 @@
         }
 
         // 初始化函数
-        function init() {
+        async function init() {
+            // 检查是否是新游戏
+            checkForNewGame();
+            
             // 检查API密钥状态
             const hasApiKey = checkApiKeyStatus();
             if (!hasApiKey) {
                 addMessage('请先在设置页面配置DeepSeek API密钥', false);
             }
+            
+            // 加载存储的故事数据
+            loadStoryData();
+            
             // 启动游戏引擎
             startEngine();
         }
         
-        // 启动游戏引擎
-        function startEngine() {
-            console.log('游戏引擎已启动');
-            // 暂时不进行数据传输
+        // 检查是否是新游戏
+        function checkForNewGame() {
+            // 获取URL参数
+            const urlParams = new URLSearchParams(window.location.search);
+            const newGame = urlParams.get('newgame');
+            
+            if (newGame === 'true') {
+                // 清空所有故事数据
+                StoryStorage.clearAll();
+                console.log('已清空所有故事数据，开始新游戏');
+            }
         }
         
+        // 加载故事数据
+        function loadStoryData() {
+            // 从StoryStorage加载数据
+            const storyData = StoryStorage.loadAll();
+            
+            fullStory = storyData.fullStory || [];
+            compressedStory = storyData.compressedStory || [];
+            uncompressedStory = storyData.uncompressedStory || [];
+            latestUserMessage = storyData.latestUserMessage;
+            
+            // 显示未压缩故事（实时故事）给玩家
+            displayUncompressedStory();
+        }
+        
+        // 显示未压缩故事（实时故事）给玩家
+        function displayUncompressedStory() {
+            if (uncompressedStory.length > 0) {
+                // 清空现有消息
+                messagesContainer.innerHTML = '';
+                
+                // 显示未压缩故事
+                uncompressedStory.forEach(msg => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `message ${msg.role === 'user' ? 'user' : 'ai'}`;
+                    messageDiv.textContent = msg.content;
+                    messagesContainer.appendChild(messageDiv);
+                });
+                
+                // 滚动到底部
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                
+                console.log('已显示未压缩故事，消息数:', uncompressedStory.length);
+            }
+        }
+        
+
+        // 启动游戏引擎
+        async function startEngine() {
+            console.log('开始启动游戏引擎');
+            try {
+                // 初始化游戏引擎
+                const initResult = await GameEngineInstance.initialize();
+                if (initResult.success) {
+                    console.log('游戏引擎初始化成功:', initResult.message);
+                    // 获取引擎状态
+                    const status = GameEngineInstance.getStatus();
+                    console.log('游戏引擎状态:', status);
+                } else {
+                    console.error('游戏引擎初始化失败:', initResult.error);
+                }
+            } catch (error) {
+                console.error('启动游戏引擎错误:', error);
+            }
+        }
+        
+
         // 添加消息到聊天界面
-        function addMessage(content, isUser = false) {
+        async function addMessage(content, isUser = false) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isUser ? 'user' : 'ai'}`;
             messageDiv.textContent = content;
             messagesContainer.appendChild(messageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
             
-            // 添加到聊天历史
-            chatHistory.push({ role: isUser ? 'user' : 'assistant', content: content });
+            // 创建消息对象
+            const messageObj = { 
+                role: isUser ? 'user' : 'assistant', 
+                content: content,
+                timestamp: new Date().toISOString()
+            };
             
-            // 限制聊天历史长度，避免API调用时上下文过长
-            if (chatHistory.length > 10) {
-                chatHistory = chatHistory.slice(-10);
+            // 更新未压缩故事（实时故事）
+            uncompressedStory.push(messageObj);
+            
+            // 更新完整故事
+            fullStory.push(messageObj);
+            
+            // 如果是用户消息，更新最新用户消息
+            if (isUser) {
+                latestUserMessage = messageObj;
             }
             
-            // 将聊天历史保存到localStorage，供设置页面导出
-            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+            // 检查是否需要压缩上下文
+            if (ContextCompressor.shouldCompress(uncompressedStory)) {
+                console.log('检测到上下文过长，准备进行压缩');
+                
+                // 从本地存储获取API密钥
+                const savedSettings = localStorage.getItem('gameSettings');
+                if (savedSettings) {
+                    const settings = JSON.parse(savedSettings);
+                    const apiKey = settings.apiKey;
+                    
+                    if (apiKey) {
+                        try {
+                            // 压缩上下文
+                            const compressedMessage = await ContextCompressor.compressContext(uncompressedStory, apiKey);
+                            if (compressedMessage) {
+                                // 更新压缩故事
+                                compressedStory.push(compressedMessage);
+                                
+                                // 清空未压缩故事，准备新的实时故事
+                                uncompressedStory = [];
+                                
+                                console.log('上下文压缩完成，压缩故事数:', compressedStory.length);
+                            }
+                        } catch (error) {
+                            console.error('压缩上下文失败:', error);
+                        }
+                    }
+                }
+            }
+            
+            // 保存所有故事数据
+            saveStoryData();
+            
+            // 输出故事数据状态
+            console.log('故事数据状态：完整故事长度:', fullStory.length, '压缩故事长度:', compressedStory.length, '未压缩故事长度:', uncompressedStory.length);
+        }
+        
+        // 保存故事数据
+        function saveStoryData() {
+            StoryStorage.saveAll(fullStory, compressedStory, uncompressedStory, latestUserMessage);
         }
         
         // 发送消息
@@ -211,7 +442,7 @@
             const message = messageInput.value.trim();
             if (message) {
                 // 添加用户消息
-                addMessage(message, true);
+                await addMessage(message, true);
                 messageInput.value = '';
                 
                 // 禁用发送按钮和输入框，防止重复发送
@@ -222,10 +453,15 @@
                 try {
                     // 调用DeepSeek API获取回复
                     const aiResponse = await callDeepSeekAPI(message);
-                    addMessage(aiResponse);
+                    
+                    // 使用游戏引擎处理AI响应
+                    const processResult = await GameEngineInstance.processAIResponse(aiResponse);
+                    
+                    // 添加处理后的故事到聊天界面
+                    await addMessage(processResult.story);
                 } catch (error) {
                     console.error('调用DeepSeek API失败:', error);
-                    addMessage('抱歉，AI回复失败，请稍后重试。', false);
+                    await addMessage('抱歉，AI回复失败，请稍后重试。', false);
                 } finally {
                     // 恢复发送按钮和输入框
                     sendBtn.disabled = false;
@@ -250,113 +486,50 @@
                 throw new Error('请先在设置页面配置DeepSeek API密钥');
             }
             
-            // 从网站获取prompt.json
-            let systemPrompt = "";
-            let promptLoaded = false;
+            // 使用PromptBuilder准备请求数据并发送API请求
+            const { requestData, apiKey: finalApiKey } = await PromptBuilder.prepareRequestData(
+                apiKey, 
+                userMessage, 
+                compressedStory, 
+                uncompressedStory, 
+                latestUserMessage
+            );
             
-            try {
-                // 直接将prompt.json作为纯文本读取，不进行任何解析
-                const response = await fetch('prompt.json');
-                if (response.ok) {
-                    systemPrompt = await response.text();
-                    console.log('成功获取prompt.json（纯文本格式）');
-                    promptLoaded = true;
-                }
-            } catch (error) {
-                console.error('获取prompt.json失败:', error);
+            // 存储完整请求数据到调试数据
+            debugData.lastApiRequest = JSON.stringify(requestData, null, 2);
+            updateDebugPanel();
+            
+            const response = await PromptBuilder.sendApiRequest(requestData, finalApiKey);
+            
+            // 存储最后一次AI回复到调试数据
+            debugData.lastAiResponse = response;
+            updateDebugPanel();
+            
+            return response;
+        }
+        
+        // 切换调试面板显示/隐藏
+        function toggleDebugPanel() {
+            if (debugPanel.style.display === 'none') {
+                debugPanel.style.display = 'block';
+            } else {
+                debugPanel.style.display = 'none';
+            }
+        }
+        
+        // 更新调试面板内容
+        function updateDebugPanel() {
+            if (debugData.lastAiResponse) {
+                lastAiResponse.textContent = debugData.lastAiResponse;
+            } else {
+                lastAiResponse.textContent = '无数据';
             }
             
-            // 如果无法加载prompt.json，使用默认提示词
-            if (!promptLoaded || !systemPrompt) {
-                console.log('使用默认提示词');
-                systemPrompt = "你是一个ai调试助手。你要忠实的执行玩家的指令。当玩家问你天上有什么的时候，你要回答'有鱼在飞'。";
+            if (debugData.lastApiRequest) {
+                lastApiRequest.textContent = debugData.lastApiRequest;
+            } else {
+                lastApiRequest.textContent = '无数据';
             }
-            
-            // 加载data.json
-            let dataContent = "";
-            try {
-                const dataResponse = await fetch('data.json');
-                if (dataResponse.ok) {
-                    dataContent = await dataResponse.text();
-                    console.log('成功获取data.json（纯文本格式）');
-                }
-            } catch (error) {
-                console.error('获取data.json失败:', error);
-            }
-            
-            // 准备请求数据，确保格式正确
-            const messages = [];
-            
-            // 添加系统提示，确保不为空
-            if (systemPrompt && typeof systemPrompt === 'string' && systemPrompt.trim()) {
-                // 按照顺序拼装提示词：prompt.json + data.json
-                let fullSystemPrompt = systemPrompt.trim();
-                if (dataContent && typeof dataContent === 'string' && dataContent.trim()) {
-                    fullSystemPrompt += "\n\n" + dataContent.trim();
-                }
-                messages.push({ role: 'system', content: fullSystemPrompt });
-            }
-            
-            // 添加聊天历史，确保格式正确
-            const historyToSend = chatHistory.slice(0, -1); // 排除刚刚添加的用户消息
-            historyToSend.forEach(msg => {
-                // 确保消息格式正确
-                if (msg && msg.role && msg.content && typeof msg.content === 'string') {
-                    messages.push({
-                        role: msg.role,
-                        content: msg.content.trim()
-                    });
-                }
-            });
-            
-            // 添加当前用户消息，确保不为空
-            if (userMessage && typeof userMessage === 'string' && userMessage.trim()) {
-                messages.push({ role: 'user', content: userMessage.trim() });
-            }
-            
-            // 准备最终的请求数据
-            const requestData = {
-                model: 'deepseek-chat',
-                messages: messages,
-                temperature: 0.7,
-                max_tokens: 1024
-            };
-            
-            // 调试日志：输出发送给AI的完整请求数据
-            console.log('发送给DeepSeek API的数据:', JSON.stringify(requestData, null, 2));
-            
-            // 发送请求到DeepSeek API
-            const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`
-                },
-                body: JSON.stringify(requestData)
-            });
-            
-            // 调试日志：输出API响应状态
-            console.log('DeepSeek API响应状态:', response.status, response.statusText);
-            
-            // 获取响应数据，无论成功或失败
-            let responseData;
-            try {
-                responseData = await response.json();
-                console.log('DeepSeek API响应数据:', JSON.stringify(responseData, null, 2));
-            } catch (parseError) {
-                console.error('解析API响应失败:', parseError);
-                responseData = null;
-            }
-            
-            if (!response.ok) {
-                // 提供更详细的错误信息
-                const errorMessage = responseData && responseData.error 
-                    ? `${response.status} ${response.statusText}: ${responseData.error.message}`
-                    : `API请求失败: ${response.status} ${response.statusText}`;
-                throw new Error(errorMessage);
-            }
-            
-            return responseData.choices[0].message.content;
         }
         
         // 事件监听
