@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>擢升一瞥 - 游戏界面</title>
+    <script src="engine.js"></script>
     <style>
+
         body {
             font-family: 'Microsoft YaHei', Arial, sans-serif;
             background-color: #f0f2f5;
@@ -173,6 +176,14 @@
             if (!hasApiKey) {
                 addMessage('请先在设置页面配置DeepSeek API密钥', false);
             }
+            // 启动游戏引擎
+            startEngine();
+        }
+        
+        // 启动游戏引擎
+        function startEngine() {
+            console.log('游戏引擎已启动');
+            // 暂时不进行数据传输
         }
         
         // 添加消息到聊天界面
@@ -261,12 +272,29 @@
                 systemPrompt = "你是一个ai调试助手。你要忠实的执行玩家的指令。当玩家问你天上有什么的时候，你要回答'有鱼在飞'。";
             }
             
+            // 加载data.json
+            let dataContent = "";
+            try {
+                const dataResponse = await fetch('data.json');
+                if (dataResponse.ok) {
+                    dataContent = await dataResponse.text();
+                    console.log('成功获取data.json（纯文本格式）');
+                }
+            } catch (error) {
+                console.error('获取data.json失败:', error);
+            }
+            
             // 准备请求数据，确保格式正确
             const messages = [];
             
             // 添加系统提示，确保不为空
             if (systemPrompt && typeof systemPrompt === 'string' && systemPrompt.trim()) {
-                messages.push({ role: 'system', content: systemPrompt.trim() });
+                // 按照顺序拼装提示词：prompt.json + data.json
+                let fullSystemPrompt = systemPrompt.trim();
+                if (dataContent && typeof dataContent === 'string' && dataContent.trim()) {
+                    fullSystemPrompt += "\n\n" + dataContent.trim();
+                }
+                messages.push({ role: 'system', content: fullSystemPrompt });
             }
             
             // 添加聊天历史，确保格式正确
