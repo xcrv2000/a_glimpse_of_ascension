@@ -144,7 +144,7 @@ class PromptBuilder {
                 model: 'deepseek-chat',
                 messages: messages,
                 temperature: 0.7,
-                max_tokens: 1024
+                max_tokens: 8192
             };
             
             // 调试日志：输出发送给AI的完整请求数据

@@ -290,7 +290,10 @@
         </div>
         
         <div class="input-area">
-            <textarea id="message-input" placeholder="输入你的消息..." rows="1"></textarea>
+            <div style="position: relative; flex: 1;">
+                <textarea id="message-input" placeholder="输入你的消息..." rows="1" maxlength="500"></textarea>
+                <div style="position: absolute; bottom: 10px; right: 10px; font-size: 12px; color: #999;" id="char-count">0/500</div>
+            </div>
             <button id="send-btn">➤</button>
         </div>
     </div>
@@ -571,18 +574,18 @@
                     
                     if (apiKey) {
                         try {
-                            // 压缩最早的8条消息
-                            const messagesToCompress = uncompressedStory.slice(0, 8);
-                            const compressedMessage = await ContextCompressor.compressContext(messagesToCompress, apiKey);
-                            if (compressedMessage) {
-                                // 更新压缩故事
-                                compressedStory.push(compressedMessage);
-                                
-                                // 保留最后4条未压缩消息作为叙事风格稳定器
-                                uncompressedStory = uncompressedStory.slice(8);
-                                
-                                console.log('上下文压缩完成，压缩故事数:', compressedStory.length, '保留的未压缩故事数:', uncompressedStory.length);
-                            }
+                            // 压缩最早的16条消息
+                        const messagesToCompress = uncompressedStory.slice(0, 16);
+                        const compressedMessage = await ContextCompressor.compressContext(messagesToCompress, apiKey);
+                        if (compressedMessage) {
+                            // 更新压缩故事
+                            compressedStory.push(compressedMessage);
+                            
+                            // 保留最后8条未压缩消息作为叙事风格稳定器
+                            uncompressedStory = uncompressedStory.slice(16);
+                            
+                            console.log('上下文压缩完成，压缩故事数:', compressedStory.length, '保留的未压缩故事数:', uncompressedStory.length);
+                        }
                         } catch (error) {
                             console.error('压缩上下文失败:', error);
                         }
@@ -713,10 +716,23 @@
             }
         });
         
-        // 自动调整输入框高度
+        // 自动调整输入框高度并更新字数统计
         messageInput.addEventListener('input', () => {
             messageInput.style.height = 'auto';
             messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
+            
+            // 更新字数统计
+            const charCount = document.getElementById('char-count');
+            if (charCount) {
+                const currentLength = messageInput.value.length;
+                charCount.textContent = `${currentLength}/500`;
+                // 当接近或达到字数限制时，改变颜色提醒用户
+                if (currentLength >= 480) {
+                    charCount.style.color = '#f44336';
+                } else {
+                    charCount.style.color = '#999';
+                }
+            }
         });
         
         // 页面加载完成后初始化
