@@ -4,9 +4,9 @@
 
 ```
 a_glimpse_of_ascension/
-├── public/              # 存放HTML文件和其他静态资源
-│   ├── chat.html        # 游戏聊天页面
-│   └── settings.html    # 设置页面
+├── index.html           # 首页
+├── chat.html            # 游戏聊天页面
+├── settings.html        # 设置页面
 ├── src/                 # 存放源代码
 │   ├── js/              # JavaScript文件
 │   │   ├── engine.js               # 游戏引擎核心
@@ -19,7 +19,6 @@ a_glimpse_of_ascension/
 │       ├── data.json               # 游戏数据
 │       ├── compressed_context.json # 压缩的上下文
 │       └── prompt.json             # 提示词配置
-├── index.html           # 首页
 ├── .trae/               # 现有文件夹，保持不变
 ├── .gitattributes       # 现有文件，保持不变
 ├── Readme.txt           # 现有文件，保持不变

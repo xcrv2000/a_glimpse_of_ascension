@@ -8,7 +8,7 @@ class PromptBuilder {
         
         try {
             // 直接将prompt.json作为纯文本读取，不进行任何解析
-            const response = await fetch('../src/data/prompt.json');
+            const response = await fetch('src/data/prompt.json');
             if (response.ok) {
                 systemPrompt = await response.text();
                 console.log('成功获取prompt.json（纯文本格式）');
@@ -27,7 +27,7 @@ class PromptBuilder {
         // 加载data.json
         let dataContent = "";
         try {
-            const dataResponse = await fetch('data.json');
+            const dataResponse = await fetch('src/data/data.json');
             if (dataResponse.ok) {
                 dataContent = await dataResponse.text();
                 console.log('成功获取data.json（纯文本格式）');
@@ -55,7 +55,7 @@ class PromptBuilder {
             
             // 尝试从文件加载
             try {
-                const response = await fetch('../src/data/compressed_context.json');
+                const response = await fetch('src/data/compressed_context.json');
                 if (response.ok) {
                     const compressedContext = await response.json();
                     console.log('成功从文件加载压缩上下文，压缩消息数:', compressedContext.length);

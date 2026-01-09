@@ -3,7 +3,7 @@ class DataManager {
     // 读取data.json文件
     static async readData() {
         try {
-            const response = await fetch('../src/data/data.json');
+            const response = await fetch('src/data/data.json');
             if (!response.ok) {
                 throw new Error(`读取data.json失败: ${response.status}`);
             }
