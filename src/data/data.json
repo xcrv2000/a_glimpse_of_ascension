@@ -1,0 +1,30 @@
+{
+  "narrative": {
+    "depthLevel": "3",
+    "storyBeat": "起",
+    "beatStats": {
+      "current": {
+        "起": 0,
+        "承": 0,
+        "转": 0,
+        "合": 0
+      },
+      "previous": {
+        "起": 0,
+        "承": 0,
+        "转": 0,
+        "合": 0
+      }
+    },
+    "currentBeatCycle": 1,
+    "totalWords": 0,
+    "currentCycleWords": 0
+  },
+  "metadata": {
+    "lastUpdated": "2026-01-07T00:00:00.000Z",
+    "version": "1.0.0",
+    "currentTime": "1925-12-26 00:00:00"
+  },
+  "events": [],
+  "foreshadowings": []
+}

@@ -5,12 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>擢升一瞥 - 游戏界面</title>
-    <script src="dataManager.js"></script>
-    <script src="responseParser.js"></script>
-    <script src="engine.js"></script>
-    <script src="storyStorage.js"></script>
-    <script src="promptBuilder_storyteller.js"></script>
-    <script src="contextCompressor.js"></script>
+    <script src="../src/js/dataManager.js"></script>
+    <script src="../src/js/responseParser.js"></script>
+    <script src="../src/js/engine.js"></script>
+    <script src="../src/js/storyStorage.js"></script>
+    <script src="../src/js/promptBuilder_storyteller.js"></script>
+    <script src="../src/js/contextCompressor.js"></script>
     <style>
 
         body {
@@ -348,7 +348,6 @@
             }
         }
         
-
         // 启动游戏引擎
         async function startEngine() {
             console.log('开始启动游戏引擎');
@@ -368,7 +367,6 @@
             }
         }
         
-
         // 添加消息到聊天界面
         async function addMessage(content, isUser = false) {
             const messageDiv = document.createElement('div');
@@ -377,27 +375,69 @@
             messagesContainer.appendChild(messageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
             
-            // 创建消息对象
-            const messageObj = { 
+            // 计算消息字数
+            const messageWordCount = content.length;
+            
+            // 创建未压缩故事的消息对象（包含时间戳）
+            const uncompressedMessageObj = { 
                 role: isUser ? 'user' : 'assistant', 
                 content: content,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                wordCount: messageWordCount
             };
             
-            // 更新未压缩故事（实时故事）
-            uncompressedStory.push(messageObj);
+            // 创建完整故事的消息对象（不包含时间戳）
+            const fullMessageObj = { 
+                role: isUser ? 'user' : 'assistant', 
+                content: content
+            };
             
-            // 更新完整故事
-            fullStory.push(messageObj);
+            // 更新未压缩故事（实时故事）- 包含时间戳
+            uncompressedStory.push(uncompressedMessageObj);
+            
+            // 更新完整故事 - 不包含时间戳
+            fullStory.push(fullMessageObj);
             
             // 如果是用户消息，更新最新用户消息
             if (isUser) {
-                latestUserMessage = messageObj;
+                latestUserMessage = uncompressedMessageObj;
+            }
+            
+            // 更新字数统计
+            if (!isUser) { // 只统计AI的故事内容
+                try {
+                    // 获取当前游戏数据
+                    const gameData = GameEngineInstance.getGameData();
+                    
+                    // 计算当前节拍
+                    const currentBeat = gameData.narrative?.storyBeat || '起';
+                    
+                    // 更新当前节拍的字数
+                    if (gameData.narrative?.beatStats?.current) {
+                        gameData.narrative.beatStats.current[currentBeat] = 
+                            (gameData.narrative.beatStats.current[currentBeat] || 0) + messageWordCount;
+                    }
+                    
+                    // 更新当前循环字数
+                    gameData.narrative.currentCycleWords = 
+                        (gameData.narrative.currentCycleWords || 0) + messageWordCount;
+                    
+                    // 更新总字数
+                    gameData.narrative.totalWords = 
+                        (gameData.narrative.totalWords || 0) + messageWordCount;
+                    
+                    // 保存更新后的数据
+                    await GameEngineInstance.saveGameData();
+                    
+                    console.log(`字数统计更新：当前节拍[${currentBeat}]增加${messageWordCount}字，总字数${gameData.narrative.totalWords}`);
+                } catch (error) {
+                    console.error('更新字数统计失败:', error);
+                }
             }
             
             // 检查是否需要压缩上下文
             if (ContextCompressor.shouldCompress(uncompressedStory)) {
-                console.log('检测到上下文过长，准备进行压缩');
+                console.log('检测到未压缩消息数达到阈值，准备进行压缩');
                 
                 // 从本地存储获取API密钥
                 const savedSettings = localStorage.getItem('gameSettings');
@@ -407,16 +447,17 @@
                     
                     if (apiKey) {
                         try {
-                            // 压缩上下文
-                            const compressedMessage = await ContextCompressor.compressContext(uncompressedStory, apiKey);
+                            // 压缩最早的8条消息
+                            const messagesToCompress = uncompressedStory.slice(0, 8);
+                            const compressedMessage = await ContextCompressor.compressContext(messagesToCompress, apiKey);
                             if (compressedMessage) {
                                 // 更新压缩故事
                                 compressedStory.push(compressedMessage);
                                 
-                                // 清空未压缩故事，准备新的实时故事
-                                uncompressedStory = [];
+                                // 保留最后4条未压缩消息作为叙事风格稳定器
+                                uncompressedStory = uncompressedStory.slice(8);
                                 
-                                console.log('上下文压缩完成，压缩故事数:', compressedStory.length);
+                                console.log('上下文压缩完成，压缩故事数:', compressedStory.length, '保留的未压缩故事数:', uncompressedStory.length);
                             }
                         } catch (error) {
                             console.error('压缩上下文失败:', error);

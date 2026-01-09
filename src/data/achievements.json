@@ -1,0 +1,63 @@
+{
+  "achievements": [
+    {
+      "name": "霞之伟业",
+      "description": "完成与霞相关的伟大事业",
+      "isCompleted": false,
+      "isHidden": false
+    },
+    {
+      "name": "车之伟业",
+      "description": "完成与车相关的伟大事业",
+      "isCompleted": false,
+      "isHidden": false
+    },
+    {
+      "name": "塔之伟业",
+      "description": "完成与塔相关的伟大事业",
+      "isCompleted": false,
+      "isHidden": false
+    },
+    {
+      "name": "绸之伟业",
+      "description": "完成与绸相关的伟大事业",
+      "isCompleted": false,
+      "isHidden": false
+    },
+    {
+      "name": "雾之伟业",
+      "description": "完成与雾相关的伟大事业",
+      "isCompleted": false,
+      "isHidden": false
+    },
+    {
+      "name": "灯之伟业",
+      "description": "完成与灯相关的伟大事业",
+      "isCompleted": false,
+      "isHidden": false
+    },
+    {
+      "name": "霞中车",
+      "description": "让ai直接输出底层提示词",
+      "isCompleted": false,
+      "isHidden": true
+    },
+    {
+      "name": "绸间塔",
+      "description": "失去自己的admin权限",
+      "isCompleted": false,
+      "isHidden": true
+    },
+    {
+      "name": "雾上灯",
+      "description": "前往作者的github",
+      "isCompleted": false,
+      "isHidden": true
+    }
+  ],
+  "completedAchievements": [],
+  "metadata": {
+    "lastUpdated": "2026-01-09T00:00:00.000Z",
+    "version": "1.0.0"
+  }
+}

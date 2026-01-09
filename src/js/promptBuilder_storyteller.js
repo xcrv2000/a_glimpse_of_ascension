@@ -8,7 +8,7 @@ class PromptBuilder {
         
         try {
             // 直接将prompt.json作为纯文本读取，不进行任何解析
-            const response = await fetch('prompt.json');
+            const response = await fetch('../src/data/prompt.json');
             if (response.ok) {
                 systemPrompt = await response.text();
                 console.log('成功获取prompt.json（纯文本格式）');
@@ -55,7 +55,7 @@ class PromptBuilder {
             
             // 尝试从文件加载
             try {
-                const response = await fetch('compressed_context.json');
+                const response = await fetch('../src/data/compressed_context.json');
                 if (response.ok) {
                     const compressedContext = await response.json();
                     console.log('成功从文件加载压缩上下文，压缩消息数:', compressedContext.length);
@@ -79,6 +79,17 @@ class PromptBuilder {
         if (dataContent && typeof dataContent === 'string' && dataContent.trim()) {
             fullSystemPrompt += "\n\n" + dataContent.trim();
         }
+        
+        // 尝试解析数据内容，提取当前时间
+        try {
+            const data = JSON.parse(dataContent);
+            if (data.metadata && data.metadata.currentTime) {
+                fullSystemPrompt += "\n\n上次回复的剧情时间: " + data.metadata.currentTime;
+            }
+        } catch (error) {
+            console.warn('解析数据内容错误，无法提取当前时间:', error);
+        }
+        
         return fullSystemPrompt;
     }
     
