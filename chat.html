@@ -35,6 +35,11 @@
             align-items: center;
         }
         
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
         .btn {
             background-color: white;
             color: #4CAF50;
@@ -189,13 +194,92 @@
         .debug-toggle:hover {
             background-color: #45a049;
         }
+        
+        /* 成就悬浮窗样式 */
+        .achievements-panel {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            width: 350px;
+            max-height: 500px;
+            background-color: white;
+            color: #333;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            z-index: 999;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .achievements-panel h3 {
+            margin-top: 0;
+            color: #4CAF50;
+            font-size: 18px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .achievement-item {
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .achievement-item.completed {
+            background-color: #e8f5e8;
+            border-left-color: #4CAF50;
+        }
+        
+        .achievement-item.hidden {
+            background-color: #f5f5f5;
+            border-left-color: #999;
+        }
+        
+        .achievement-name {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .achievement-description {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .achievement-status {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .achievements-toggle {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .achievements-toggle:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 <body>
     <div class="header">
         <a href="index.html" class="btn">返回首页</a>
         <span>擢升一瞥</span>
-        <a href="settings.html" class="btn">设置</a>
+        <div class="header-buttons">
+            <button class="btn achievements-toggle" onclick="toggleAchievementsPanel()">成就</button>
+            <a href="settings.html" class="btn">设置</a>
+        </div>
     </div>
     
     <div class="chat-container">
@@ -229,6 +313,14 @@
         </div>
     </div>
     
+    <!-- 成就悬浮窗 -->
+    <div class="achievements-panel" id="achievementsPanel">
+        <h3>成就列表</h3>
+        <div class="achievements-content" id="achievementsContent">
+            <div class="loading">加载成就中...</div>
+        </div>
+    </div>
+    
     <script>
         // 全局调试属性
         const admin = true;
@@ -248,6 +340,8 @@
         const lastApiRequest = document.getElementById('lastApiRequest');
         const dataJsonContent = document.getElementById('dataJsonContent');
         const debugToggle = document.querySelector('.debug-toggle');
+        const achievementsPanel = document.getElementById('achievementsPanel');
+        const achievementsContent = document.getElementById('achievementsContent');
         
         // 调试数据存储
         let debugData = {
@@ -325,6 +419,9 @@
             
             // 启动游戏引擎
             startEngine();
+            
+            // 加载成就数据
+            await loadAchievementsData();
         }
         
         // 检查是否是新游戏
@@ -633,6 +730,80 @@
                 console.log('API密钥已配置，控件已启用');
             }
         });
+        
+        // 切换成就面板显示/隐藏
+        function toggleAchievementsPanel() {
+            if (achievementsPanel.style.display === 'none' || achievementsPanel.style.display === '') {
+                achievementsPanel.style.display = 'block';
+                // 每次打开时重新加载成就数据
+                loadAchievementsData();
+            } else {
+                achievementsPanel.style.display = 'none';
+            }
+        }
+        
+        // 加载成就数据
+        async function loadAchievementsData() {
+            try {
+                // 从游戏引擎获取成就数据
+                const achievementsData = GameEngineInstance.getAchievementsData();
+                if (achievementsData && achievementsData.achievements) {
+                    displayAchievements(achievementsData.achievements);
+                } else {
+                    // 如果游戏引擎未初始化，尝试直接从文件加载
+                    const response = await fetch('src/data/achievements.json');
+                    if (response.ok) {
+                        const data = await response.json();
+                        displayAchievements(data.achievements);
+                    } else {
+                        throw new Error('加载成就数据失败');
+                    }
+                }
+            } catch (error) {
+                console.error('加载成就数据错误:', error);
+                achievementsContent.innerHTML = '<div class="error">加载成就失败</div>';
+            }
+        }
+        
+        // 显示成就列表
+        function displayAchievements(achievements) {
+            if (!achievements || achievements.length === 0) {
+                achievementsContent.innerHTML = '<div class="no-achievements">暂无成就</div>';
+                return;
+            }
+            
+            // 过滤出可见的成就
+            const visibleAchievements = achievements.filter(achievement => !achievement.isHidden);
+            
+            if (visibleAchievements.length === 0) {
+                achievementsContent.innerHTML = '<div class="no-achievements">暂无可见成就</div>';
+                return;
+            }
+            
+            // 按完成状态排序
+            visibleAchievements.sort((a, b) => {
+                if (a.isCompleted && !b.isCompleted) return -1;
+                if (!a.isCompleted && b.isCompleted) return 1;
+                return 0;
+            });
+            
+            let html = '';
+            
+            visibleAchievements.forEach(achievement => {
+                const className = `achievement-item ${achievement.isCompleted ? 'completed' : ''} ${achievement.isHidden ? 'hidden' : ''}`;
+                const statusText = achievement.isCompleted ? '已完成' : '未完成';
+                
+                html += `
+                    <div class="${className}">
+                        <div class="achievement-name">${achievement.name}</div>
+                        <div class="achievement-description">${achievement.description}</div>
+                        <div class="achievement-status">状态: ${statusText}</div>
+                    </div>
+                `;
+            });
+            
+            achievementsContent.innerHTML = html;
+        }
     </script>
 </body>
 </html>

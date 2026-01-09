@@ -188,6 +188,26 @@ class ResponseParser {
                                                         action: 'removeForeshadowing',
                                                         value: foreshadowingName.trim()
                                                     });
+                                                } else {
+                                                    // 匹配成就完成格式: 完成成就：成就名称
+                                                    const achievementCompleteMatch = line.match(/^完成成就：(.+)$/);
+                                                    if (achievementCompleteMatch) {
+                                                        const [, achievementName] = achievementCompleteMatch;
+                                                        requests.push({
+                                                            action: 'completeAchievement',
+                                                            value: achievementName.trim()
+                                                        });
+                                                    } else {
+                                                        // 匹配成就显示格式: 显示成就：成就名称
+                                                        const achievementShowMatch = line.match(/^显示成就：(.+)$/);
+                                                        if (achievementShowMatch) {
+                                                            const [, achievementName] = achievementShowMatch;
+                                                            requests.push({
+                                                                action: 'showAchievement',
+                                                                value: achievementName.trim()
+                                                            });
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }
@@ -227,6 +247,12 @@ class ResponseParser {
             return this.validateForeshadowingRequest(request);
         } else if (request.action === 'removeForeshadowing') {
             return this.validateRemoveForeshadowingRequest(request);
+        } else if (request.action === 'completeAchievement' || request.action === 'showAchievement') {
+            // 验证成就操作
+            if (!request.value || typeof request.value !== 'string') {
+                return { valid: false, error: '成就操作必须指定成就名称' };
+            }
+            return { valid: true };
         } else if (request.action === 'update') {
             // 只允许特定的路径
             const allowedPaths = [
@@ -451,7 +477,17 @@ class ResponseParser {
 删除伏笔：神秘符号
 ===GAME_DATA_END===
 
-注意：每次响应都必须包含节拍操作和景深等级，可以选择性包含时间设置、事件操作和伏笔操作。`;
+或者：
+
+===GAME_DATA_START===
+节拍操作：推进
+当前景深等级：3
+当前时间：1925-12-30 00:00:00
+完成成就：霞之伟业
+显示成就：霞中车
+===GAME_DATA_END===
+
+注意：每次响应都必须包含节拍操作和景深等级，可以选择性包含时间设置、事件操作、伏笔操作和成就操作。`;
     }
 }
 

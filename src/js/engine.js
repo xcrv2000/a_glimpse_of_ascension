@@ -294,6 +294,12 @@ class GameEngine {
                 await this.updateEvent(request.value);
             } else if (request.action === 'deleteEvent') {
                 await this.deleteEvent(request.value);
+            } else if (request.action === 'completeAchievement') {
+                // 处理成就完成操作
+                await this.completeAchievement(request.value);
+            } else if (request.action === 'showAchievement') {
+                // 处理成就显示操作
+                await this.showAchievement(request.value);
             } else if (request.action === 'update') {
                 // 处理节拍操作
                 if (request.path === 'narrative.storyBeatOperation') {
@@ -820,6 +826,83 @@ class GameEngine {
             }
         } catch (error) {
             console.error('保存成就数据错误:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // 完成成就
+    async completeAchievement(achievementName) {
+        try {
+            console.log('开始完成成就:', achievementName);
+            
+            // 确保成就数据存在
+            if (!this.achievementsData || !this.achievementsData.achievements) {
+                this.achievementsData = this.dataManager.getDefaultAchievementsData();
+            }
+            
+            // 查找成就
+            const achievementIndex = this.achievementsData.achievements.findIndex(
+                achievement => achievement.name === achievementName
+            );
+            
+            if (achievementIndex >= 0) {
+                // 更新成就状态
+                this.achievementsData.achievements[achievementIndex].isCompleted = true;
+                
+                // 检查是否已在完成列表中
+                const isInCompletedList = this.achievementsData.completedAchievements.some(
+                    achievement => achievement.name === achievementName
+                );
+                
+                if (!isInCompletedList) {
+                    // 添加到完成列表
+                    this.achievementsData.completedAchievements.push({
+                        name: achievementName,
+                        completedAt: new Date().toISOString()
+                    });
+                }
+                
+                await this.saveAchievementsData();
+                console.log('成就完成成功:', achievementName);
+                return { success: true };
+            } else {
+                console.warn('成就不存在:', achievementName);
+                return { success: false, error: '成就不存在' };
+            }
+        } catch (error) {
+            console.error('完成成就错误:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // 显示成就
+    async showAchievement(achievementName) {
+        try {
+            console.log('开始显示成就:', achievementName);
+            
+            // 确保成就数据存在
+            if (!this.achievementsData || !this.achievementsData.achievements) {
+                this.achievementsData = this.dataManager.getDefaultAchievementsData();
+            }
+            
+            // 查找成就
+            const achievementIndex = this.achievementsData.achievements.findIndex(
+                achievement => achievement.name === achievementName
+            );
+            
+            if (achievementIndex >= 0) {
+                // 更新成就状态
+                this.achievementsData.achievements[achievementIndex].isHidden = false;
+                
+                await this.saveAchievementsData();
+                console.log('成就显示成功:', achievementName);
+                return { success: true };
+            } else {
+                console.warn('成就不存在:', achievementName);
+                return { success: false, error: '成就不存在' };
+            }
+        } catch (error) {
+            console.error('显示成就错误:', error);
             return { success: false, error: error.message };
         }
     }
