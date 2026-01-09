@@ -128,8 +128,8 @@
         /* 调试悬浮窗样式 */
         .debug-panel {
             position: fixed;
-            top: 20px;
-            right: 20px;
+            top: 80px;
+            left: 20px;
             width: 400px;
             max-height: 500px;
             background-color: rgba(0, 0, 0, 0.8);
@@ -174,8 +174,8 @@
         
         .debug-toggle {
             position: fixed;
-            top: 20px;
-            right: 20px;
+            top: 80px;
+            left: 20px;
             background-color: #4CAF50;
             color: white;
             border: none;
@@ -223,6 +223,10 @@
             <h4>最后一次完整请求</h4>
             <div class="debug-content" id="lastApiRequest">无数据</div>
         </div>
+        <div class="debug-section">
+            <h4>data.json内容</h4>
+            <div class="debug-content" id="dataJsonContent">加载中...</div>
+        </div>
     </div>
     
     <script>
@@ -242,20 +246,43 @@
         const debugPanel = document.getElementById('debugPanel');
         const lastAiResponse = document.getElementById('lastAiResponse');
         const lastApiRequest = document.getElementById('lastApiRequest');
+        const dataJsonContent = document.getElementById('dataJsonContent');
         const debugToggle = document.querySelector('.debug-toggle');
         
         // 调试数据存储
         let debugData = {
             lastAiResponse: null,
-            lastApiRequest: null
+            lastApiRequest: null,
+            dataJson: null
         };
         
         // 页面加载时检查admin权限并隐藏调试按钮
         window.addEventListener('load', function() {
             if (typeof admin === 'undefined' || !admin) {
                 debugToggle.style.display = 'none';
+            } else {
+                // 加载data.json内容
+                loadDataJson();
             }
         });
+        
+        // 加载data.json内容
+        async function loadDataJson() {
+            try {
+                const response = await fetch('data.json');
+                if (response.ok) {
+                    const data = await response.json();
+                    debugData.dataJson = JSON.stringify(data, null, 2);
+                    updateDebugPanel();
+                } else {
+                    throw new Error('加载失败');
+                }
+            } catch (error) {
+                console.error('加载data.json失败:', error);
+                debugData.dataJson = '加载失败: ' + error.message;
+                updateDebugPanel();
+            }
+        }
         
         // 故事数据
         let fullStory = []; // 完整故事，不做删减
@@ -570,6 +597,12 @@
                 lastApiRequest.textContent = debugData.lastApiRequest;
             } else {
                 lastApiRequest.textContent = '无数据';
+            }
+            
+            if (debugData.dataJson) {
+                dataJsonContent.textContent = debugData.dataJson;
+            } else {
+                dataJsonContent.textContent = '加载中...';
             }
         }
         
