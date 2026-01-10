@@ -212,6 +212,57 @@ class ResponseParser {
                                                                 action: 'showAchievement',
                                                                 value: achievementName.trim()
                                                             });
+                                                        } else {
+                                                            // 匹配角色操作格式: 注册角色：{...}
+                                                            const characterRegisterMatch = line.match(/^注册角色：(.+)$/);
+                                                            if (characterRegisterMatch) {
+                                                                try {
+                                                                    const characterData = JSON.parse(characterRegisterMatch[1]);
+                                                                    requests.push({
+                                                                        action: 'registerCharacter',
+                                                                        value: characterData
+                                                                    });
+                                                                } catch (e) {
+                                                                    console.error('解析角色数据错误:', e);
+                                                                }
+                                                            } else {
+                                                                // 匹配角色更新格式: 更新角色：{...}
+                                                                const characterUpdateMatch = line.match(/^更新角色：(.+)$/);
+                                                                if (characterUpdateMatch) {
+                                                                    try {
+                                                                        const characterData = JSON.parse(characterUpdateMatch[1]);
+                                                                        requests.push({
+                                                                            action: 'updateCharacter',
+                                                                            value: characterData
+                                                                        });
+                                                                    } catch (e) {
+                                                                        console.error('解析角色数据错误:', e);
+                                                                    }
+                                                                } else {
+                                                                    // 匹配角色删除格式: 删除角色：角色名称
+                                                                    const characterDeleteMatch = line.match(/^删除角色：(.+)$/);
+                                                                    if (characterDeleteMatch) {
+                                                                        const [, characterName] = characterDeleteMatch;
+                                                                        requests.push({
+                                                                            action: 'deleteCharacter',
+                                                                            value: characterName.trim()
+                                                                        });
+                                                                    } else {
+                                                                        // 匹配快捷添加做过的事格式: 添加角色做过的事：角色名称，做过的事
+                                                                        const characterThingDoneMatch = line.match(/^添加角色做过的事：(.+?)，(.+)$/);
+                                                                        if (characterThingDoneMatch) {
+                                                                            const [, characterName, thingDone] = characterThingDoneMatch;
+                                                                            requests.push({
+                                                                                action: 'addCharacterThingDone',
+                                                                                value: {
+                                                                                    name: characterName.trim(),
+                                                                                    thingDone: thingDone.trim()
+                                                                                }
+                                                                            });
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -259,6 +310,12 @@ class ResponseParser {
                 return { valid: false, error: '成就操作必须指定成就名称' };
             }
             return { valid: true };
+        } else if (request.action === 'registerCharacter' || request.action === 'updateCharacter') {
+            return this.validateCharacterRequest(request);
+        } else if (request.action === 'deleteCharacter') {
+            return this.validateDeleteCharacterRequest(request);
+        } else if (request.action === 'addCharacterThingDone') {
+            return this.validateAddCharacterThingDoneRequest(request);
         } else if (request.action === 'update') {
             // 只允许特定的路径
             const allowedPaths = [
@@ -275,11 +332,12 @@ class ResponseParser {
             if (request.path === 'narrative.storyBeatOperation') {
                 const allowedOperations = [
                     '推进', '推进到下一节拍',
-                    '维持', '维持在当前节拍'
+                    '维持', '维持在当前节拍',
+                    '完结'
                 ];
                 
                 if (!allowedOperations.includes(request.value)) {
-                    return { valid: false, error: '只允许推进节拍或维持节拍操作' };
+                    return { valid: false, error: '只允许推进节拍、维持节拍或完结操作' };
                 }
             } else if (request.path === 'metadata.currentTime') {
                 // 验证时间格式 YYYY-MM-DD HH:mm:ss
@@ -401,6 +459,71 @@ class ResponseParser {
         return { valid: true };
     }
 
+    // 验证角色请求
+    static validateCharacterRequest(request) {
+        const characterData = request.value;
+        
+        if (!characterData || typeof characterData !== 'object') {
+            return { valid: false, error: '角色数据格式无效' };
+        }
+        
+        // 检查必需字段
+        if (!characterData.name || typeof characterData.name !== 'string') {
+            return { valid: false, error: '角色必须包含名称' };
+        }
+        
+        if (!characterData.memoryPoints || typeof characterData.memoryPoints !== 'string') {
+            return { valid: false, error: '角色必须包含记忆点' };
+        }
+        
+        if (!characterData.description || typeof characterData.description !== 'string') {
+            return { valid: false, error: '角色必须包含描述' };
+        }
+        
+        if (!characterData.template || typeof characterData.template !== 'string') {
+            return { valid: false, error: '角色必须包含模板' };
+        }
+        
+        if (!characterData.relationship || typeof characterData.relationship !== 'string') {
+            return { valid: false, error: '角色必须包含与玩家关系' };
+        }
+        
+        // 验证做过的事
+        if (characterData.thingsDone && !Array.isArray(characterData.thingsDone)) {
+            return { valid: false, error: '做过的事必须是数组格式' };
+        }
+        
+        return { valid: true };
+    }
+
+    // 验证删除角色请求
+    static validateDeleteCharacterRequest(request) {
+        if (!request.value || typeof request.value !== 'string') {
+            return { valid: false, error: '删除角色必须指定角色名称' };
+        }
+        
+        return { valid: true };
+    }
+
+    // 验证添加角色做过的事请求
+    static validateAddCharacterThingDoneRequest(request) {
+        const thingDoneData = request.value;
+        
+        if (!thingDoneData || typeof thingDoneData !== 'object') {
+            return { valid: false, error: '添加做过的事数据格式无效' };
+        }
+        
+        if (!thingDoneData.name || typeof thingDoneData.name !== 'string') {
+            return { valid: false, error: '必须指定角色名称' };
+        }
+        
+        if (!thingDoneData.thingDone || typeof thingDoneData.thingDone !== 'string') {
+            return { valid: false, error: '必须指定做过的事' };
+        }
+        
+        return { valid: true };
+    }
+
     // 批量验证数据请求
     static validateRequests(requests) {
         const validatedRequests = [];
@@ -493,7 +616,51 @@ class ResponseParser {
 显示成就：霞中车
 ===GAME_DATA_END===
 
-注意：每次响应都必须包含节拍操作和景深等级，可以选择性包含时间设置、事件操作、伏笔操作和成就操作。`;
+或者：
+
+===GAME_DATA_START===
+节拍操作：推进
+当前景深等级：3
+当前时间：1925-12-30 10:00:00
+注册角色：{"name":"艾米","memoryPoints":"紫色眼睛，总是带着一本魔法书","description":"年轻的魔法师学徒","template":"法师","relationship":"朋友","thingsDone":["学习魔法","帮助玩家"]}
+===GAME_DATA_END===
+
+或者：
+
+===GAME_DATA_START===
+节拍操作：维持
+当前景深等级：3
+当前时间：1925-12-30 11:00:00
+更新角色：{"name":"艾米","memoryPoints":"紫色眼睛，总是带着一本魔法书","description":"年轻的魔法师学徒，正在研究高级法术","template":"法师","relationship":"朋友","thingsDone":["学习魔法","帮助玩家","研究高级法术"]}
+===GAME_DATA_END===
+
+或者：
+
+===GAME_DATA_START===
+节拍操作：推进
+当前景深等级：3
+当前时间：1925-12-31 00:00:00
+删除角色：不重要的角色
+===GAME_DATA_END===
+
+或者：
+
+===GAME_DATA_START===
+节拍操作：完结
+当前景深等级：3
+当前时间：1929-12-31 23:59:59
+===GAME_DATA_END===
+
+或者：
+
+===GAME_DATA_START===
+节拍操作：维持
+当前景深等级：3
+当前时间：1925-12-31 10:00:00
+【艾米，学会了火球术，添加】
+===GAME_DATA_END===
+
+注意：每次响应都必须包含节拍操作和景深等级，可以选择性包含时间设置、事件操作、伏笔操作、成就操作和角色操作。`;
     }
 }
 

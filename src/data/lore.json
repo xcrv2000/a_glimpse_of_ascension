@@ -1,0 +1,76 @@
+{
+  "characterTemplates": [
+    {
+      "template_id": "蜂",
+      "personality": "",
+      "motivation": "",
+      "behaviorPattern": ""
+    },
+    {
+      "template_id": "蚁",
+      "personality": "",
+      "motivation": "",
+      "behaviorPattern": ""
+    },
+    {
+      "template_id": "template3",
+      "personality": "",
+      "motivation": "",
+      "behaviorPattern": ""
+    },
+    {
+      "template_id": "template4",
+      "personality": "",
+      "motivation": "",
+      "behaviorPattern": ""
+    },
+    {
+      "template_id": "template5",
+      "personality": "",
+      "motivation": "",
+      "behaviorPattern": ""
+    },
+    {
+      "template_id": "template6",
+      "personality": "",
+      "motivation": "",
+      "behaviorPattern": ""
+    },
+    {
+      "template_id": "template7",
+      "personality": "",
+      "motivation": "",
+      "behaviorPattern": ""
+    },
+    {
+      "template_id": "template8",
+      "personality": "",
+      "motivation": "",
+      "behaviorPattern": ""
+    },
+    {
+      "template_id": "template9",
+      "personality": "",
+      "motivation": "",
+      "behaviorPattern": ""
+    },
+    {
+      "template_id": "template10",
+      "personality": "",
+      "motivation": "",
+      "behaviorPattern": ""
+    },
+    {
+      "template_id": "template11",
+      "personality": "",
+      "motivation": "",
+      "behaviorPattern": ""
+    },
+    {
+      "template_id": "template12",
+      "personality": "",
+      "motivation": "",
+      "behaviorPattern": ""
+    }
+  ]
+}

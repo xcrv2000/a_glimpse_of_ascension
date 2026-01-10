@@ -26,5 +26,15 @@
     "currentTime": "1925-12-26 00:00:00"
   },
   "events": [],
-  "foreshadowings": []
+  "foreshadowings": [],
+  "characters": [
+    {
+      "name": "特雷",
+      "memoryPoints": "头顶插着一个巨大的齿轮",
+      "description": "开朗的新手向导和任务发布员",
+      "template": "蝶",
+      "relationship": "新手引导",
+      "thingsDone": []
+    }
+  ]
 }

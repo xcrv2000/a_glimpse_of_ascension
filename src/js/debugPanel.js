@@ -1,0 +1,215 @@
+// 调试面板模块
+class DebugPanel {
+    constructor() {
+        this.panel = document.getElementById('debugPanel');
+        this.init();
+    }
+
+    init() {
+        // 绑定事件
+        this.bindEvents();
+    }
+
+    bindEvents() {
+        // 切换调试面板显示/隐藏
+        window.toggleDebugPanel = () => this.togglePanel();
+        
+        // 切换调试选项卡
+        window.switchDebugTab = (tabId) => this.switchTab(tabId);
+        
+        // 执行引擎工具操作
+        window.executeEngineTool = (action, path, value) => this.executeTool(action, path, value);
+        
+        // 执行时间设置操作
+        window.executeTimeTool = () => this.executeTime();
+        
+        // 切换事件表单显示/隐藏
+        window.toggleEventForm = () => this.toggleEventForm();
+        
+        // 执行事件操作
+        window.executeEventTool = (action) => this.executeEvent(action);
+    }
+
+    togglePanel() {
+        if (this.panel.style.display === 'none') {
+            this.panel.style.display = 'block';
+        } else {
+            this.panel.style.display = 'none';
+        }
+    }
+
+    switchTab(tabId) {
+        // 隐藏所有选项卡内容
+        const tabContents = document.querySelectorAll('.debug-tab-content');
+        tabContents.forEach(tab => {
+            tab.style.display = 'none';
+        });
+        
+        // 移除所有选项卡的活动状态
+        const tabs = document.querySelectorAll('.debug-tab');
+        tabs.forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // 显示选中的选项卡内容
+        document.getElementById(`${tabId}-tab`).style.display = 'block';
+        
+        // 设置选中选项卡为活动状态
+        event.currentTarget.classList.add('active');
+        
+        // 如果切换到引擎工具选项卡，更新游戏数据显示
+        if (tabId === 'engine-tools') {
+            this.updateGameDataDisplay();
+        }
+    }
+
+    executeTool(action, path, value) {
+        try {
+            // 创建工具请求对象
+            const toolRequest = {
+                action: action,
+                path: path,
+                value: value
+            };
+            
+            // 验证请求
+            const validation = ResponseParser.validateRequest(toolRequest);
+            if (!validation.valid) {
+                alert('操作无效: ' + validation.error);
+                return;
+            }
+            
+            // 执行操作（这里只是模拟执行，实际执行需要调用游戏引擎）
+            console.log('执行引擎工具操作:', toolRequest);
+            
+            // 显示成功消息
+            alert('操作执行成功!');
+            
+            // 更新游戏数据显示
+            this.updateGameDataDisplay();
+        } catch (error) {
+            console.error('执行引擎工具错误:', error);
+            alert('执行操作时出错: ' + error.message);
+        }
+    }
+
+    executeTime() {
+        try {
+            const timeInput = document.getElementById('time-input');
+            if (!timeInput.value) {
+                alert('请选择时间');
+                return;
+            }
+            
+            // 转换时间格式为 YYYY-MM-DD HH:mm:ss
+            const date = new Date(timeInput.value);
+            const formattedTime = date.toISOString().slice(0, 19).replace('T', ' ');
+            
+            // 执行操作
+            this.executeTool('update', 'metadata.currentTime', formattedTime);
+        } catch (error) {
+            console.error('执行时间工具错误:', error);
+            alert('执行操作时出错: ' + error.message);
+        }
+    }
+
+    toggleEventForm() {
+        const eventForm = document.getElementById('event-form');
+        if (eventForm.style.display === 'none' || eventForm.style.display === '') {
+            eventForm.style.display = 'block';
+        } else {
+            eventForm.style.display = 'none';
+        }
+    }
+
+    executeEvent(action) {
+        try {
+            const eventName = document.getElementById('event-name').value;
+            const eventDescription = document.getElementById('event-description').value;
+            const eventStartTime = document.getElementById('event-start-time').value;
+            const eventEndTime = document.getElementById('event-end-time').value;
+            const eventImportance = document.getElementById('event-importance').value;
+            
+            if (!eventName || !eventDescription || !eventStartTime || !eventEndTime) {
+                alert('请填写所有必填字段');
+                return;
+            }
+            
+            // 转换时间格式
+            const startDate = new Date(eventStartTime);
+            const endDate = new Date(eventEndTime);
+            const formattedStartTime = startDate.toISOString().slice(0, 19).replace('T', ' ');
+            const formattedEndTime = endDate.toISOString().slice(0, 19).replace('T', ' ');
+            
+            // 创建事件数据对象
+            const eventData = {
+                name: eventName,
+                description: eventDescription,
+                startTime: formattedStartTime,
+                expectedEndTime: formattedEndTime,
+                importance: parseInt(eventImportance) || 3,
+                status: 'foreground'
+            };
+            
+            // 执行操作
+            this.executeTool(action, null, eventData);
+        } catch (error) {
+            console.error('执行事件工具错误:', error);
+            alert('执行操作时出错: ' + error.message);
+        }
+    }
+
+    updateGameDataDisplay() {
+        try {
+            // 获取游戏数据
+            const gameData = GameEngineInstance.getGameData();
+            
+            // 更新节拍数据
+            if (gameData.narrative) {
+                document.getElementById('current-beat').textContent = gameData.narrative.storyBeat || '未知';
+                document.getElementById('current-beat-operation').textContent = gameData.narrative.storyBeatOperation || '未知';
+            }
+            
+            // 更新景深数据
+            if (gameData.narrative) {
+                document.getElementById('current-depth-level').textContent = gameData.narrative.depthLevel || '未知';
+            }
+            
+            // 更新时间数据
+            if (gameData.metadata) {
+                document.getElementById('current-time').textContent = gameData.metadata.currentTime || '未知';
+            }
+        } catch (error) {
+            console.error('更新游戏数据显示错误:', error);
+            // 如果获取游戏数据失败，保持显示"加载中..."
+        }
+    }
+
+    // 更新调试面板内容
+    updateContent() {
+        if (debugData.lastAiResponse) {
+            document.getElementById('lastAiResponse').textContent = debugData.lastAiResponse;
+        } else {
+            document.getElementById('lastAiResponse').textContent = '无数据';
+        }
+        
+        if (debugData.lastApiRequest) {
+            document.getElementById('lastApiRequest').textContent = debugData.lastApiRequest;
+        } else {
+            document.getElementById('lastApiRequest').textContent = '无数据';
+        }
+        
+        if (debugData.dataJson) {
+            document.getElementById('dataJsonContent').textContent = debugData.dataJson;
+        } else {
+            document.getElementById('dataJsonContent').textContent = '加载中...';
+        }
+    }
+}
+
+// 初始化调试面板
+window.addEventListener('load', () => {
+    if (typeof admin !== 'undefined' && admin) {
+        window.DebugPanelInstance = new DebugPanel();
+    }
+});

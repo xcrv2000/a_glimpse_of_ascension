@@ -11,6 +11,7 @@
     <script src="src/js/storyStorage.js"></script>
     <script src="src/js/promptBuilder_storyteller.js"></script>
     <script src="src/js/contextCompressor.js"></script>
+    <script src="src/js/debugPanel.js"></script>
     <style>
 
         body {
@@ -133,26 +134,53 @@
         /* 调试悬浮窗样式 */
         .debug-panel {
             position: fixed;
-            top: 80px;
-            left: 20px;
+            top: 20px;
+            left: 150px;
             width: 400px;
             max-height: 500px;
             background-color: rgba(0, 0, 0, 0.8);
             color: white;
             border-radius: 10px;
-            padding: 15px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
             z-index: 1000;
-            overflow-y: auto;
+            overflow: hidden;
+        }
+        
+        .debug-panel-header {
+            padding: 15px 15px 0 15px;
         }
         
         .debug-panel h3 {
             margin-top: 0;
             color: #4CAF50;
             font-size: 16px;
-            border-bottom: 1px solid #555;
-            padding-bottom: 8px;
             margin-bottom: 12px;
+        }
+        
+        /* 选项卡样式 */
+        .debug-tabs {
+            display: flex;
+            margin: 0 15px;
+            border-bottom: 1px solid #555;
+        }
+        
+        .debug-tab {
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 12px;
+            color: #aaa;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .debug-tab.active {
+            color: #4CAF50;
+            border-bottom-color: #4CAF50;
+        }
+        
+        .debug-tab-content {
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
         }
         
         .debug-section {
@@ -173,14 +201,35 @@
             font-family: monospace;
             white-space: pre-wrap;
             word-wrap: break-word;
-            max-height: 150px;
+            max-height: 300px;
             overflow-y: auto;
+        }
+        
+        /* 引擎工具按钮样式 */
+        .engine-tool-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.3s;
+        }
+        
+        .engine-tool-btn:hover {
+            background-color: #45a049;
+        }
+        
+        .engine-tool-btn:disabled {
+            background-color: #555;
+            cursor: not-allowed;
         }
         
         .debug-toggle {
             position: fixed;
-            top: 80px;
-            left: 20px;
+            top: 20px;
+            left: 150px;
             background-color: #4CAF50;
             color: white;
             border: none;
@@ -301,18 +350,93 @@
     <!-- 调试悬浮窗 -->
     <button class="debug-toggle" onclick="toggleDebugPanel()">调试面板</button>
     <div class="debug-panel" id="debugPanel" style="display: none;">
-        <h3>调试信息</h3>
-        <div class="debug-section">
-            <h4>最后一次AI回复</h4>
-            <div class="debug-content" id="lastAiResponse">无数据</div>
+        <div class="debug-panel-header">
+            <h3>调试信息</h3>
         </div>
-        <div class="debug-section">
-            <h4>最后一次完整请求</h4>
-            <div class="debug-content" id="lastApiRequest">无数据</div>
+        <div class="debug-tabs">
+            <div class="debug-tab" onclick="switchDebugTab('engine-tools')">引擎工具</div>
+            <div class="debug-tab active" onclick="switchDebugTab('ai-response')">AI回复</div>
+            <div class="debug-tab" onclick="switchDebugTab('api-request')">API请求</div>
+            <div class="debug-tab" onclick="switchDebugTab('game-data')">游戏数据</div>
         </div>
-        <div class="debug-section">
-            <h4>data.json内容</h4>
-            <div class="debug-content" id="dataJsonContent">加载中...</div>
+        <div class="debug-tab-content" id="engine-tools-tab" style="display: none;">
+            <div class="debug-section">
+                <h4>节拍操作</h4>
+                <div class="game-data-display" id="beat-data-display" style="margin-bottom: 10px; padding: 8px; background-color: rgba(255, 255, 255, 0.1); border-radius: 4px;">
+                    当前节拍：<span id="current-beat">加载中...</span><br>
+                    节拍操作：<span id="current-beat-operation">加载中...</span>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;">
+                    <button class="engine-tool-btn" onclick="executeEngineTool('update', 'narrative.storyBeatOperation', '推进')">推进</button>
+                    <button class="engine-tool-btn" onclick="executeEngineTool('update', 'narrative.storyBeatOperation', '维持')">维持</button>
+                    <button class="engine-tool-btn" onclick="executeEngineTool('update', 'narrative.storyBeatOperation', '完结')">完结</button>
+                </div>
+            </div>
+            <div class="debug-section">
+                <h4>景深等级</h4>
+                <div class="game-data-display" id="depth-data-display" style="margin-bottom: 10px; padding: 8px; background-color: rgba(255, 255, 255, 0.1); border-radius: 4px;">
+                    当前景深等级：<span id="current-depth-level">加载中...</span>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;">
+                    <button class="engine-tool-btn" onclick="executeEngineTool('update', 'narrative.depthLevel', '1')">景深 1</button>
+                    <button class="engine-tool-btn" onclick="executeEngineTool('update', 'narrative.depthLevel', '2')">景深 2</button>
+                    <button class="engine-tool-btn" onclick="executeEngineTool('update', 'narrative.depthLevel', '3')">景深 3</button>
+                    <button class="engine-tool-btn" onclick="executeEngineTool('update', 'narrative.depthLevel', '4')">景深 4</button>
+                    <button class="engine-tool-btn" onclick="executeEngineTool('update', 'narrative.depthLevel', '5')">景深 5</button>
+                </div>
+            </div>
+            <div class="debug-section">
+                <h4>时间设置</h4>
+                <div class="game-data-display" id="time-data-display" style="margin-bottom: 10px; padding: 8px; background-color: rgba(255, 255, 255, 0.1); border-radius: 4px;">
+                    当前时间：<span id="current-time">加载中...</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <input type="datetime-local" id="time-input" style="width: 100%; padding: 8px; margin-bottom: 8px;" />
+                    <button class="engine-tool-btn" onclick="executeTimeTool()">设置时间</button>
+                </div>
+            </div>
+            <div class="debug-section">
+                <h4>事件操作</h4>
+                <button class="engine-tool-btn" onclick="toggleEventForm()">注册/更新事件</button>
+                <div id="event-form" style="display: none; margin-top: 10px; padding: 10px; background-color: rgba(255, 255, 255, 0.1); border-radius: 5px;">
+                    <input type="text" id="event-name" placeholder="事件名称" style="width: 100%; padding: 6px; margin-bottom: 6px;" />
+                    <textarea id="event-description" placeholder="事件描述" rows="2" style="width: 100%; padding: 6px; margin-bottom: 6px;" ></textarea>
+                    <input type="datetime-local" id="event-start-time" style="width: 100%; padding: 6px; margin-bottom: 6px;" />
+                    <input type="datetime-local" id="event-end-time" style="width: 100%; padding: 6px; margin-bottom: 6px;" />
+                    <input type="number" id="event-importance" placeholder="重要程度 (1-5)" min="1" max="5" style="width: 100%; padding: 6px; margin-bottom: 6px;" />
+                    <button class="engine-tool-btn" onclick="executeEventTool('registerEvent')">注册事件</button>
+                </div>
+                <div style="margin-top: 10px;">
+                    <input type="text" id="delete-event-name" placeholder="事件名称" style="width: 100%; padding: 6px; margin-bottom: 6px;" />
+                    <button class="engine-tool-btn" onclick="executeEngineTool('deleteEvent', null, document.getElementById('delete-event-name').value)">删除事件</button>
+                </div>
+            </div>
+            <div class="debug-section">
+                <h4>成就操作</h4>
+                <input type="text" id="achievement-name" placeholder="成就名称" style="width: 100%; padding: 6px; margin-bottom: 6px;" />
+                <div style="display: flex; gap: 8px;">
+                    <button class="engine-tool-btn" onclick="executeEngineTool('completeAchievement', null, document.getElementById('achievement-name').value)">完成成就</button>
+                    <button class="engine-tool-btn" onclick="executeEngineTool('showAchievement', null, document.getElementById('achievement-name').value)">显示成就</button>
+                </div>
+            </div>
+        </div>
+        <div class="debug-tab-content" id="ai-response-tab">
+            <div class="debug-section">
+                <h4>最后一次AI回复</h4>
+                <div class="debug-content" id="lastAiResponse">无数据</div>
+            </div>
+        </div>
+        <div class="debug-tab-content" id="api-request-tab" style="display: none;">
+            <div class="debug-section">
+                <h4>最后一次完整请求</h4>
+                <div class="debug-content" id="lastApiRequest">无数据</div>
+            </div>
+        </div>
+        <div class="debug-tab-content" id="game-data-tab" style="display: none;">
+            <div class="debug-section">
+                <h4>data.json内容</h4>
+                <div class="debug-content" id="dataJsonContent">加载中...</div>
+            </div>
         </div>
     </div>
     
@@ -338,10 +462,6 @@
         const messagesContainer = document.getElementById('messages');
         const messageInput = document.getElementById('message-input');
         const sendBtn = document.getElementById('send-btn');
-        const debugPanel = document.getElementById('debugPanel');
-        const lastAiResponse = document.getElementById('lastAiResponse');
-        const lastApiRequest = document.getElementById('lastApiRequest');
-        const dataJsonContent = document.getElementById('dataJsonContent');
         const debugToggle = document.querySelector('.debug-toggle');
         const achievementsPanel = document.getElementById('achievementsPanel');
         const achievementsContent = document.getElementById('achievementsContent');
@@ -370,14 +490,18 @@
                 if (response.ok) {
                     const data = await response.json();
                     debugData.dataJson = JSON.stringify(data, null, 2);
-                    updateDebugPanel();
+                    if (window.DebugPanelInstance) {
+                        window.DebugPanelInstance.updateContent();
+                    }
                 } else {
                     throw new Error('加载失败');
                 }
             } catch (error) {
                 console.error('加载data.json失败:', error);
                 debugData.dataJson = '加载失败: ' + error.message;
-                updateDebugPanel();
+                if (window.DebugPanelInstance) {
+                    window.DebugPanelInstance.updateContent();
+                }
             }
         }
         
@@ -665,46 +789,22 @@
             
             // 存储完整请求数据到调试数据
             debugData.lastApiRequest = JSON.stringify(requestData, null, 2);
-            updateDebugPanel();
+            if (window.DebugPanelInstance) {
+                window.DebugPanelInstance.updateContent();
+            }
             
             const response = await PromptBuilder.sendApiRequest(requestData, finalApiKey);
             
             // 存储最后一次AI回复到调试数据
             debugData.lastAiResponse = response;
-            updateDebugPanel();
+            if (window.DebugPanelInstance) {
+                window.DebugPanelInstance.updateContent();
+            }
             
             return response;
         }
         
-        // 切换调试面板显示/隐藏
-        function toggleDebugPanel() {
-            if (debugPanel.style.display === 'none') {
-                debugPanel.style.display = 'block';
-            } else {
-                debugPanel.style.display = 'none';
-            }
-        }
-        
-        // 更新调试面板内容
-        function updateDebugPanel() {
-            if (debugData.lastAiResponse) {
-                lastAiResponse.textContent = debugData.lastAiResponse;
-            } else {
-                lastAiResponse.textContent = '无数据';
-            }
-            
-            if (debugData.lastApiRequest) {
-                lastApiRequest.textContent = debugData.lastApiRequest;
-            } else {
-                lastApiRequest.textContent = '无数据';
-            }
-            
-            if (debugData.dataJson) {
-                dataJsonContent.textContent = debugData.dataJson;
-            } else {
-                dataJsonContent.textContent = '加载中...';
-            }
-        }
+
         
         // 事件监听
         sendBtn.addEventListener('click', sendMessage);

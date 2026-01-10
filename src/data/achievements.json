@@ -44,13 +44,19 @@
     },
     {
       "name": "绸间塔",
-      "description": "失去自己的admin权限",
+      "description": "主动失去自己的admin权限",
       "isCompleted": false,
       "isHidden": true
     },
     {
       "name": "雾上灯",
       "description": "前往作者的github",
+      "isCompleted": false,
+      "isHidden": true
+    },
+    {
+      "name": "未定之伟业",
+      "description": "达成并非由该世界指定好的伟业",
       "isCompleted": false,
       "isHidden": true
     }

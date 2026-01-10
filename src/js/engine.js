@@ -83,6 +83,12 @@ class GameEngine {
                 console.log('初始化foreshadowings数组');
             }
             
+            // 确保characters数组存在
+            if (!this.gameData.characters) {
+                this.gameData.characters = [];
+                console.log('初始化characters数组');
+            }
+            
             // 确保narrative对象存在
             if (!this.gameData.narrative) {
                 this.gameData.narrative = {};
@@ -123,6 +129,10 @@ class GameEngine {
                 this.gameData.narrative.currentCycleWords = 0;
                 console.log('初始化currentCycleWords');
             }
+            
+            // 确保当前游戏会话的伟业达成标志存在且初始为false
+            this.gameData.narrative.hasAchievedGreatnessInCurrentGame = false;
+            console.log('初始化hasAchievedGreatnessInCurrentGame标志为false');
             
             console.log('游戏数据加载成功:', this.gameData);
             return this.gameData;
@@ -300,6 +310,14 @@ class GameEngine {
             } else if (request.action === 'showAchievement') {
                 // 处理成就显示操作
                 await this.showAchievement(request.value);
+            } else if (request.action === 'registerCharacter') {
+                await this.registerCharacter(request.value);
+            } else if (request.action === 'updateCharacter') {
+                await this.updateCharacter(request.value);
+            } else if (request.action === 'deleteCharacter') {
+                await this.deleteCharacter(request.value);
+            } else if (request.action === 'addCharacterThingDone') {
+                await this.addCharacterThingDone(request.value);
             } else if (request.action === 'update') {
                 // 处理节拍操作
                 if (request.path === 'narrative.storyBeatOperation') {
@@ -331,6 +349,13 @@ class GameEngine {
     async registerEvent(eventData) {
         try {
             console.log('开始注册事件:', eventData);
+            
+            // 检查是否在后日谈
+            const currentBeat = this.gameData.narrative?.storyBeat || '起';
+            if (currentBeat === '后日谈') {
+                console.log('在后日谈中，不可以注册新事件');
+                return { success: false, error: '在后日谈中，不可以注册新事件' };
+            }
             
             // 确保events数组存在
             if (!this.gameData.events) {
@@ -490,9 +515,40 @@ class GameEngine {
         try {
             console.log('处理故事节拍操作:', operation);
             
+            // 检查是否已经在后日谈
+            const currentBeat = this.gameData.narrative?.storyBeat || '起';
+            if (currentBeat === '后日谈') {
+                console.log('已在后日谈，节拍操作无效');
+                return currentBeat;
+            }
+            
+            // 处理完结操作（在任何节拍都有效）
+            if (operation === '完结') {
+                // 直接进入后日谈
+                const newBeat = '后日谈';
+                this.gameData = this.dataManager.updateDataByPath(
+                    this.gameData,
+                    'narrative.storyBeat',
+                    newBeat
+                );
+                // 在后日谈中，当前时间变为"后日谈"
+                this.gameData = this.dataManager.updateDataByPath(
+                    this.gameData,
+                    'metadata.currentTime',
+                    '后日谈'
+                );
+                console.log(`故事节拍已完结: ${currentBeat} → ${newBeat}`);
+                return newBeat;
+            }
+            
+            // 检查是否在终幕
+            if (currentBeat === '终幕') {
+                console.log('已在终幕，节拍操作无效');
+                return currentBeat;
+            }
+            
             // 定义故事节拍顺序
             const storyBeatOrder = ['起', '承', '转', '合'];
-            const currentBeat = this.gameData.narrative?.storyBeat || '起';
             const currentIndex = storyBeatOrder.indexOf(currentBeat);
             
             let newBeat = currentBeat;
@@ -502,11 +558,24 @@ class GameEngine {
                 if (currentIndex < storyBeatOrder.length - 1) {
                     newBeat = storyBeatOrder[currentIndex + 1];
                 } else {
-                    // 已经是最后一节拍，重置为'起'，开始新的循环
-                    newBeat = storyBeatOrder[0];
-                    
-                    // 开始新的节拍循环
-                    this.startNewBeatCycle();
+                    // 已经是最后一节拍，检查是否在当前游戏中达成伟业
+                    if (this.gameData.narrative?.hasAchievedGreatnessInCurrentGame) {
+                        // 在当前游戏中达成伟业，进入后日谈
+                        console.log('在当前游戏中达成伟业，当前节拍循环结束，进入后日谈');
+                        newBeat = '后日谈';
+                        // 在后日谈中，当前时间变为"后日谈"
+                        this.gameData = this.dataManager.updateDataByPath(
+                            this.gameData,
+                            'metadata.currentTime',
+                            '后日谈'
+                        );
+                    } else {
+                        // 未在当前游戏中达成伟业，重置为'起'，开始新的循环
+                        newBeat = storyBeatOrder[0];
+                        
+                        // 开始新的节拍循环
+                        this.startNewBeatCycle();
+                    }
                 }
             } else if (operation === '维持' || operation === '维持在当前节拍') {
                 // 维持当前节拍
@@ -515,6 +584,9 @@ class GameEngine {
                 // 直接指定节拍
                 newBeat = operation;
             }
+            
+            // 检查是否需要进入终幕
+            newBeat = this.checkIfNeedEnterFinalAct(newBeat);
             
             // 更新故事节拍
             this.gameData = this.dataManager.updateDataByPath(
@@ -529,6 +601,36 @@ class GameEngine {
             console.error('处理故事节拍操作错误:', error);
             return this.gameData.narrative?.storyBeat || '起';
         }
+    }
+
+    // 检查是否需要进入终幕
+    checkIfNeedEnterFinalAct(currentBeat) {
+        // 检查是否已经在终幕或后日谈
+        if (currentBeat === '终幕' || currentBeat === '后日谈') {
+            return currentBeat;
+        }
+        
+        // 检查时间线是否到1929年
+        const currentTime = this.gameData.metadata?.currentTime;
+        if (currentTime && typeof currentTime === 'string' && currentTime !== '后日谈') {
+            const yearMatch = currentTime.match(/^(\d{4})-/);
+            if (yearMatch) {
+                const year = parseInt(yearMatch[1]);
+                if (year >= 1929) {
+                    console.log('时间线到1929年，进入终幕');
+                    return '终幕';
+                }
+            }
+        }
+        
+        // 检查故事总字数是否超过30万字
+        const totalWords = this.gameData.narrative?.totalWords || 0;
+        if (totalWords >= 300000) {
+            console.log('故事总字数超过30万字，进入终幕');
+            return '终幕';
+        }
+        
+        return currentBeat;
     }
     
     // 开始新的节拍循环
@@ -862,6 +964,27 @@ class GameEngine {
                     });
                 }
                 
+                // 特殊处理：如果是雾上灯成就，打开GitHub链接
+                if (achievementName === '雾上灯') {
+                    console.log('打开雾上灯成就的GitHub链接');
+                    // 在浏览器中打开新标签页
+                    if (typeof window !== 'undefined' && window.open) {
+                        window.open('https://github.com/xcrv2000/a_glimpse_of_ascension/', '_blank');
+                    }
+                }
+                
+                // 检查是否达成伟业，如果是，设置当前游戏会话的后日谈标志
+                if (achievementName.includes('伟业')) {
+                    console.log('AI声明达成伟业，设置当前游戏会话的后日谈标志');
+                    // 设置当前游戏会话的达成伟业标志，在当前节拍循环结束后进入后日谈
+                    // 这个标志会在新游戏开始时被重置
+                    this.gameData = this.dataManager.updateDataByPath(
+                        this.gameData,
+                        'narrative.hasAchievedGreatnessInCurrentGame',
+                        true
+                    );
+                }
+                
                 await this.saveAchievementsData();
                 console.log('成就完成成功:', achievementName);
                 return { success: true };
@@ -925,6 +1048,177 @@ class GameEngine {
             return { success: true };
         } catch (error) {
             console.error('清空已完成成就错误:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // 注册角色
+    async registerCharacter(characterData) {
+        try {
+            console.log('开始注册角色:', characterData);
+            
+            // 检查是否在终幕或后日谈
+            const currentBeat = this.gameData.narrative?.storyBeat || '起';
+            if (currentBeat === '终幕' || currentBeat === '后日谈') {
+                console.log('在终幕或后日谈中，不可以注册新角色');
+                return { success: false, error: '在终幕或后日谈中，不可以注册新角色' };
+            }
+            
+            // 确保characters数组存在
+            if (!this.gameData.characters) {
+                this.gameData.characters = [];
+            }
+            
+            // 验证并处理template
+            const validTemplate = this.validateCharacterTemplate(characterData.template);
+            if (validTemplate !== characterData.template) {
+                console.log(`角色模板 ${characterData.template} 无效，替换为 ${validTemplate}`);
+                characterData.template = validTemplate;
+            }
+            
+            // 检查是否已存在同名角色
+            const existingCharacterIndex = this.gameData.characters.findIndex(character => character.name === characterData.name);
+            
+            if (existingCharacterIndex >= 0) {
+                // 存在同名角色，更新它
+                console.log('存在同名角色，更新它:', characterData.name);
+                this.gameData.characters[existingCharacterIndex] = {
+                    ...this.gameData.characters[existingCharacterIndex],
+                    ...characterData,
+                    thingsDone: characterData.thingsDone || this.gameData.characters[existingCharacterIndex].thingsDone || []
+                };
+            } else {
+                // 不存在同名角色，添加新角色
+                console.log('添加新角色:', characterData.name);
+                const newCharacter = {
+                    ...characterData,
+                    thingsDone: characterData.thingsDone || []
+                };
+                this.gameData.characters.push(newCharacter);
+            }
+            
+            console.log('角色注册成功');
+            return { success: true };
+        } catch (error) {
+            console.error('注册角色错误:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // 验证角色模板
+    validateCharacterTemplate(template) {
+        // 有效的角色模板列表
+        const validTemplates = ['蜂', '蚁', '蛾', '蝶', '蝗', '蜣', '螳', '蝎', '蛛', '蛉', '蝉', '萤'];
+        
+        // 检查模板是否有效
+        if (validTemplates.includes(template)) {
+            return template;
+        } else {
+            // 随机选择一个有效的模板
+            const randomIndex = Math.floor(Math.random() * validTemplates.length);
+            return validTemplates[randomIndex];
+        }
+    }
+
+    // 更新角色
+    async updateCharacter(characterData) {
+        try {
+            console.log('开始更新角色:', characterData);
+            
+            // 确保characters数组存在
+            if (!this.gameData.characters) {
+                this.gameData.characters = [];
+                return { success: false, error: '角色数组不存在' };
+            }
+            
+            // 验证并处理template
+            const validTemplate = this.validateCharacterTemplate(characterData.template);
+            if (validTemplate !== characterData.template) {
+                console.log(`角色模板 ${characterData.template} 无效，替换为 ${validTemplate}`);
+                characterData.template = validTemplate;
+            }
+            
+            // 查找同名角色
+            const existingCharacterIndex = this.gameData.characters.findIndex(character => character.name === characterData.name);
+            
+            if (existingCharacterIndex >= 0) {
+                // 更新角色
+                this.gameData.characters[existingCharacterIndex] = {
+                    ...this.gameData.characters[existingCharacterIndex],
+                    ...characterData,
+                    thingsDone: characterData.thingsDone || this.gameData.characters[existingCharacterIndex].thingsDone || []
+                };
+                console.log('角色更新成功:', characterData.name);
+                return { success: true };
+            } else {
+                // 不存在同名角色，注册为新角色
+                console.log('不存在同名角色，注册为新角色:', characterData.name);
+                return await this.registerCharacter(characterData);
+            }
+        } catch (error) {
+            console.error('更新角色错误:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // 删除角色
+    async deleteCharacter(characterName) {
+        try {
+            console.log('开始删除角色:', characterName);
+            
+            // 确保characters数组存在
+            if (!this.gameData.characters) {
+                this.gameData.characters = [];
+                return { success: false, error: '角色数组不存在' };
+            }
+            
+            // 查找并删除同名角色
+            const initialLength = this.gameData.characters.length;
+            this.gameData.characters = this.gameData.characters.filter(character => character.name !== characterName);
+            
+            if (this.gameData.characters.length < initialLength) {
+                console.log('角色删除成功:', characterName);
+                return { success: true };
+            } else {
+                console.warn('角色不存在:', characterName);
+                return { success: false, error: '角色不存在' };
+            }
+        } catch (error) {
+            console.error('删除角色错误:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // 快捷添加角色做过的事
+    async addCharacterThingDone(thingDoneData) {
+        try {
+            console.log('开始添加角色做过的事:', thingDoneData);
+            
+            // 确保characters数组存在
+            if (!this.gameData.characters) {
+                this.gameData.characters = [];
+                return { success: false, error: '角色数组不存在' };
+            }
+            
+            // 查找角色
+            const characterIndex = this.gameData.characters.findIndex(character => character.name === thingDoneData.name);
+            
+            if (characterIndex >= 0) {
+                // 确保thingsDone数组存在
+                if (!this.gameData.characters[characterIndex].thingsDone) {
+                    this.gameData.characters[characterIndex].thingsDone = [];
+                }
+                
+                // 添加做过的事
+                this.gameData.characters[characterIndex].thingsDone.push(thingDoneData.thingDone);
+                console.log('添加角色做过的事成功:', thingDoneData.name, thingDoneData.thingDone);
+                return { success: true };
+            } else {
+                console.warn('角色不存在:', thingDoneData.name);
+                return { success: false, error: '角色不存在' };
+            }
+        } catch (error) {
+            console.error('添加角色做过的事错误:', error);
             return { success: false, error: error.message };
         }
     }

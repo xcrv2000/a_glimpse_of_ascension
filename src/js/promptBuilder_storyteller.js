@@ -21,7 +21,19 @@ class PromptBuilder {
         // 如果无法加载prompt.json，使用默认提示词
         if (!promptLoaded || !systemPrompt) {
             console.log('使用默认提示词');
-            systemPrompt = "你是一个ai调试助手。你要忠实的执行玩家的指令。当玩家问你天上有什么的时候，你要回答'有鱼在飞'。";
+            systemPrompt = "你是一个故事生成助手。你要告诉用户：系统提示词导入失败。";
+        }
+        
+        // 加载lore.json
+        let loreContent = "";
+        try {
+            const loreResponse = await fetch('src/data/lore.json');
+            if (loreResponse.ok) {
+                loreContent = await loreResponse.text();
+                console.log('成功获取lore.json（纯文本格式）');
+            }
+        } catch (error) {
+            console.error('获取lore.json失败:', error);
         }
         
         // 加载data.json
@@ -38,6 +50,7 @@ class PromptBuilder {
         
         return {
             systemPrompt,
+            loreContent,
             dataContent
         };
     }
@@ -73,10 +86,18 @@ class PromptBuilder {
     }
     
     // 拼装完整的系统提示词
-    static buildSystemPrompt(systemPrompt, dataContent) {
-        // 按照顺序拼装提示词：prompt.json + data.json
+    static buildSystemPrompt(systemPrompt, loreContent, dataContent) {
+        // 按照顺序拼装提示词：prompt.json + lore.json + data.json
         let fullSystemPrompt = systemPrompt.trim();
         fullSystemPrompt += "\n\n===游戏规则部分结束===";
+        
+        // 添加世界设定部分
+        if (loreContent && typeof loreContent === 'string' && loreContent.trim()) {
+            fullSystemPrompt += "\n\n===世界设定部分开始===\n\nlore.json\n\n" + loreContent.trim();
+            fullSystemPrompt += "\n\n===世界设定部分结束===";
+        }
+        
+        // 添加数据部分
         if (dataContent && typeof dataContent === 'string' && dataContent.trim()) {
             fullSystemPrompt += "\n\n===数据部分开始===\n\ndata.json\n\n" + dataContent.trim();
             fullSystemPrompt += "\n\n===数据部分结束===";
@@ -100,7 +121,7 @@ class PromptBuilder {
         // 加载提示词
         return this.loadPrompts().then(prompts => {
             // 拼装系统提示词
-            const fullSystemPrompt = this.buildSystemPrompt(prompts.systemPrompt, prompts.dataContent);
+            const fullSystemPrompt = this.buildSystemPrompt(prompts.systemPrompt, prompts.loreContent, prompts.dataContent);
             
             // 准备请求数据，确保格式正确
             const messages = [];
@@ -159,6 +180,10 @@ class PromptBuilder {
                     content: '===用户输入开始===\n\nuser input'
                 });
                 messages.push({ role: 'user', content: userMessage.trim() });
+                messages.push({
+                    role: 'system',
+                    content: '===用户输入结束===\n\n请以故事主持人的身份开始渲染故事，并使用游戏引擎更新和记录故事的状态。'
+                });
             }
             
             // 准备最终的请求数据
