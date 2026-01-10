@@ -907,6 +907,28 @@ class GameEngine {
         }
     }
 
+    // 清空已完成成就
+    async clearCompletedAchievements() {
+        try {
+            console.log('开始清空已完成成就');
+            
+            // 确保成就数据存在
+            if (!this.achievementsData) {
+                this.achievementsData = this.dataManager.getDefaultAchievementsData();
+            }
+            
+            // 使用dataManager的方法清空成就
+            this.achievementsData = this.dataManager.clearCompletedAchievements(this.achievementsData);
+            
+            await this.saveAchievementsData();
+            console.log('清空已完成成就成功');
+            return { success: true };
+        } catch (error) {
+            console.error('清空已完成成就错误:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
     // 获取当前游戏数据
     getGameData() {
         return this.gameData;

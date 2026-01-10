@@ -73,9 +73,15 @@ class ResponseParser {
             return Array.isArray(requests) ? requests : [requests];
         } catch (error) {
             console.error('解析数据请求JSON错误:', error);
+            console.error('原始内容:', content);
             
             // 如果JSON解析失败，尝试解析简单格式
-            return this.parseSimpleFormat(content);
+            try {
+                return this.parseSimpleFormat(content);
+            } catch (simpleError) {
+                console.error('解析简单格式错误:', simpleError);
+                return [];
+            }
         }
     }
 

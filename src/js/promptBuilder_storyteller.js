@@ -76,8 +76,10 @@ class PromptBuilder {
     static buildSystemPrompt(systemPrompt, dataContent) {
         // 按照顺序拼装提示词：prompt.json + data.json
         let fullSystemPrompt = systemPrompt.trim();
+        fullSystemPrompt += "\n\n===游戏规则部分结束===";
         if (dataContent && typeof dataContent === 'string' && dataContent.trim()) {
-            fullSystemPrompt += "\n\n" + dataContent.trim();
+            fullSystemPrompt += "\n\n===数据部分开始===\n\ndata.json\n\n" + dataContent.trim();
+            fullSystemPrompt += "\n\n===数据部分结束===";
         }
         
         // 尝试解析数据内容，提取当前时间
@@ -110,18 +112,30 @@ class PromptBuilder {
             
             // 添加压缩故事
             if (compressedStory && compressedStory.length > 0) {
+                messages.push({
+                    role: 'system',
+                    content: '===摘要部分开始===\n\ncompressed_context'
+                });
                 compressedStory.forEach(compressedMsg => {
                     if (compressedMsg && compressedMsg.content && typeof compressedMsg.content === 'string') {
                         messages.push({
                             role: compressedMsg.role || 'assistant',
-                            content: `[压缩故事] ${compressedMsg.content.trim()}`
+                            content: compressedMsg.content.trim()
                         });
                     }
+                });
+                messages.push({
+                    role: 'system',
+                    content: '===摘要部分结束==='
                 });
             }
             
             // 添加未压缩故事（实时故事）
             if (uncompressedStory && uncompressedStory.length > 0) {
+                messages.push({
+                    role: 'system',
+                    content: '===故事部分开始===\n\nuncompressed_context'
+                });
                 // 排除刚刚添加的用户消息，因为它会作为单独的消息添加
                 const storyToSend = uncompressedStory.slice(0, -1);
                 storyToSend.forEach(msg => {
@@ -132,10 +146,18 @@ class PromptBuilder {
                         });
                     }
                 });
+                messages.push({
+                    role: 'system',
+                    content: '===故事部分结束==='
+                });
             }
             
             // 添加最新用户消息，确保不为空
             if (userMessage && typeof userMessage === 'string' && userMessage.trim()) {
+                messages.push({
+                    role: 'system',
+                    content: '===用户输入开始===\n\nuser input'
+                });
                 messages.push({ role: 'user', content: userMessage.trim() });
             }
             

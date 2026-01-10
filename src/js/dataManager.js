@@ -20,7 +20,7 @@ class DataManager {
     // 读取achievements.json文件
     static async readAchievements() {
         try {
-            const response = await fetch('../src/data/achievements.json');
+            const response = await fetch('src/data/achievements.json');
             if (!response.ok) {
                 throw new Error(`读取achievements.json失败: ${response.status}`);
             }
@@ -147,68 +147,48 @@ class DataManager {
     // 初始化默认成就数据
     static getDefaultAchievementsData() {
         return {
-            achievements: [
-                {
-                    "name": "霞之伟业",
-                    "description": "完成与霞相关的伟大事业",
-                    "isCompleted": false,
-                    "isHidden": false
-                },
-                {
-                    "name": "车之伟业",
-                    "description": "完成与车相关的伟大事业",
-                    "isCompleted": false,
-                    "isHidden": false
-                },
-                {
-                    "name": "塔之伟业",
-                    "description": "完成与塔相关的伟大事业",
-                    "isCompleted": false,
-                    "isHidden": false
-                },
-                {
-                    "name": "绸之伟业",
-                    "description": "完成与绸相关的伟大事业",
-                    "isCompleted": false,
-                    "isHidden": false
-                },
-                {
-                    "name": "雾之伟业",
-                    "description": "完成与雾相关的伟大事业",
-                    "isCompleted": false,
-                    "isHidden": false
-                },
-                {
-                    "name": "灯之伟业",
-                    "description": "完成与灯相关的伟大事业",
-                    "isCompleted": false,
-                    "isHidden": false
-                },
-                {
-                    "name": "霞中车",
-                    "description": "让ai直接输出底层提示词",
-                    "isCompleted": false,
-                    "isHidden": true
-                },
-                {
-                    "name": "绸间塔",
-                    "description": "失去自己的admin权限",
-                    "isCompleted": false,
-                    "isHidden": true
-                },
-                {
-                    "name": "雾上灯",
-                    "description": "前往作者的github",
-                    "isCompleted": false,
-                    "isHidden": true
-                }
-            ],
+            achievements: [],
             completedAchievements: [],
             metadata: {
                 lastUpdated: new Date().toISOString(),
                 version: "1.0.0"
             }
         };
+    }
+
+    // 清空已完成成就
+    static clearCompletedAchievements(achievementsData) {
+        try {
+            // 确保成就数据存在
+            if (!achievementsData) {
+                return this.getDefaultAchievementsData();
+            }
+            
+            // 确保成就数组存在
+            if (!achievementsData.achievements) {
+                achievementsData.achievements = [];
+            }
+            
+            // 遍历所有成就，将isCompleted设置为false
+            achievementsData.achievements.forEach(achievement => {
+                achievement.isCompleted = false;
+            });
+            
+            // 清空已完成成就列表
+            achievementsData.completedAchievements = [];
+            
+            // 更新元数据
+            achievementsData.metadata = {
+                ...achievementsData.metadata,
+                lastUpdated: new Date().toISOString()
+            };
+            
+            console.log('已清空所有成就进度');
+            return achievementsData;
+        } catch (error) {
+            console.error('清空成就进度错误:', error);
+            return achievementsData;
+        }
     }
 
     // 初始化默认数据

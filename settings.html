@@ -167,6 +167,7 @@
         <div class="section">
             <h2>数据管理</h2>
             <button class="action-btn" onclick="exportChat()">导出对话记录</button>
+            <button class="action-btn danger" onclick="clearCompletedAchievements()">清空已完成成就</button>
         </div>
     </div>
     
@@ -234,6 +235,28 @@
             alert('设置已保存');
         }
         
+        // 清空已完成成就
+        function clearCompletedAchievements() {
+            // 二次确认
+            if (confirm('确定要清空所有已完成的成就吗？此操作不可撤销。')) {
+                // 检查GameEngineInstance是否存在
+                if (typeof GameEngineInstance !== 'undefined') {
+                    // 调用引擎方法清空成就
+                    GameEngineInstance.clearCompletedAchievements().then(result => {
+                        if (result.success) {
+                            alert('已成功清空所有已完成的成就');
+                        } else {
+                            alert('清空成就失败: ' + (result.error || '未知错误'));
+                        }
+                    }).catch(error => {
+                        alert('清空成就时发生错误: ' + error.message);
+                    });
+                } else {
+                    alert('游戏引擎未加载，无法清空成就');
+                }
+            }
+        }
+
         // 页面加载时加载设置
         window.addEventListener('load', loadSettings);
     </script>

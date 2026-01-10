@@ -366,7 +366,7 @@
         // 加载data.json内容
         async function loadDataJson() {
             try {
-                const response = await fetch('data.json');
+                const response = await fetch('src/data/data.json');
                 if (response.ok) {
                     const data = await response.json();
                     debugData.dataJson = JSON.stringify(data, null, 2);
