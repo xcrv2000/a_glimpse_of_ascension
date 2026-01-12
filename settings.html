@@ -289,6 +289,8 @@
                 if (promptModeToggle) {
                     promptModeToggle.checked = false; // false表示两阶段模式
                 }
+                // 不显示默认API密钥，保持密码字段为空
+                document.getElementById('api-key').value = '';
             }
         }
         

@@ -162,6 +162,11 @@ class PromptBuilder_Recorder {
     
     // 发送API请求
     static async sendApiRequest(requestData, apiKey) {
+        // 如果没有提供API密钥，使用默认值
+        if (!apiKey) {
+            apiKey = 'sk-13cf1d781bca49d49cd15136a4859607';
+        }
+        
         // 发送请求到DeepSeek API
         const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
             method: 'POST',
@@ -190,6 +195,12 @@ class PromptBuilder_Recorder {
             const errorMessage = responseData && responseData.error 
                 ? `${response.status} ${response.statusText}: ${responseData.error.message}`
                 : `API请求失败: ${response.status} ${response.statusText}`;
+            
+            // 检查是否是余额不足错误
+            if (responseData && responseData.error && responseData.error.message && responseData.error.message.includes('余额不足')) {
+                throw new Error(`API余额不足，请在设置页面配置您自己的DeepSeek API密钥: ${errorMessage}`);
+            }
+            
             throw new Error(errorMessage);
         }
         

@@ -23,6 +23,11 @@ class ContextCompressor {
             return null;
         }
         
+        // 如果没有提供API密钥，使用默认值
+        if (!apiKey) {
+            apiKey = 'sk-13cf1d781bca49d49cd15136a4859607';
+        }
+        
         console.log('开始压缩上下文，未压缩消息数:', uncompressedStory.length);
         
         // 准备压缩提示词
@@ -69,6 +74,10 @@ ${uncompressedStory.map(msg => `${msg.role === 'user' ? '用户' : '助手'}: ${
             
             if (!response.ok) {
                 const errorData = await response.json();
+                // 检查是否是余额不足错误
+                if (errorData.error && errorData.error.message && errorData.error.message.includes('余额不足')) {
+                    throw new Error(`API余额不足，请在设置页面配置您自己的DeepSeek API密钥: ${response.status} ${errorData.error.message}`);
+                }
                 throw new Error(`API请求失败: ${response.status} ${errorData.error?.message || ''}`);
             }
             

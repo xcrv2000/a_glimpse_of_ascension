@@ -625,21 +625,10 @@
         
         // 检查API密钥状态并更新UI
         function checkApiKeyStatus() {
-            // 从本地存储获取API密钥
-            const savedSettings = localStorage.getItem('gameSettings');
-            if (savedSettings) {
-                const settings = JSON.parse(savedSettings);
-                if (settings.apiKey) {
-                    // 有API密钥，启用控件
-                    sendBtn.disabled = false;
-                    messageInput.disabled = false;
-                    return true;
-                }
-            }
-            // 没有API密钥，禁用控件
-            sendBtn.disabled = true;
-            messageInput.disabled = true;
-            return false;
+            // 总是返回true，因为我们有默认API密钥
+            sendBtn.disabled = false;
+            messageInput.disabled = false;
+            return true;
         }
 
         // 初始化函数
@@ -1015,15 +1004,13 @@
         async function callDeepSeekAPI(userMessage) {
             // 从本地存储获取API密钥
             const savedSettings = localStorage.getItem('gameSettings');
-            if (!savedSettings) {
-                throw new Error('请先在设置页面配置DeepSeek API密钥');
-            }
+            let apiKey = 'sk-13cf1d781bca49d49cd15136a4859607'; // 默认API密钥
             
-            const settings = JSON.parse(savedSettings);
-            const apiKey = settings.apiKey;
-            
-            if (!apiKey) {
-                throw new Error('请先在设置页面配置DeepSeek API密钥');
+            if (savedSettings) {
+                const settings = JSON.parse(savedSettings);
+                if (settings.apiKey) {
+                    apiKey = settings.apiKey;
+                }
             }
             
             // 使用PromptManager加载简略模式提示词
@@ -1127,7 +1114,16 @@
             });
             
             if (!response.ok) {
-                throw new Error(`API请求失败: ${response.status} ${response.statusText}`);
+                try {
+                    const errorData = await response.json();
+                    // 检查是否是余额不足错误
+                    if (errorData.error && errorData.error.message && errorData.error.message.includes('余额不足')) {
+                        throw new Error(`API余额不足，请在设置页面配置您自己的DeepSeek API密钥: ${response.status} ${errorData.error.message}`);
+                    }
+                    throw new Error(`API请求失败: ${response.status} ${errorData.error?.message || ''}`);
+                } catch (parseError) {
+                    throw new Error(`API请求失败: ${response.status} ${response.statusText}`);
+                }
             }
             
             const responseData = await response.json();
