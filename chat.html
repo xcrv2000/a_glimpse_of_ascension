@@ -625,9 +625,17 @@
         
         // 检查API密钥状态并更新UI
         function checkApiKeyStatus() {
+            // 获取DOM元素
+            const sendBtn = document.getElementById('sendBtn');
+            const messageInput = document.getElementById('messageInput');
+            
             // 总是返回true，因为我们有默认API密钥
-            sendBtn.disabled = false;
-            messageInput.disabled = false;
+            if (sendBtn) {
+                sendBtn.disabled = false;
+            }
+            if (messageInput) {
+                messageInput.disabled = false;
+            }
             return true;
         }
 
