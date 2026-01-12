@@ -379,7 +379,7 @@
     <div class="chat-container">
         <div class="messages" id="messages">
             <div class="message ai">
-                欢迎来到擢升一瞥的调试开发界面。我是你的AI助手，将会帮助你完成这个网页游戏的开发。
+                在雾中……有一座城。
             </div>
         </div>
         
@@ -626,7 +626,7 @@
         // 检查API密钥状态并更新UI
         function checkApiKeyStatus() {
             // 获取DOM元素
-            const sendBtn = document.getElementById('sendBtn');
+            const sendBtn = document.getElementById('send-btn');
             const messageInput = document.getElementById('messageInput');
             
             // 总是返回true，因为我们有默认API密钥
@@ -840,6 +840,15 @@
         
         // 发送消息
         async function sendMessage() {
+            // 获取DOM元素
+            const messageInput = document.getElementById('messageInput');
+            const sendBtn = document.getElementById('send-btn');
+            
+            if (!messageInput || !sendBtn) {
+                console.error('消息输入框或发送按钮未找到');
+                return;
+            }
+            
             const message = messageInput.value.trim();
             if (message) {
                 // 添加用户消息
@@ -1152,7 +1161,7 @@
 
         
         // 初始化DOM元素
-        const sendBtn = document.getElementById('sendBtn');
+        const sendBtn = document.getElementById('send-btn');
         const messageInput = document.getElementById('messageInput');
         
         // 事件监听
