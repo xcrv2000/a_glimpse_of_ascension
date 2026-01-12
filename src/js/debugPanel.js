@@ -140,6 +140,36 @@ class DebugPanel {
         const eventForm = document.getElementById('event-form');
         if (eventForm.style.display === 'none' || eventForm.style.display === '') {
             eventForm.style.display = 'block';
+            
+            // 设置默认时间为游戏当前时间
+            try {
+                const gameData = GameEngineInstance.getGameData();
+                const currentTime = gameData.metadata?.currentTime;
+                
+                if (currentTime) {
+                    // 转换游戏时间格式为 datetime-local 格式
+                    const date = new Date(currentTime);
+                    const formattedTime = date.toISOString().slice(0, 16); // 格式: YYYY-MM-DDTHH:mm
+                    
+                    // 设置开始时间和结束时间的默认值
+                    const startTimeInput = document.getElementById('event-start-time');
+                    const endTimeInput = document.getElementById('event-end-time');
+                    
+                    if (startTimeInput && !startTimeInput.value) {
+                        startTimeInput.value = formattedTime;
+                    }
+                    
+                    if (endTimeInput && !endTimeInput.value) {
+                        // 结束时间默认设置为开始时间后1小时
+                        const endDate = new Date(date);
+                        endDate.setHours(date.getHours() + 1);
+                        const formattedEndTime = endDate.toISOString().slice(0, 16);
+                        endTimeInput.value = formattedEndTime;
+                    }
+                }
+            } catch (error) {
+                console.error('设置默认事件时间失败:', error);
+            }
         } else {
             eventForm.style.display = 'none';
         }
@@ -186,6 +216,26 @@ class DebugPanel {
         const foreshadowingForm = document.getElementById('foreshadowing-form');
         if (foreshadowingForm.style.display === 'none' || foreshadowingForm.style.display === '') {
             foreshadowingForm.style.display = 'block';
+            
+            // 设置默认时间为游戏当前时间
+            try {
+                const gameData = GameEngineInstance.getGameData();
+                const currentTime = gameData.metadata?.currentTime;
+                
+                if (currentTime) {
+                    // 转换游戏时间格式为 datetime-local 格式
+                    const date = new Date(currentTime);
+                    const formattedTime = date.toISOString().slice(0, 16); // 格式: YYYY-MM-DDTHH:mm
+                    
+                    // 设置伏笔时间的默认值
+                    const timeInput = document.getElementById('foreshadowing-time');
+                    if (timeInput && !timeInput.value) {
+                        timeInput.value = formattedTime;
+                    }
+                }
+            } catch (error) {
+                console.error('设置默认伏笔时间失败:', error);
+            }
         } else {
             foreshadowingForm.style.display = 'none';
         }

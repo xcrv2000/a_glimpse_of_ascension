@@ -500,7 +500,9 @@
                 <div id="event-form" style="display: none; margin-top: 10px; padding: 10px; background-color: rgba(255, 255, 255, 0.1); border-radius: 5px;">
                     <input type="text" id="event-name" placeholder="事件名称" style="width: 100%; padding: 6px; margin-bottom: 6px;" />
                     <textarea id="event-description" placeholder="事件描述" rows="2" style="width: 100%; padding: 6px; margin-bottom: 6px;" ></textarea>
+                    <div style="margin-bottom: 4px; font-size: 12px; color: #999;">开始时间（默认：游戏当前时间）</div>
                     <input type="datetime-local" id="event-start-time" style="width: 100%; padding: 6px; margin-bottom: 6px;" />
+                    <div style="margin-bottom: 4px; font-size: 12px; color: #999;">结束时间（默认：开始时间后1小时）</div>
                     <input type="datetime-local" id="event-end-time" style="width: 100%; padding: 6px; margin-bottom: 6px;" />
                     <input type="number" id="event-importance" placeholder="重要程度 (1-5)" min="1" max="5" style="width: 100%; padding: 6px; margin-bottom: 6px;" />
                     <button class="engine-tool-btn" onclick="executeEventTool('registerEvent')">注册事件</button>
@@ -524,6 +526,7 @@
                 <div id="foreshadowing-form" style="display: none; margin-top: 10px; padding: 10px; background-color: rgba(255, 255, 255, 0.1); border-radius: 5px;">
                     <input type="text" id="foreshadowing-name" placeholder="伏笔名称" style="width: 100%; padding: 6px; margin-bottom: 6px;" />
                     <textarea id="foreshadowing-description" placeholder="伏笔描述" rows="2" style="width: 100%; padding: 6px; margin-bottom: 6px;" ></textarea>
+                    <div style="margin-bottom: 4px; font-size: 12px; color: #999;">发生时间（默认：游戏当前时间）</div>
                     <input type="datetime-local" id="foreshadowing-time" style="width: 100%; padding: 6px; margin-bottom: 6px;" />
                     <input type="number" id="foreshadowing-importance" placeholder="重要程度 (1-5)" min="1" max="5" style="width: 100%; padding: 6px; margin-bottom: 6px;" />
                     <button class="engine-tool-btn" onclick="executeForeshadowingTool('addForeshadowing')">添加伏笔</button>
