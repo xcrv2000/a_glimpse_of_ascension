@@ -82,10 +82,10 @@ class ResponseParser {
                 line = line.trim();
                 if (!line) return;
                 
-                // 匹配节拍操作格式: 节拍操作：推进
-                const beatOperationMatch = line.match(/^节拍操作：(.+)$/);
+                // 匹配节拍操作格式: 节拍操作：推进 或 推进节拍
+                const beatOperationMatch = line.match(/^(节拍操作：|)(推进|维持|完结)(节拍|)$/);
                 if (beatOperationMatch) {
-                    const [, operation] = beatOperationMatch;
+                    const [, , operation] = beatOperationMatch;
                     let normalizedOperation = operation.trim();
                     // 标准化操作值
                     if (normalizedOperation === '维持节拍') {

@@ -914,6 +914,8 @@
                 // 添加用户消息
                 await addMessage(message, true);
                 messageInput.value = '';
+                // 重置输入框高度为一行
+                messageInput.style.height = 'auto';
                 
                 // 禁用发送按钮和输入框，防止重复发送
                 sendBtn.disabled = true;
@@ -1273,6 +1275,17 @@
             if (hasApiKey) {
                 // 如果之前没有API密钥，现在有了，显示提示消息
                 console.log('API密钥已配置，控件已启用');
+            }
+        });
+        
+        // 窗口大小变化时调整输入框宽度
+        window.addEventListener('resize', function() {
+            if (messageInput) {
+                // 重置输入框高度，确保在窗口大小变化时重新计算
+                messageInput.style.height = 'auto';
+                // 触发input事件，确保输入框重新调整
+                const event = new Event('input', { bubbles: true });
+                messageInput.dispatchEvent(event);
             }
         });
         
