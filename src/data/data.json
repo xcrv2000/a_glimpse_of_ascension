@@ -37,9 +37,10 @@
       "thingsDone": []
     }
   ],
-  "inventory": {
+  "assets": {
     "items": [],
-    "assets": [],
-    "knowledge": []
+    "property": [],
+    "knowledge": [],
+    "locations": []
   }
 }

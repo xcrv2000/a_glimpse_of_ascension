@@ -1,58 +1,9 @@
-// 提示词构建器模块
-class PromptBuilder {
+// 提示词构建器模块 - 故事讲述者
+class PromptBuilder_Storyteller {
     // 加载和处理提示词文件
     static async loadPrompts() {
-        // 从网站获取prompt.json
-        let systemPrompt = "";
-        let promptLoaded = false;
-        
-        try {
-            // 直接将prompt.json作为纯文本读取，不进行任何解析
-            const response = await fetch('src/data/prompt.json');
-            if (response.ok) {
-                systemPrompt = await response.text();
-                console.log('成功获取prompt.json（纯文本格式）');
-                promptLoaded = true;
-            }
-        } catch (error) {
-            console.error('获取prompt.json失败:', error);
-        }
-        
-        // 如果无法加载prompt.json，使用默认提示词
-        if (!promptLoaded || !systemPrompt) {
-            console.log('使用默认提示词');
-            systemPrompt = "你是一个故事生成助手。你要告诉用户：系统提示词导入失败。";
-        }
-        
-        // 加载lore.json
-        let loreContent = "";
-        try {
-            const loreResponse = await fetch('src/data/lore.json');
-            if (loreResponse.ok) {
-                loreContent = await loreResponse.text();
-                console.log('成功获取lore.json（纯文本格式）');
-            }
-        } catch (error) {
-            console.error('获取lore.json失败:', error);
-        }
-        
-        // 加载data.json
-        let dataContent = "";
-        try {
-            const dataResponse = await fetch('src/data/data.json');
-            if (dataResponse.ok) {
-                dataContent = await dataResponse.text();
-                console.log('成功获取data.json（纯文本格式）');
-            }
-        } catch (error) {
-            console.error('获取data.json失败:', error);
-        }
-        
-        return {
-            systemPrompt,
-            loreContent,
-            dataContent
-        };
+        // 使用PromptManager加载提示词
+        return await PromptManager.loadPrompts('full');
     }
     
     // 加载压缩的上下文
@@ -68,7 +19,9 @@ class PromptBuilder {
             
             // 尝试从文件加载
             try {
-                const response = await fetch('src/data/compressed_context.json');
+                const basePath = window.location.pathname.includes('src') ? '' : 'src';
+                const contextPath = `${basePath}/data/compressed_context.json`;
+                const response = await fetch(contextPath);
                 if (response.ok) {
                     const compressedContext = await response.json();
                     console.log('成功从文件加载压缩上下文，压缩消息数:', compressedContext.length);
@@ -116,7 +69,7 @@ class PromptBuilder {
         return fullSystemPrompt;
     }
     
-    // 准备API请求数据
+    // 准备API请求数据 - 第一阶段
     static prepareRequestData(apiKey, userMessage, compressedStory, uncompressedStory, latestUserMessage) {
         // 加载提示词
         return this.loadPrompts().then(prompts => {
@@ -182,7 +135,7 @@ class PromptBuilder {
                 messages.push({ role: 'user', content: userMessage.trim() });
                 messages.push({
                     role: 'system',
-                    content: '===用户输入结束===\n\n请以故事主持人的身份开始渲染故事，并使用游戏引擎更新和记录故事的状态。'
+                    content: '===用户输入结束===\n\n请以故事讲述者的身份开始渲染故事。请在叙事结束后添加一段秘密信息，格式为"**秘密信息**：[内容]"。秘密信息将直接发送给故事记录者，用于后续的游戏引擎更新。'
                 });
             }
             
@@ -195,7 +148,7 @@ class PromptBuilder {
             };
             
             // 调试日志：输出发送给AI的完整请求数据
-            console.log('发送给DeepSeek API的数据:', JSON.stringify(requestData, null, 2));
+            console.log('发送给DeepSeek API的数据（故事讲述者）:', JSON.stringify(requestData, null, 2));
             console.log('API调用上下文：系统提示词长度:', (fullSystemPrompt || '').length, '压缩故事数:', compressedStory.length, '未压缩故事数:', uncompressedStory.length);
             
             return {
@@ -238,11 +191,46 @@ class PromptBuilder {
             throw new Error(errorMessage);
         }
         
-        return responseData.choices[0].message.content;
+        const content = responseData.choices[0].message.content;
+        
+        // 解析响应，提取故事和秘密信息
+        return this.parseResponse(content);
+    }
+    
+    // 解析API响应，提取故事和秘密信息
+    static parseResponse(content) {
+        try {
+            // 寻找秘密信息标记
+            const secretInfoMatch = content.match(/\*\*秘密信息\*\*：([\s\S]*)$/);
+            
+            let story = content;
+            let secretInfo = '';
+            
+            if (secretInfoMatch) {
+                // 提取故事部分（去掉秘密信息）
+                story = content.substring(0, secretInfoMatch.index).trim();
+                // 提取秘密信息
+                secretInfo = secretInfoMatch[1].trim();
+            }
+            
+            console.log('解析后的故事:', story);
+            console.log('解析后的秘密信息:', secretInfo);
+            
+            return {
+                story,
+                secretInfo
+            };
+        } catch (error) {
+            console.error('解析API响应失败:', error);
+            return {
+                story: content,
+                secretInfo: ''
+            };
+        }
     }
 }
 
 // 导出模块
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = PromptBuilder;
+    module.exports = PromptBuilder_Storyteller;
 }

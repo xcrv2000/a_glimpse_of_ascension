@@ -126,16 +126,54 @@
             background-color: #f44336;
         }
         
-        .action-btn.danger:hover {
-            background-color: #da190b;
+        /* 开关样式 */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
         }
         
-        .footer {
-            background-color: #f0f0f0;
-            color: #666;
-            text-align: center;
-            padding: 10px;
-            font-size: 14px;
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: #4CAF50;
+        }
+        
+        input:focus + .toggle-slider {
+            box-shadow: 0 0 1px #4CAF50;
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
         }
     </style>
 </head>
@@ -162,6 +200,25 @@
             </div>
             
             <button class="action-btn" onclick="saveSettings()">保存设置</button>
+        </div>
+        
+        <div class="section">
+            <h2>提示词模式</h2>
+            <div class="setting-group">
+                <label class="setting-label" for="prompt-mode">模式选择</label>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span>简略模式</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="prompt-mode">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span>两阶段模式</span>
+                </div>
+                <small style="color: #666; margin-top: 5px; display: block;">
+                    简略模式：传统的单阶段交互，提示词包含引擎调用信息<br>
+                    两阶段模式：新的两阶段交互，叙事与引擎调用分离
+                </small>
+            </div>
         </div>
         
         <div class="section">
@@ -220,15 +277,26 @@
                 if (settings.apiKey) {
                     document.getElementById('api-key').value = settings.apiKey;
                 }
+                // 加载提示词模式设置
+                const promptModeToggle = document.getElementById('prompt-mode');
+                if (promptModeToggle) {
+                    // 简略模式为true，完整模式为false
+                    promptModeToggle.checked = settings.promptMode === 'simplified';
+                }
             }
         }
         
         // 保存设置
         function saveSettings() {
+            // 获取提示词模式设置
+            const promptModeToggle = document.getElementById('prompt-mode');
+            const promptMode = promptModeToggle.checked ? 'simplified' : 'twoPhase';
+            
             // 将API密钥保存到本地存储
             const settings = {
                 aiModel: "deepseek",
-                apiKey: document.getElementById('api-key').value
+                apiKey: document.getElementById('api-key').value,
+                promptMode: promptMode
             };
             
             localStorage.setItem('gameSettings', JSON.stringify(settings));

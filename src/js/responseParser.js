@@ -374,6 +374,44 @@ class ResponseParser {
                                                                                             }
                                                                                         }
                                                                                     }
+                                                                                } else {
+                                                                                    // 匹配添加地点格式: 添加地点：{...}
+                                                                                    const addLocationMatch = line.match(/^添加地点：(.+)$/);
+                                                                                    if (addLocationMatch) {
+                                                                                        try {
+                                                                                            const locationData = JSON.parse(addLocationMatch[1]);
+                                                                                            requests.push({
+                                                                                                action: 'addLocation',
+                                                                                                value: locationData
+                                                                                            });
+                                                                                        } catch (e) {
+                                                                                            console.error('解析地点数据错误:', e);
+                                                                                        }
+                                                                                    } else {
+                                                                                        // 匹配删除地点格式: 删除地点：地点名称
+                                                                                        const removeLocationMatch = line.match(/^删除地点：(.+)$/);
+                                                                                        if (removeLocationMatch) {
+                                                                                            const [, locationName] = removeLocationMatch;
+                                                                                            requests.push({
+                                                                                                action: 'removeLocation',
+                                                                                                value: locationName.trim()
+                                                                                            });
+                                                                                        } else {
+                                                                                            // 匹配更新地点格式: 更新地点：{...}
+                                                                                            const updateLocationMatch = line.match(/^更新地点：(.+)$/);
+                                                                                            if (updateLocationMatch) {
+                                                                                                try {
+                                                                                                    const locationData = JSON.parse(updateLocationMatch[1]);
+                                                                                                    requests.push({
+                                                                                                        action: 'updateLocation',
+                                                                                                        value: locationData
+                                                                                                    });
+                                                                                                } catch (e) {
+                                                                                                    console.error('解析地点数据错误:', e);
+                                                                                                }
+                                                                                            }
+                                                                                        }
+                                                                                    }
                                                                                 }
                                                                 }
                                                             }
@@ -430,11 +468,11 @@ class ResponseParser {
             return this.validateDeleteCharacterRequest(request);
         } else if (request.action === 'addCharacterThingDone') {
             return this.validateAddCharacterThingDoneRequest(request);
-        } else if (request.action === 'addItem' || request.action === 'addAsset' || request.action === 'addKnowledge') {
+        } else if (request.action === 'addItem' || request.action === 'addAsset' || request.action === 'addKnowledge' || request.action === 'addLocation') {
             return this.validateInventoryAddRequest(request);
-        } else if (request.action === 'removeItem' || request.action === 'removeAsset' || request.action === 'removeKnowledge') {
+        } else if (request.action === 'removeItem' || request.action === 'removeAsset' || request.action === 'removeKnowledge' || request.action === 'removeLocation') {
             return this.validateInventoryRemoveRequest(request);
-        } else if (request.action === 'updateItem' || request.action === 'updateAsset' || request.action === 'updateKnowledge') {
+        } else if (request.action === 'updateItem' || request.action === 'updateAsset' || request.action === 'updateKnowledge' || request.action === 'updateLocation') {
             return this.validateInventoryAddRequest(request);
         } else if (request.action === 'update') {
             // 只允许特定的路径

@@ -336,6 +336,12 @@ class GameEngine {
                 await this.updateAsset(request.value);
             } else if (request.action === 'updateKnowledge') {
                 await this.updateKnowledge(request.value);
+            } else if (request.action === 'addLocation') {
+                await this.addLocation(request.value);
+            } else if (request.action === 'updateLocation') {
+                await this.updateLocation(request.value);
+            } else if (request.action === 'removeLocation') {
+                await this.removeLocation(request.value);
             } else if (request.action === 'addForeshadowing') {
                 await this.addForeshadowing(request.value);
             } else if (request.action === 'updateForeshadowing') {
@@ -1378,22 +1384,22 @@ class GameEngine {
         try {
             console.log('开始添加物品:', itemData);
             
-            // 确保inventory对象存在
-            if (!this.gameData.inventory) {
-                this.gameData.inventory = {
+            // 确保assets对象存在
+            if (!this.gameData.assets) {
+                this.gameData.assets = {
                     items: [],
-                    assets: [],
+                    property: [],
                     knowledge: []
                 };
             }
             
             // 确保items数组存在
-            if (!this.gameData.inventory.items) {
-                this.gameData.inventory.items = [];
+            if (!this.gameData.assets.items) {
+                this.gameData.assets.items = [];
             }
             
             // 添加物品
-            this.gameData.inventory.items.push(itemData);
+            this.gameData.assets.items.push(itemData);
             console.log('添加物品成功:', itemData.name);
             return { success: true };
         } catch (error) {
@@ -1407,22 +1413,22 @@ class GameEngine {
         try {
             console.log('开始添加资产:', assetData);
             
-            // 确保inventory对象存在
-            if (!this.gameData.inventory) {
-                this.gameData.inventory = {
+            // 确保assets对象存在
+            if (!this.gameData.assets) {
+                this.gameData.assets = {
                     items: [],
-                    assets: [],
+                    property: [],
                     knowledge: []
                 };
             }
             
-            // 确保assets数组存在
-            if (!this.gameData.inventory.assets) {
-                this.gameData.inventory.assets = [];
+            // 确保property数组存在
+            if (!this.gameData.assets.property) {
+                this.gameData.assets.property = [];
             }
             
-            // 添加资产
-            this.gameData.inventory.assets.push(assetData);
+            // 添加财产
+            this.gameData.assets.property.push(assetData);
             console.log('添加资产成功:', assetData.name);
             return { success: true };
         } catch (error) {
@@ -1436,22 +1442,22 @@ class GameEngine {
         try {
             console.log('开始添加知识:', knowledgeData);
             
-            // 确保inventory对象存在
-            if (!this.gameData.inventory) {
-                this.gameData.inventory = {
+            // 确保assets对象存在
+            if (!this.gameData.assets) {
+                this.gameData.assets = {
                     items: [],
-                    assets: [],
+                    property: [],
                     knowledge: []
                 };
             }
             
             // 确保knowledge数组存在
-            if (!this.gameData.inventory.knowledge) {
-                this.gameData.inventory.knowledge = [];
+            if (!this.gameData.assets.knowledge) {
+                this.gameData.assets.knowledge = [];
             }
             
             // 添加知识
-            this.gameData.inventory.knowledge.push(knowledgeData);
+            this.gameData.assets.knowledge.push(knowledgeData);
             console.log('添加知识成功:', knowledgeData.name);
             return { success: true };
         } catch (error) {
@@ -1465,16 +1471,16 @@ class GameEngine {
         try {
             console.log('开始移除物品:', itemName);
             
-            // 确保inventory对象存在
-            if (!this.gameData.inventory || !this.gameData.inventory.items) {
+            // 确保assets对象存在
+            if (!this.gameData.assets || !this.gameData.assets.items) {
                 return { success: false, error: '物品不存在' };
             }
             
             // 查找并移除物品
-            const initialLength = this.gameData.inventory.items.length;
-            this.gameData.inventory.items = this.gameData.inventory.items.filter(item => item.name !== itemName);
+            const initialLength = this.gameData.assets.items.length;
+            this.gameData.assets.items = this.gameData.assets.items.filter(item => item.name !== itemName);
             
-            if (this.gameData.inventory.items.length < initialLength) {
+            if (this.gameData.assets.items.length < initialLength) {
                 console.log('移除物品成功:', itemName);
                 return { success: true };
             } else {
@@ -1492,16 +1498,16 @@ class GameEngine {
         try {
             console.log('开始移除资产:', assetName);
             
-            // 确保inventory对象存在
-            if (!this.gameData.inventory || !this.gameData.inventory.assets) {
+            // 确保assets对象存在
+            if (!this.gameData.assets || !this.gameData.assets.property) {
                 return { success: false, error: '资产不存在' };
             }
             
             // 查找并移除资产
-            const initialLength = this.gameData.inventory.assets.length;
-            this.gameData.inventory.assets = this.gameData.inventory.assets.filter(asset => asset.name !== assetName);
+            const initialLength = this.gameData.assets.property.length;
+            this.gameData.assets.property = this.gameData.assets.property.filter(asset => asset.name !== assetName);
             
-            if (this.gameData.inventory.assets.length < initialLength) {
+            if (this.gameData.assets.property.length < initialLength) {
                 console.log('移除资产成功:', assetName);
                 return { success: true };
             } else {
@@ -1519,16 +1525,16 @@ class GameEngine {
         try {
             console.log('开始移除知识:', knowledgeName);
             
-            // 确保inventory对象存在
-            if (!this.gameData.inventory || !this.gameData.inventory.knowledge) {
+            // 确保assets对象存在
+            if (!this.gameData.assets || !this.gameData.assets.knowledge) {
                 return { success: false, error: '知识不存在' };
             }
             
             // 查找并移除知识
-            const initialLength = this.gameData.inventory.knowledge.length;
-            this.gameData.inventory.knowledge = this.gameData.inventory.knowledge.filter(knowledge => knowledge.name !== knowledgeName);
+            const initialLength = this.gameData.assets.knowledge.length;
+            this.gameData.assets.knowledge = this.gameData.assets.knowledge.filter(knowledge => knowledge.name !== knowledgeName);
             
-            if (this.gameData.inventory.knowledge.length < initialLength) {
+            if (this.gameData.assets.knowledge.length < initialLength) {
                 console.log('移除知识成功:', knowledgeName);
                 return { success: true };
             } else {
@@ -1541,23 +1547,111 @@ class GameEngine {
         }
     }
 
+    // 添加地点
+    async addLocation(locationData) {
+        try {
+            console.log('开始添加地点:', locationData);
+            
+            // 确保assets对象存在
+            if (!this.gameData.assets) {
+                this.gameData.assets = {
+                    items: [],
+                    property: [],
+                    knowledge: [],
+                    locations: []
+                };
+            }
+            
+            // 确保locations数组存在
+            if (!this.gameData.assets.locations) {
+                this.gameData.assets.locations = [];
+            }
+            
+            // 添加地点
+            this.gameData.assets.locations.push(locationData);
+            console.log('添加地点成功:', locationData.name);
+            return { success: true };
+        } catch (error) {
+            console.error('添加地点错误:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // 更新地点
+    async updateLocation(locationData) {
+        try {
+            console.log('开始更新地点:', locationData);
+            
+            // 确保assets对象存在
+            if (!this.gameData.assets || !this.gameData.assets.locations) {
+                return { success: false, error: '地点不存在' };
+            }
+            
+            // 查找地点
+            const locationIndex = this.gameData.assets.locations.findIndex(location => location.name === locationData.name);
+            
+            if (locationIndex >= 0) {
+                // 更新地点
+                this.gameData.assets.locations[locationIndex] = {
+                    ...this.gameData.assets.locations[locationIndex],
+                    ...locationData
+                };
+                console.log('更新地点成功:', locationData.name);
+                return { success: true };
+            } else {
+                console.warn('地点不存在:', locationData.name);
+                return { success: false, error: '地点不存在' };
+            }
+        } catch (error) {
+            console.error('更新地点错误:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // 移除地点
+    async removeLocation(locationName) {
+        try {
+            console.log('开始移除地点:', locationName);
+            
+            // 确保assets对象存在
+            if (!this.gameData.assets || !this.gameData.assets.locations) {
+                return { success: false, error: '地点不存在' };
+            }
+            
+            // 查找并移除地点
+            const initialLength = this.gameData.assets.locations.length;
+            this.gameData.assets.locations = this.gameData.assets.locations.filter(location => location.name !== locationName);
+            
+            if (this.gameData.assets.locations.length < initialLength) {
+                console.log('移除地点成功:', locationName);
+                return { success: true };
+            } else {
+                console.warn('地点不存在:', locationName);
+                return { success: false, error: '地点不存在' };
+            }
+        } catch (error) {
+            console.error('移除地点错误:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
     // 更新物品
     async updateItem(itemData) {
         try {
             console.log('开始更新物品:', itemData);
             
-            // 确保inventory对象存在
-            if (!this.gameData.inventory || !this.gameData.inventory.items) {
+            // 确保assets对象存在
+            if (!this.gameData.assets || !this.gameData.assets.items) {
                 return { success: false, error: '物品不存在' };
             }
             
             // 查找物品
-            const itemIndex = this.gameData.inventory.items.findIndex(item => item.name === itemData.name);
+            const itemIndex = this.gameData.assets.items.findIndex(item => item.name === itemData.name);
             
             if (itemIndex >= 0) {
                 // 更新物品
-                this.gameData.inventory.items[itemIndex] = {
-                    ...this.gameData.inventory.items[itemIndex],
+                this.gameData.assets.items[itemIndex] = {
+                    ...this.gameData.assets.items[itemIndex],
                     ...itemData
                 };
                 console.log('更新物品成功:', itemData.name);
@@ -1577,18 +1671,18 @@ class GameEngine {
         try {
             console.log('开始更新资产:', assetData);
             
-            // 确保inventory对象存在
-            if (!this.gameData.inventory || !this.gameData.inventory.assets) {
+            // 确保assets对象存在
+            if (!this.gameData.assets || !this.gameData.assets.property) {
                 return { success: false, error: '资产不存在' };
             }
             
             // 查找资产
-            const assetIndex = this.gameData.inventory.assets.findIndex(asset => asset.name === assetData.name);
+            const assetIndex = this.gameData.assets.property.findIndex(asset => asset.name === assetData.name);
             
             if (assetIndex >= 0) {
                 // 更新资产
-                this.gameData.inventory.assets[assetIndex] = {
-                    ...this.gameData.inventory.assets[assetIndex],
+                this.gameData.assets.property[assetIndex] = {
+                    ...this.gameData.assets.property[assetIndex],
                     ...assetData
                 };
                 console.log('更新资产成功:', assetData.name);
@@ -1608,18 +1702,18 @@ class GameEngine {
         try {
             console.log('开始更新知识:', knowledgeData);
             
-            // 确保inventory对象存在
-            if (!this.gameData.inventory || !this.gameData.inventory.knowledge) {
+            // 确保assets对象存在
+            if (!this.gameData.assets || !this.gameData.assets.knowledge) {
                 return { success: false, error: '知识不存在' };
             }
             
             // 查找知识
-            const knowledgeIndex = this.gameData.inventory.knowledge.findIndex(knowledge => knowledge.name === knowledgeData.name);
+            const knowledgeIndex = this.gameData.assets.knowledge.findIndex(knowledge => knowledge.name === knowledgeData.name);
             
             if (knowledgeIndex >= 0) {
                 // 更新知识
-                this.gameData.inventory.knowledge[knowledgeIndex] = {
-                    ...this.gameData.inventory.knowledge[knowledgeIndex],
+                this.gameData.assets.knowledge[knowledgeIndex] = {
+                    ...this.gameData.assets.knowledge[knowledgeIndex],
                     ...knowledgeData
                 };
                 console.log('更新知识成功:', knowledgeData.name);

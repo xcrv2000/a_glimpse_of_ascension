@@ -2,7 +2,7 @@
 class ContextCompressor {
     // 未压缩消息数阈值
     static get UNCOMPRESSED_MESSAGE_THRESHOLD() {
-        return 9; // 当未压缩消息数超过24条时进行压缩，充分利用更大的上下文窗口
+        return 24; // 当未压缩消息数超过24条时进行压缩，充分利用更大的上下文窗口
     }
     
     // 检查是否需要压缩上下文
