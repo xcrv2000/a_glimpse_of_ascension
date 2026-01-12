@@ -745,7 +745,7 @@
         
         // 显示未压缩故事（实时故事）给玩家
         function displayUncompressedStory() {
-            if (uncompressedStory.length > 0) {
+            if (uncompressedStory.length > 0 && messagesContainer) {
                 // 清空现有消息
                 messagesContainer.innerHTML = '';
                 
@@ -788,8 +788,12 @@
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isUser ? 'user' : 'ai'}`;
             messageDiv.textContent = content;
-            messagesContainer.appendChild(messageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            // 检查messagesContainer是否存在
+            if (messagesContainer) {
+                messagesContainer.appendChild(messageDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
             
             // 计算消息字数
             const messageWordCount = content.length;
@@ -1219,6 +1223,7 @@
         // 初始化DOM元素
         const sendBtn = document.getElementById('send-btn');
         const messageInput = document.getElementById('message-input');
+        const messagesContainer = document.getElementById('messages');
         
         // 事件监听
         if (sendBtn) {
