@@ -33,31 +33,18 @@ class ResponseParser {
 
     // 提取响应中的不同部分
     static extractParts(response) {
-        // 定义数据请求的开始和结束标记
-        const dataRequestStart = /===GAME_DATA_START===/i;
-        const dataRequestEnd = /===GAME_DATA_END===/i;
-        
-        // 查找数据请求部分
-        const startMatch = response.match(dataRequestStart);
-        const endMatch = response.match(dataRequestEnd);
-        
-        let story = response;
+        // 直接解析整个响应内容
+        let story = '';
         let dataRequests = [];
         
-        if (startMatch) {
-            // 提取故事部分（数据请求之前的内容）
-            story = response.substring(0, startMatch.index).trim();
-            
-            // 如果找到了结束标记，提取并解析数据请求部分
-            if (endMatch && endMatch.index > startMatch.index) {
-                const dataRequestContent = response.substring(
-                    startMatch.index + startMatch[0].length,
-                    endMatch.index
-                ).trim();
-                
-                // 解析数据请求内容
-                dataRequests = this.parseDataRequests(dataRequestContent);
-            }
+        try {
+            // 尝试解析数据请求
+            dataRequests = this.parseDataRequests(response);
+        } catch (error) {
+            console.error('解析数据请求错误:', error);
+            // 如果解析失败，将整个内容视为故事
+            story = response;
+            dataRequests = [];
         }
         
         return { story, dataRequests };
@@ -99,10 +86,17 @@ class ResponseParser {
                 const beatOperationMatch = line.match(/^节拍操作：(.+)$/);
                 if (beatOperationMatch) {
                     const [, operation] = beatOperationMatch;
+                    let normalizedOperation = operation.trim();
+                    // 标准化操作值
+                    if (normalizedOperation === '维持节拍') {
+                        normalizedOperation = '维持';
+                    } else if (normalizedOperation === '推进节拍' || normalizedOperation === '推进到下一节拍') {
+                        normalizedOperation = '推进';
+                    }
                     requests.push({
                         action: 'update',
                         path: 'narrative.storyBeatOperation',
-                        value: operation.trim()
+                        value: normalizedOperation
                     });
                 } else if (line.match(/^当前景深等级：(.+)$/)) {
                     // 匹配景深等级格式: 当前景深等级：2

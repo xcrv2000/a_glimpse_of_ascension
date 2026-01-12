@@ -257,19 +257,28 @@ class GameEngine {
 
     // 处理数据请求
     async processDataRequests(requests) {
+
         try {
             console.log('开始处理数据请求:', requests);
             
             // 验证请求格式
-            const validation = this.responseParser.validateRequests(requests);
+            const validRequests = [];
+            const errors = [];
             
-            if (validation.errors.length > 0) {
-                console.warn('数据请求验证错误:', validation.errors);
+            for (const request of requests) {
+                const validation = this.responseParser.validateRequest(request);
+                if (validation.valid) {
+                    validRequests.push(request);
+                } else {
+                    errors.push(validation.error);
+                }
+            }
+            
+            if (errors.length > 0) {
+                console.warn('数据请求验证错误:', errors);
             }
             
             // 处理有效的请求
-            const validRequests = validation.validRequests;
-            
             for (const request of validRequests) {
                 await this.processSingleRequest(request);
             }
@@ -281,7 +290,7 @@ class GameEngine {
             return {
                 success: true,
                 processedCount: validRequests.length,
-                errors: validation.errors.length
+                errors: errors.length
             };
         } catch (error) {
             console.error('处理数据请求错误:', error);
@@ -290,6 +299,7 @@ class GameEngine {
                 error: error.message
             };
         }
+
     }
 
     // 处理单个数据请求

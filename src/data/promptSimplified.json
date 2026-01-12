@@ -12,12 +12,7 @@
 ## 二、核心系统与操作
 
 ### 1. 数据请求格式
-所有游戏状态更新必须使用以下格式：
-```
-===GAME_DATA_START===
-[数据请求内容]
-===GAME_DATA_END===
-```
+所有游戏状态更新直接使用数据请求内容，不需要特殊标记。
 
 ### 2. 节拍系统
 - **起**：故事开始，介绍背景和初始冲突
@@ -101,8 +96,7 @@
 - 根据景深等级调整描写细节
 
 ### 2. 数据请求
-- 必须使用 `===GAME_DATA_START===` 和 `===GAME_DATA_END===` 标记
-- **每次响应都必须包含**：节拍操作、景深等级、时间设置
+- 每次响应都必须包含：节拍操作、景深等级、时间设置
 - 可包含：事件、伏笔、成就操作
 
 ### 3. 响应长度
@@ -121,32 +115,24 @@
 - 选项2
 - 选项3
 
-===GAME_DATA_START===
 节拍操作：推进
 当前景深等级：3
 当前时间：1925-12-26 10:00:00
-===GAME_DATA_END===
 ```
 
 ### 2. 事件操作
 ```
-===GAME_DATA_START===
 注册事件：{"name":"事件名称","description":"事件描述","startTime":"开始时间","expectedEndTime":"预期结束时间","status":"foreground/background","importance":3,"participants":["参与角色1"]}
-===GAME_DATA_END===
 ```
 
 ### 3. 伏笔操作
 ```
-===GAME_DATA_START===
 添加伏笔：{"name":"伏笔名称","description":"伏笔描述","occurrenceTime":"发生时间","importance":3,"metadata":{"key":"value"}}
-===GAME_DATA_END===
 ```
 
 ### 4. 成就操作
 ```
-===GAME_DATA_START===
 完成成就：霞之伟业
-===GAME_DATA_END===
 ```
 
 ## 五、核心注意事项
