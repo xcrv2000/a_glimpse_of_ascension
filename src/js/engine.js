@@ -278,8 +278,19 @@ class GameEngine {
                 console.warn('数据请求验证错误:', errors);
             }
             
+            // 重新排序请求：先处理角色注册，后处理节拍操作
+            // 这样在节拍从其他节拍进入终幕或后日谈的回复中，仍然可以注册新角色
+            const reorderedRequests = [
+                // 先处理角色相关请求
+                ...validRequests.filter(req => req.action === 'registerCharacter'),
+                // 然后处理其他请求
+                ...validRequests.filter(req => req.action !== 'registerCharacter')
+            ];
+            
+            console.log('重新排序后的请求:', reorderedRequests);
+            
             // 处理有效的请求
-            for (const request of validRequests) {
+            for (const request of reorderedRequests) {
                 await this.processSingleRequest(request);
             }
             
@@ -1113,6 +1124,12 @@ class GameEngine {
             if (achievementIndex >= 0) {
                 // 更新成就状态
                 this.achievementsData.achievements[achievementIndex].isCompleted = true;
+                
+                // 特殊处理：如果是隐藏成就，完成后自动显示
+                if (this.achievementsData.achievements[achievementIndex].isHidden) {
+                    this.achievementsData.achievements[achievementIndex].isHidden = false;
+                    console.log('隐藏成就已完成并显示:', achievementName);
+                }
                 
                 // 检查是否已在完成列表中
                 const isInCompletedList = this.achievementsData.completedAchievements.some(

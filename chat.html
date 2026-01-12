@@ -38,6 +38,26 @@
             align-items: center;
         }
         
+        .status-bar {
+            background-color: #f0f0f0;
+            color: #666;
+            padding: 5px 15px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .story-stats {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .current-time {
+            text-align: right;
+        }
+        
         .header-buttons {
             display: flex;
             gap: 10px;
@@ -186,7 +206,23 @@
             }
         }
         
-        /* 调试悬浮窗样式 */
+        .achievement-btn {
+            margin-top: 8px;
+            padding: 6px 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.3s;
+        }
+        
+        .achievement-btn:hover {
+            background-color: #45a049;
+        }
+        
+        /* 调试悬浮窗 */
         .debug-panel {
             position: fixed;
             top: 70px;
@@ -427,6 +463,14 @@
             <button class="btn achievements-toggle" onclick="toggleAchievementsPanel()">成就</button>
             <a href="settings.html" class="btn">设置</a>
         </div>
+    </div>
+    <div class="status-bar">
+        <div class="story-stats">
+            <span id="full-story-words">完整故事：0字</span>
+            <span id="compressed-story-words">压缩故事：0字</span>
+            <span id="uncompressed-story-words">未压缩故事：0字</span>
+        </div>
+        <div class="current-time" id="current-time-display">加载中...</div>
     </div>
     
     <div class="chat-container">
@@ -700,6 +744,44 @@
         let uncompressedStory = []; // 未压缩故事（实时故事）
         let latestUserMessage = null; // 最新用户消息
         
+        // 计算故事字数
+        function calculateStoryWords(story) {
+            if (!story || !Array.isArray(story)) {
+                return 0;
+            }
+            return story.reduce((total, msg) => {
+                if (msg && msg.content) {
+                    return total + msg.content.length;
+                }
+                return total;
+            }, 0);
+        }
+        
+        // 更新故事字数统计
+        function updateStoryWordCounts() {
+            const fullStoryWords = calculateStoryWords(fullStory);
+            const compressedStoryWords = calculateStoryWords(compressedStory);
+            const uncompressedStoryWords = calculateStoryWords(uncompressedStory);
+            
+            document.getElementById('full-story-words').textContent = `完整故事：${fullStoryWords}字`;
+            document.getElementById('compressed-story-words').textContent = `压缩故事：${compressedStoryWords}字`;
+            document.getElementById('uncompressed-story-words').textContent = `未压缩故事：${uncompressedStoryWords}字`;
+        }
+        
+        // 更新当前时间显示
+        function updateCurrentTime() {
+            const now = new Date();
+            const timeString = now.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('current-time-display').textContent = timeString;
+        }
+        
         // 检查API密钥状态并更新UI
         function checkApiKeyStatus() {
             // 获取DOM元素
@@ -735,6 +817,15 @@
             
             // 加载成就数据
             await loadAchievementsData();
+            
+            // 更新故事字数统计
+            updateStoryWordCounts();
+            
+            // 更新当前时间
+            updateCurrentTime();
+            
+            // 设置时间更新定时器
+            setInterval(updateCurrentTime, 1000);
         }
         
         // 检查是否是新游戏
@@ -911,12 +1002,17 @@
             saveStoryData();
             
             // 输出故事数据状态
-            console.log('故事数据状态：完整故事长度:', fullStory.length, '压缩故事长度:', compressedStory.length, '未压缩故事长度:', uncompressedStory.length);
+            const fullStoryWords = calculateStoryWords(fullStory);
+            const compressedStoryWords = calculateStoryWords(compressedStory);
+            const uncompressedStoryWords = calculateStoryWords(uncompressedStory);
+            console.log('故事数据状态：完整故事字数:', fullStoryWords, '压缩故事字数:', compressedStoryWords, '未压缩故事字数:', uncompressedStoryWords);
         }
         
         // 保存故事数据
         function saveStoryData() {
             StoryStorage.saveAll(fullStory, compressedStory, uncompressedStory, latestUserMessage);
+            // 更新故事字数统计
+            updateStoryWordCounts();
         }
         
         // 发送消息
@@ -1351,8 +1447,8 @@
                 return;
             }
             
-            // 过滤出可见的成就
-            const visibleAchievements = achievements.filter(achievement => !achievement.isHidden);
+            // 过滤出可见的成就和已完成的隐藏成就
+            const visibleAchievements = achievements.filter(achievement => !achievement.isHidden || achievement.isCompleted);
             
             if (visibleAchievements.length === 0) {
                 achievementsContent.innerHTML = '<div class="no-achievements">暂无可见成就</div>';
@@ -1372,11 +1468,24 @@
                 const className = `achievement-item ${achievement.isCompleted ? 'completed' : ''} ${achievement.isHidden ? 'hidden' : ''}`;
                 const statusText = achievement.isCompleted ? '已完成' : '未完成';
                 
+                // 为特定成就添加按钮
+                let buttonHtml = '';
+                if (achievement.isCompleted) {
+                    if (achievement.name === '霞中车') {
+                        buttonHtml = '<button class="achievement-btn" onclick="handleXiaZhongCheClick()">获得管理员权限</button>';
+                    } else if (achievement.name === '绸间塔') {
+                        buttonHtml = '<button class="achievement-btn" onclick="handleChouJianTaClick()">失去管理员权限</button>';
+                    } else if (achievement.name === '雾上灯') {
+                        buttonHtml = '<button class="achievement-btn" onclick="handleWuShangDengClick()">前往GitHub</button>';
+                    }
+                }
+                
                 html += `
                     <div class="${className}">
                         <div class="achievement-name">${achievement.name}</div>
                         <div class="achievement-description">${achievement.description}</div>
                         <div class="achievement-status">状态: ${statusText}</div>
+                        ${buttonHtml}
                     </div>
                 `;
             });
@@ -1396,6 +1505,54 @@
             } else {
                 debugPanel.style.display = 'none';
             }
+        }
+        
+        // 处理霞中车成就按钮点击（获得admin权限）
+        function handleXiaZhongCheClick() {
+            console.log('点击霞中车成就按钮，获得admin权限');
+            // 设置admin权限为true
+            window.admin = true;
+            // 重新定义admin属性，防止修改
+            Object.defineProperty(window, 'admin', {
+                value: true,
+                writable: false,
+                configurable: false
+            });
+            console.log('admin权限已设置为:', window.admin);
+            // 重新加载成就数据，更新UI
+            loadAchievementsData();
+            // 显示成功消息
+            addMessage('你获得了管理员权限！', false);
+        }
+        
+        // 处理绸间塔成就按钮点击（失去admin权限）
+        function handleChouJianTaClick() {
+            console.log('点击绸间塔成就按钮，失去admin权限');
+            // 设置admin权限为false
+            window.admin = false;
+            // 重新定义admin属性，防止修改
+            Object.defineProperty(window, 'admin', {
+                value: false,
+                writable: false,
+                configurable: false
+            });
+            console.log('admin权限已设置为:', window.admin);
+            // 重新加载成就数据，更新UI
+            loadAchievementsData();
+            // 隐藏调试面板
+            const debugPanel = document.getElementById('debugPanel');
+            if (debugPanel) {
+                debugPanel.style.display = 'none';
+            }
+            // 显示成功消息
+            addMessage('你失去了管理员权限。', false);
+        }
+        
+        // 处理雾上灯成就按钮点击（前往GitHub）
+        function handleWuShangDengClick() {
+            console.log('点击雾上灯成就按钮，前往GitHub');
+            // 打开GitHub链接
+            window.open('https://github.com/xcrv2000/a_glimpse_of_ascension/', '_blank');
         }
         
         // 切换调试标签页
