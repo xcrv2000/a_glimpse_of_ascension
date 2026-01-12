@@ -15,7 +15,7 @@ class DebugPanel {
         window.toggleDebugPanel = () => this.togglePanel();
         
         // 切换调试选项卡
-        window.switchDebugTab = (tabId) => this.switchTab(tabId);
+        window.switchDebugTab = (tabId, event) => this.switchTab(tabId, event);
         
         // 执行引擎工具操作
         window.executeEngineTool = (action, path, value) => this.executeTool(action, path, value);
@@ -44,7 +44,7 @@ class DebugPanel {
         }
     }
 
-    switchTab(tabId) {
+    switchTab(tabId, event) {
         // 隐藏所有选项卡内容
         const tabContents = document.querySelectorAll('.debug-tab-content');
         tabContents.forEach(tab => {
@@ -61,7 +61,9 @@ class DebugPanel {
         document.getElementById(`${tabId}-tab`).style.display = 'block';
         
         // 设置选中选项卡为活动状态
-        event.currentTarget.classList.add('active');
+        if (event && event.currentTarget) {
+            event.currentTarget.classList.add('active');
+        }
         
         // 如果切换到引擎工具选项卡，更新游戏数据显示
         if (tabId === 'engine-tools') {
