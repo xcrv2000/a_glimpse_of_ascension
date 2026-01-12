@@ -69,6 +69,11 @@ class DebugPanel {
         if (tabId === 'engine-tools') {
             this.updateGameDataDisplay();
         }
+        
+        // 如果切换到压缩故事选项卡，更新压缩故事显示
+        if (tabId === 'compressed-story') {
+            this.updateCompressedStoryDisplay();
+        }
     }
 
     executeTool(action, path, value) {
@@ -299,6 +304,35 @@ class DebugPanel {
         }
     }
 
+    // 更新压缩故事显示
+    updateCompressedStoryDisplay() {
+        try {
+            // 获取压缩后的故事数据
+            const compressedStory = StoryStorage.loadCompressedStory();
+            
+            // 更新显示
+            const compressedStoryContent = document.getElementById('compressed-story-content');
+            if (compressedStoryContent) {
+                if (compressedStory && compressedStory.length > 0) {
+                    // 格式化压缩故事为可读格式
+                    let formattedStory = '';
+                    compressedStory.forEach((msg, index) => {
+                        formattedStory += `[${index + 1}] ${msg.role}: ${msg.content}\n\n`;
+                    });
+                    compressedStoryContent.textContent = formattedStory;
+                } else {
+                    compressedStoryContent.textContent = '无压缩故事数据';
+                }
+            }
+        } catch (error) {
+            console.error('更新压缩故事显示错误:', error);
+            const compressedStoryContent = document.getElementById('compressed-story-content');
+            if (compressedStoryContent) {
+                compressedStoryContent.textContent = '加载压缩故事失败';
+            }
+        }
+    }
+
     // 更新调试面板内容
     updateContent() {
         if (document.getElementById('lastAiResponse')) {
@@ -324,6 +358,9 @@ class DebugPanel {
                 document.getElementById('dataJsonContent').textContent = '加载中...';
             }
         }
+        
+        // 更新压缩故事
+        this.updateCompressedStoryDisplay();
     }
 }
 

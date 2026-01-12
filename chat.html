@@ -456,6 +456,7 @@
             <div class="debug-tab active" onclick="switchDebugTab('ai-data')">AI输入/输出</div>
             <div class="debug-tab" onclick="switchDebugTab('phase1')">阶段一 (故事讲述者)</div>
             <div class="debug-tab" onclick="switchDebugTab('phase2')">阶段二 (故事记录者)</div>
+            <div class="debug-tab" onclick="switchDebugTab('compressed-story')">压缩故事</div>
             <div class="debug-tab" onclick="switchDebugTab('game-data')">游戏数据</div>
         </div>
         <div class="debug-tab-content" id="engine-tools-tab" style="display: none;">
@@ -576,6 +577,14 @@
                 </div>
             </div>
         </div>
+        <div class="debug-tab-content" id="compressed-story-tab" style="display: none;">
+            <div class="debug-section">
+                <h4>压缩后的故事</h4>
+                <div class="debug-data" id="compressed-story-content">
+                    加载中...
+                </div>
+            </div>
+        </div>
         <div class="debug-tab-content" id="game-data-tab" style="display: none;">
             <div class="debug-section">
                 <h4>data.json内容</h4>
@@ -654,6 +663,18 @@
         // 加载data.json内容
         async function loadDataJson() {
             try {
+                // 首先尝试从localStorage加载数据（游戏引擎实际存储的位置）
+                const localStorageData = localStorage.getItem('gameData');
+                if (localStorageData) {
+                    const data = JSON.parse(localStorageData);
+                    debugData.dataJson = JSON.stringify(data, null, 2);
+                    if (window.DebugPanelInstance) {
+                        window.DebugPanelInstance.updateContent();
+                    }
+                    return;
+                }
+                
+                // 如果localStorage中没有数据，尝试从文件加载（备用方案）
                 const response = await fetch('src/data/data.json');
                 if (response.ok) {
                     const data = await response.json();
@@ -665,7 +686,7 @@
                     throw new Error('加载失败');
                 }
             } catch (error) {
-                console.error('加载data.json失败:', error);
+                console.error('加载游戏数据失败:', error);
                 debugData.dataJson = '加载失败: ' + error.message;
                 if (window.DebugPanelInstance) {
                     window.DebugPanelInstance.updateContent();
