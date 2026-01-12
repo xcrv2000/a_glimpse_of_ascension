@@ -280,8 +280,14 @@
                 // 加载提示词模式设置
                 const promptModeToggle = document.getElementById('prompt-mode');
                 if (promptModeToggle) {
-                    // 简略模式为true，完整模式为false
+                    // 简略模式为true，两阶段模式为false
                     promptModeToggle.checked = settings.promptMode === 'simplified';
+                }
+            } else {
+                // 没有保存的设置，默认选择两阶段模式
+                const promptModeToggle = document.getElementById('prompt-mode');
+                if (promptModeToggle) {
+                    promptModeToggle.checked = false; // false表示两阶段模式
                 }
             }
         }

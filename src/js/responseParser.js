@@ -104,326 +104,274 @@ class ResponseParser {
                         path: 'narrative.storyBeatOperation',
                         value: operation.trim()
                     });
-                } else {
+                } else if (line.match(/^当前景深等级：(.+)$/)) {
                     // 匹配景深等级格式: 当前景深等级：2
                     const depthMatch = line.match(/^当前景深等级：(.+)$/);
-                    if (depthMatch) {
-                        const [, value] = depthMatch;
+                    const [, value] = depthMatch;
+                    requests.push({
+                        action: 'update',
+                        path: 'narrative.depthLevel',
+                        value: value.trim()
+                    });
+                } else if (line.match(/^当前时间：(.+)$/)) {
+                    // 匹配时间设置格式: 当前时间：1925-12-26 00:00:00
+                    const timeMatch = line.match(/^当前时间：(.+)$/);
+                    const [, value] = timeMatch;
+                    requests.push({
+                        action: 'update',
+                        path: 'metadata.currentTime',
+                        value: value.trim()
+                    });
+                } else if (line.match(/^注册事件：(.+)$/)) {
+                    // 匹配事件操作格式: 注册事件：{...}
+                    const eventRegisterMatch = line.match(/^注册事件：(.+)$/);
+                    try {
+                        const eventData = JSON.parse(eventRegisterMatch[1]);
                         requests.push({
-                            action: 'update',
-                            path: 'narrative.depthLevel',
-                            value: value.trim()
+                            action: 'registerEvent',
+                            value: eventData
                         });
-                    } else {
-                        // 匹配时间设置格式: 当前时间：1925-12-26 00:00:00
-                        const timeMatch = line.match(/^当前时间：(.+)$/);
-                        if (timeMatch) {
-                            const [, value] = timeMatch;
-                            requests.push({
-                                action: 'update',
-                                path: 'metadata.currentTime',
-                                value: value.trim()
-                            });
-                        } else {
-                            // 匹配事件操作格式: 注册事件：{...}
-                            const eventRegisterMatch = line.match(/^注册事件：(.+)$/);
-                            if (eventRegisterMatch) {
-                                try {
-                                    const eventData = JSON.parse(eventRegisterMatch[1]);
-                                    requests.push({
-                                        action: 'registerEvent',
-                                        value: eventData
-                                    });
-                                } catch (e) {
-                                    console.error('解析事件数据错误:', e);
-                                }
-                            } else {
-                                // 匹配事件更新格式: 更新事件：{...}
-                                const eventUpdateMatch = line.match(/^更新事件：(.+)$/);
-                                if (eventUpdateMatch) {
-                                    try {
-                                        const eventData = JSON.parse(eventUpdateMatch[1]);
-                                        requests.push({
-                                            action: 'updateEvent',
-                                            value: eventData
-                                        });
-                                    } catch (e) {
-                                        console.error('解析事件数据错误:', e);
-                                    }
-                                } else {
-                                    // 匹配事件删除格式: 删除事件：事件名称
-                                    const eventDeleteMatch = line.match(/^删除事件：(.+)$/);
-                                    if (eventDeleteMatch) {
-                                        const [, eventName] = eventDeleteMatch;
-                                        requests.push({
-                                            action: 'deleteEvent',
-                                            value: eventName.trim()
-                                        });
-                                    } else {
-                                        // 匹配伏笔操作格式: 添加伏笔：{...}
-                                        const foreshadowingAddMatch = line.match(/^添加伏笔：(.+)$/);
-                                        if (foreshadowingAddMatch) {
-                                            try {
-                                                const foreshadowingData = JSON.parse(foreshadowingAddMatch[1]);
-                                                requests.push({
-                                                    action: 'addForeshadowing',
-                                                    value: foreshadowingData
-                                                });
-                                            } catch (e) {
-                                                console.error('解析伏笔数据错误:', e);
-                                            }
-                                        } else {
-                                            // 匹配伏笔更新格式: 更新伏笔：{...}
-                                            const foreshadowingUpdateMatch = line.match(/^更新伏笔：(.+)$/);
-                                            if (foreshadowingUpdateMatch) {
-                                                try {
-                                                    const foreshadowingData = JSON.parse(foreshadowingUpdateMatch[1]);
-                                                    requests.push({
-                                                        action: 'updateForeshadowing',
-                                                        value: foreshadowingData
-                                                    });
-                                                } catch (e) {
-                                                    console.error('解析伏笔数据错误:', e);
-                                                }
-                                            } else {
-                                                // 匹配伏笔删除格式: 删除伏笔：伏笔名称
-                                                const foreshadowingDeleteMatch = line.match(/^删除伏笔：(.+)$/);
-                                                if (foreshadowingDeleteMatch) {
-                                                    const [, foreshadowingName] = foreshadowingDeleteMatch;
-                                                    requests.push({
-                                                        action: 'removeForeshadowing',
-                                                        value: foreshadowingName.trim()
-                                                    });
-                                                } else {
-                                                    // 匹配成就完成格式: 完成成就：成就名称
-                                                    const achievementCompleteMatch = line.match(/^完成成就：(.+)$/);
-                                                    if (achievementCompleteMatch) {
-                                                        const [, achievementName] = achievementCompleteMatch;
-                                                        requests.push({
-                                                            action: 'completeAchievement',
-                                                            value: achievementName.trim()
-                                                        });
-                                                    } else {
-                                                        // 匹配成就显示格式: 显示成就：成就名称
-                                                        const achievementShowMatch = line.match(/^显示成就：(.+)$/);
-                                                        if (achievementShowMatch) {
-                                                            const [, achievementName] = achievementShowMatch;
-                                                            requests.push({
-                                                                action: 'showAchievement',
-                                                                value: achievementName.trim()
-                                                            });
-                                                        } else {
-                                                            // 匹配角色操作格式: 注册角色：{...}
-                                                            const characterRegisterMatch = line.match(/^注册角色：(.+)$/);
-                                                            if (characterRegisterMatch) {
-                                                                try {
-                                                                    const characterData = JSON.parse(characterRegisterMatch[1]);
-                                                                    requests.push({
-                                                                        action: 'registerCharacter',
-                                                                        value: characterData
-                                                                    });
-                                                                } catch (e) {
-                                                                    console.error('解析角色数据错误:', e);
-                                                                }
-                                                            } else {
-                                                                // 匹配角色更新格式: 更新角色：{...}
-                                                                const characterUpdateMatch = line.match(/^更新角色：(.+)$/);
-                                                                if (characterUpdateMatch) {
-                                                                    try {
-                                                                        const characterData = JSON.parse(characterUpdateMatch[1]);
-                                                                        requests.push({
-                                                                            action: 'updateCharacter',
-                                                                            value: characterData
-                                                                        });
-                                                                    } catch (e) {
-                                                                        console.error('解析角色数据错误:', e);
-                                                                    }
-                                                                } else {
-                                                                    // 匹配角色删除格式: 删除角色：角色名称
-                                                                    const characterDeleteMatch = line.match(/^删除角色：(.+)$/);
-                                                                    if (characterDeleteMatch) {
-                                                                        const [, characterName] = characterDeleteMatch;
-                                                                        requests.push({
-                                                                            action: 'deleteCharacter',
-                                                                            value: characterName.trim()
-                                                                        });
-                                                                    } else {
-                                                                                    // 匹配快捷添加做过的事格式: 添加角色做过的事：角色名称，做过的事
-                                                                                    const characterThingDoneMatch = line.match(/^添加角色做过的事：(.+?)，(.+)$/);
-                                                                                    if (characterThingDoneMatch) {
-                                                                                        const [, characterName, thingDone] = characterThingDoneMatch;
-                                                                                        requests.push({
-                                                                                            action: 'addCharacterThingDone',
-                                                                                            value: {
-                                                                                                name: characterName.trim(),
-                                                                                                thingDone: thingDone.trim()
-                                                                                            }
-                                                                                        });
-                                                                                    } else {
-                                                                                        // 匹配添加物品格式: 添加物品：{...}
-                                                                                        const addItemMatch = line.match(/^添加物品：(.+)$/);
-                                                                                        if (addItemMatch) {
-                                                                                            try {
-                                                                                                const itemData = JSON.parse(addItemMatch[1]);
-                                                                                                requests.push({
-                                                                                                    action: 'addItem',
-                                                                                                    value: itemData
-                                                                                                });
-                                                                                            } catch (e) {
-                                                                                                console.error('解析物品数据错误:', e);
-                                                                                            }
-                                                                                        } else {
-                                                                                            // 匹配添加资产格式: 添加资产：{...}
-                                                                                            const addAssetMatch = line.match(/^添加资产：(.+)$/);
-                                                                                            if (addAssetMatch) {
-                                                                                                try {
-                                                                                                    const assetData = JSON.parse(addAssetMatch[1]);
-                                                                                                    requests.push({
-                                                                                                        action: 'addAsset',
-                                                                                                        value: assetData
-                                                                                                    });
-                                                                                                } catch (e) {
-                                                                                                    console.error('解析资产数据错误:', e);
-                                                                                                }
-                                                                                            } else {
-                                                                                                // 匹配添加知识格式: 添加知识：{...}
-                                                                                                const addKnowledgeMatch = line.match(/^添加知识：(.+)$/);
-                                                                                                if (addKnowledgeMatch) {
-                                                                                                    try {
-                                                                                                        const knowledgeData = JSON.parse(addKnowledgeMatch[1]);
-                                                                                                        requests.push({
-                                                                                                            action: 'addKnowledge',
-                                                                                                            value: knowledgeData
-                                                                                                        });
-                                                                                                    } catch (e) {
-                                                                                                        console.error('解析知识数据错误:', e);
-                                                                                                    }
-                                                                                                } else {
-                                                                                                    // 匹配删除物品格式: 删除物品：物品名称
-                                                                                                    const removeItemMatch = line.match(/^删除物品：(.+)$/);
-                                                                                                    if (removeItemMatch) {
-                                                                                                        const [, itemName] = removeItemMatch;
-                                                                                                        requests.push({
-                                                                                                            action: 'removeItem',
-                                                                                                            value: itemName.trim()
-                                                                                                        });
-                                                                                                    } else {
-                                                                                                        // 匹配删除资产格式: 删除资产：资产名称
-                                                                                                        const removeAssetMatch = line.match(/^删除资产：(.+)$/);
-                                                                                                        if (removeAssetMatch) {
-                                                                                                            const [, assetName] = removeAssetMatch;
-                                                                                                            requests.push({
-                                                                                                                action: 'removeAsset',
-                                                                                                                value: assetName.trim()
-                                                                                                            });
-                                                                                                        } else {
-                                                                                                            // 匹配删除知识格式: 删除知识：知识名称
-                                                                                                            const removeKnowledgeMatch = line.match(/^删除知识：(.+)$/);
-                                                                                                            if (removeKnowledgeMatch) {
-                                                                                                                const [, knowledgeName] = removeKnowledgeMatch;
-                                                                                                                requests.push({
-                                                                                                                    action: 'removeKnowledge',
-                                                                                                                    value: knowledgeName.trim()
-                                                                                                                });
-                                                                                                            } else {
-                                                                                                                // 匹配更新物品格式: 更新物品：{...}
-                                                                                                                const updateItemMatch = line.match(/^更新物品：(.+)$/);
-                                                                                                                if (updateItemMatch) {
-                                                                                                                    try {
-                                                                                                                        const itemData = JSON.parse(updateItemMatch[1]);
-                                                                                                                        requests.push({
-                                                                                                                            action: 'updateItem',
-                                                                                                                            value: itemData
-                                                                                                                        });
-                                                                                                                    } catch (e) {
-                                                                                                                        console.error('解析物品数据错误:', e);
-                                                                                                                    }
-                                                                                                                } else {
-                                                                                                                    // 匹配更新资产格式: 更新资产：{...}
-                                                                                                                    const updateAssetMatch = line.match(/^更新资产：(.+)$/);
-                                                                                                                    if (updateAssetMatch) {
-                                                                                                                        try {
-                                                                                                                            const assetData = JSON.parse(updateAssetMatch[1]);
-                                                                                                                            requests.push({
-                                                                                                                                action: 'updateAsset',
-                                                                                                                                value: assetData
-                                                                                                                            });
-                                                                                                                        } catch (e) {
-                                                                                                                            console.error('解析资产数据错误:', e);
-                                                                                                                        }
-                                                                                                                    } else {
-                                                                                                                        // 匹配更新知识格式: 更新知识：{...}
-                                                                                                                        const updateKnowledgeMatch = line.match(/^更新知识：(.+)$/);
-                                                                                                                        if (updateKnowledgeMatch) {
-                                                                                                                            try {
-                                                                                                                                const knowledgeData = JSON.parse(updateKnowledgeMatch[1]);
-                                                                                                                                requests.push({
-                                                                                                                                    action: 'updateKnowledge',
-                                                                                                                                    value: knowledgeData
-                                                                                                                                });
-                                                                                                                            } catch (e) {
-                                                                                                                                console.error('解析知识数据错误:', e);
-                                                                                                                            }
-                                                                                                                        }
-                                                                                                                    }
-                                                                                                                }
-                                                                                                            }
-                                                                                                        }
-                                                                                                    }
-                                                                                                }
-                                                                                            }
-                                                                                        }
-                                                                                    }
-                                                                                } else {
-                                                                                    // 匹配添加地点格式: 添加地点：{...}
-                                                                                    const addLocationMatch = line.match(/^添加地点：(.+)$/);
-                                                                                    if (addLocationMatch) {
-                                                                                        try {
-                                                                                            const locationData = JSON.parse(addLocationMatch[1]);
-                                                                                            requests.push({
-                                                                                                action: 'addLocation',
-                                                                                                value: locationData
-                                                                                            });
-                                                                                        } catch (e) {
-                                                                                            console.error('解析地点数据错误:', e);
-                                                                                        }
-                                                                                    } else {
-                                                                                        // 匹配删除地点格式: 删除地点：地点名称
-                                                                                        const removeLocationMatch = line.match(/^删除地点：(.+)$/);
-                                                                                        if (removeLocationMatch) {
-                                                                                            const [, locationName] = removeLocationMatch;
-                                                                                            requests.push({
-                                                                                                action: 'removeLocation',
-                                                                                                value: locationName.trim()
-                                                                                            });
-                                                                                        } else {
-                                                                                            // 匹配更新地点格式: 更新地点：{...}
-                                                                                            const updateLocationMatch = line.match(/^更新地点：(.+)$/);
-                                                                                            if (updateLocationMatch) {
-                                                                                                try {
-                                                                                                    const locationData = JSON.parse(updateLocationMatch[1]);
-                                                                                                    requests.push({
-                                                                                                        action: 'updateLocation',
-                                                                                                        value: locationData
-                                                                                                    });
-                                                                                                } catch (e) {
-                                                                                                    console.error('解析地点数据错误:', e);
-                                                                                                }
-                                                                                            }
-                                                                                        }
-                                                                                    }
-                                                                                }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                    } catch (e) {
+                        console.error('解析事件数据错误:', e);
+                    }
+                } else if (line.match(/^更新事件：(.+)$/)) {
+                    // 匹配事件更新格式: 更新事件：{...}
+                    const eventUpdateMatch = line.match(/^更新事件：(.+)$/);
+                    try {
+                        const eventData = JSON.parse(eventUpdateMatch[1]);
+                        requests.push({
+                            action: 'updateEvent',
+                            value: eventData
+                        });
+                    } catch (e) {
+                        console.error('解析事件数据错误:', e);
+                    }
+                } else if (line.match(/^删除事件：(.+)$/)) {
+                    // 匹配事件删除格式: 删除事件：事件名称
+                    const eventDeleteMatch = line.match(/^删除事件：(.+)$/);
+                    const [, eventName] = eventDeleteMatch;
+                    requests.push({
+                        action: 'deleteEvent',
+                        value: eventName.trim()
+                    });
+                } else if (line.match(/^添加伏笔：(.+)$/)) {
+                    // 匹配伏笔操作格式: 添加伏笔：{...}
+                    const foreshadowingAddMatch = line.match(/^添加伏笔：(.+)$/);
+                    try {
+                        const foreshadowingData = JSON.parse(foreshadowingAddMatch[1]);
+                        requests.push({
+                            action: 'addForeshadowing',
+                            value: foreshadowingData
+                        });
+                    } catch (e) {
+                        console.error('解析伏笔数据错误:', e);
+                    }
+                } else if (line.match(/^更新伏笔：(.+)$/)) {
+                    // 匹配伏笔更新格式: 更新伏笔：{...}
+                    const foreshadowingUpdateMatch = line.match(/^更新伏笔：(.+)$/);
+                    try {
+                        const foreshadowingData = JSON.parse(foreshadowingUpdateMatch[1]);
+                        requests.push({
+                            action: 'updateForeshadowing',
+                            value: foreshadowingData
+                        });
+                    } catch (e) {
+                        console.error('解析伏笔数据错误:', e);
+                    }
+                } else if (line.match(/^删除伏笔：(.+)$/)) {
+                    // 匹配伏笔删除格式: 删除伏笔：伏笔名称
+                    const foreshadowingDeleteMatch = line.match(/^删除伏笔：(.+)$/);
+                    const [, foreshadowingName] = foreshadowingDeleteMatch;
+                    requests.push({
+                        action: 'removeForeshadowing',
+                        value: foreshadowingName.trim()
+                    });
+                } else if (line.match(/^完成成就：(.+)$/)) {
+                    // 匹配成就完成格式: 完成成就：成就名称
+                    const achievementCompleteMatch = line.match(/^完成成就：(.+)$/);
+                    const [, achievementName] = achievementCompleteMatch;
+                    requests.push({
+                        action: 'completeAchievement',
+                        value: achievementName.trim()
+                    });
+                } else if (line.match(/^显示成就：(.+)$/)) {
+                    // 匹配成就显示格式: 显示成就：成就名称
+                    const achievementShowMatch = line.match(/^显示成就：(.+)$/);
+                    const [, achievementName] = achievementShowMatch;
+                    requests.push({
+                        action: 'showAchievement',
+                        value: achievementName.trim()
+                    });
+                } else if (line.match(/^注册角色：(.+)$/)) {
+                    // 匹配角色操作格式: 注册角色：{...}
+                    const characterRegisterMatch = line.match(/^注册角色：(.+)$/);
+                    try {
+                        const characterData = JSON.parse(characterRegisterMatch[1]);
+                        requests.push({
+                            action: 'registerCharacter',
+                            value: characterData
+                        });
+                    } catch (e) {
+                        console.error('解析角色数据错误:', e);
+                    }
+                } else if (line.match(/^更新角色：(.+)$/)) {
+                    // 匹配角色更新格式: 更新角色：{...}
+                    const characterUpdateMatch = line.match(/^更新角色：(.+)$/);
+                    try {
+                        const characterData = JSON.parse(characterUpdateMatch[1]);
+                        requests.push({
+                            action: 'updateCharacter',
+                            value: characterData
+                        });
+                    } catch (e) {
+                        console.error('解析角色数据错误:', e);
+                    }
+                } else if (line.match(/^删除角色：(.+)$/)) {
+                    // 匹配角色删除格式: 删除角色：角色名称
+                    const characterDeleteMatch = line.match(/^删除角色：(.+)$/);
+                    const [, characterName] = characterDeleteMatch;
+                    requests.push({
+                        action: 'deleteCharacter',
+                        value: characterName.trim()
+                    });
+                } else if (line.match(/^添加角色做过的事：(.+?)，(.+)$/)) {
+                    // 匹配快捷添加做过的事格式: 添加角色做过的事：角色名称，做过的事
+                    const characterThingDoneMatch = line.match(/^添加角色做过的事：(.+?)，(.+)$/);
+                    const [, characterName, thingDone] = characterThingDoneMatch;
+                    requests.push({
+                        action: 'addCharacterThingDone',
+                        value: {
+                            name: characterName.trim(),
+                            thingDone: thingDone.trim()
                         }
+                    });
+                } else if (line.match(/^添加物品：(.+)$/)) {
+                    // 匹配添加物品格式: 添加物品：{...}
+                    const addItemMatch = line.match(/^添加物品：(.+)$/);
+                    try {
+                        const itemData = JSON.parse(addItemMatch[1]);
+                        requests.push({
+                            action: 'addItem',
+                            value: itemData
+                        });
+                    } catch (e) {
+                        console.error('解析物品数据错误:', e);
+                    }
+                } else if (line.match(/^添加资产：(.+)$/)) {
+                    // 匹配添加资产格式: 添加资产：{...}
+                    const addAssetMatch = line.match(/^添加资产：(.+)$/);
+                    try {
+                        const assetData = JSON.parse(addAssetMatch[1]);
+                        requests.push({
+                            action: 'addAsset',
+                            value: assetData
+                        });
+                    } catch (e) {
+                        console.error('解析资产数据错误:', e);
+                    }
+                } else if (line.match(/^添加知识：(.+)$/)) {
+                    // 匹配添加知识格式: 添加知识：{...}
+                    const addKnowledgeMatch = line.match(/^添加知识：(.+)$/);
+                    try {
+                        const knowledgeData = JSON.parse(addKnowledgeMatch[1]);
+                        requests.push({
+                            action: 'addKnowledge',
+                            value: knowledgeData
+                        });
+                    } catch (e) {
+                        console.error('解析知识数据错误:', e);
+                    }
+                } else if (line.match(/^删除物品：(.+)$/)) {
+                    // 匹配删除物品格式: 删除物品：物品名称
+                    const removeItemMatch = line.match(/^删除物品：(.+)$/);
+                    const [, itemName] = removeItemMatch;
+                    requests.push({
+                        action: 'removeItem',
+                        value: itemName.trim()
+                    });
+                } else if (line.match(/^删除资产：(.+)$/)) {
+                    // 匹配删除资产格式: 删除资产：资产名称
+                    const removeAssetMatch = line.match(/^删除资产：(.+)$/);
+                    const [, assetName] = removeAssetMatch;
+                    requests.push({
+                        action: 'removeAsset',
+                        value: assetName.trim()
+                    });
+                } else if (line.match(/^删除知识：(.+)$/)) {
+                    // 匹配删除知识格式: 删除知识：知识名称
+                    const removeKnowledgeMatch = line.match(/^删除知识：(.+)$/);
+                    const [, knowledgeName] = removeKnowledgeMatch;
+                    requests.push({
+                        action: 'removeKnowledge',
+                        value: knowledgeName.trim()
+                    });
+                } else if (line.match(/^更新物品：(.+)$/)) {
+                    // 匹配更新物品格式: 更新物品：{...}
+                    const updateItemMatch = line.match(/^更新物品：(.+)$/);
+                    try {
+                        const itemData = JSON.parse(updateItemMatch[1]);
+                        requests.push({
+                            action: 'updateItem',
+                            value: itemData
+                        });
+                    } catch (e) {
+                        console.error('解析物品数据错误:', e);
+                    }
+                } else if (line.match(/^更新资产：(.+)$/)) {
+                    // 匹配更新资产格式: 更新资产：{...}
+                    const updateAssetMatch = line.match(/^更新资产：(.+)$/);
+                    try {
+                        const assetData = JSON.parse(updateAssetMatch[1]);
+                        requests.push({
+                            action: 'updateAsset',
+                            value: assetData
+                        });
+                    } catch (e) {
+                        console.error('解析资产数据错误:', e);
+                    }
+                } else if (line.match(/^更新知识：(.+)$/)) {
+                    // 匹配更新知识格式: 更新知识：{...}
+                    const updateKnowledgeMatch = line.match(/^更新知识：(.+)$/);
+                    try {
+                        const knowledgeData = JSON.parse(updateKnowledgeMatch[1]);
+                        requests.push({
+                            action: 'updateKnowledge',
+                            value: knowledgeData
+                        });
+                    } catch (e) {
+                        console.error('解析知识数据错误:', e);
+                    }
+                } else if (line.match(/^添加地点：(.+)$/)) {
+                    // 匹配添加地点格式: 添加地点：{...}
+                    const addLocationMatch = line.match(/^添加地点：(.+)$/);
+                    try {
+                        const locationData = JSON.parse(addLocationMatch[1]);
+                        requests.push({
+                            action: 'addLocation',
+                            value: locationData
+                        });
+                    } catch (e) {
+                        console.error('解析地点数据错误:', e);
+                    }
+                } else if (line.match(/^删除地点：(.+)$/)) {
+                    // 匹配删除地点格式: 删除地点：地点名称
+                    const removeLocationMatch = line.match(/^删除地点：(.+)$/);
+                    const [, locationName] = removeLocationMatch;
+                    requests.push({
+                        action: 'removeLocation',
+                        value: locationName.trim()
+                    });
+                } else if (line.match(/^更新地点：(.+)$/)) {
+                    // 匹配更新地点格式: 更新地点：{...}
+                    const updateLocationMatch = line.match(/^更新地点：(.+)$/);
+                    try {
+                        const locationData = JSON.parse(updateLocationMatch[1]);
+                        requests.push({
+                            action: 'updateLocation',
+                            value: locationData
+                        });
+                    } catch (e) {
+                        console.error('解析地点数据错误:', e);
                     }
                 }
             });
@@ -497,18 +445,12 @@ class ResponseParser {
                 if (!allowedOperations.includes(request.value)) {
                     return { valid: false, error: '只允许推进节拍、维持节拍或完结操作' };
                 }
-            } else if (request.path === 'metadata.currentTime') {
-                // 验证时间格式 YYYY-MM-DD HH:mm:ss
-                const timeRegex = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
-                if (!timeRegex.test(request.value)) {
-                    return { valid: false, error: '时间格式必须为 YYYY-MM-DD HH:mm:ss' };
-                }
             }
+            
+            return { valid: true };
         } else {
-            return { valid: false, error: '未知的操作类型' };
+            return { valid: false, error: '不支持的操作类型' };
         }
-        
-        return { valid: true };
     }
 
     // 验证事件请求
@@ -533,32 +475,16 @@ class ResponseParser {
         }
         
         if (!eventData.expectedEndTime || typeof eventData.expectedEndTime !== 'string') {
-            return { valid: false, error: '事件必须包含预期结束时间' };
+            return { valid: false, error: '事件必须包含预计结束时间' };
         }
         
-        // 验证时间格式
-        const timeRegex = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
-        if (!timeRegex.test(eventData.startTime)) {
-            return { valid: false, error: '开始时间格式必须为 YYYY-MM-DD HH:mm:ss' };
+        // 检查可选字段
+        if (eventData.importance !== undefined && typeof eventData.importance !== 'number') {
+            return { valid: false, error: '事件重要性必须是数字' };
         }
         
-        if (!timeRegex.test(eventData.expectedEndTime)) {
-            return { valid: false, error: '预期结束时间格式必须为 YYYY-MM-DD HH:mm:ss' };
-        }
-        
-        // 验证状态
-        if (eventData.status && !['foreground', 'background'].includes(eventData.status)) {
-            return { valid: false, error: '事件状态必须是 foreground 或 background' };
-        }
-        
-        // 验证重要程度
-        if (eventData.importance && (isNaN(eventData.importance) || eventData.importance < 1 || eventData.importance > 5)) {
-            return { valid: false, error: '事件重要程度必须是 1 到 5 之间的数字' };
-        }
-        
-        // 验证参与角色
-        if (eventData.participants && !Array.isArray(eventData.participants)) {
-            return { valid: false, error: '参与角色必须是数组格式' };
+        if (eventData.status !== undefined && typeof eventData.status !== 'string') {
+            return { valid: false, error: '事件状态必须是字符串' };
         }
         
         return { valid: true };
@@ -594,15 +520,9 @@ class ResponseParser {
             return { valid: false, error: '伏笔必须包含发生时间' };
         }
         
-        // 验证时间格式
-        const timeRegex = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
-        if (!timeRegex.test(foreshadowingData.occurrenceTime)) {
-            return { valid: false, error: '发生时间格式必须为 YYYY-MM-DD HH:mm:ss' };
-        }
-        
-        // 验证重要程度
-        if (foreshadowingData.importance && (isNaN(foreshadowingData.importance) || foreshadowingData.importance < 1 || foreshadowingData.importance > 5)) {
-            return { valid: false, error: '伏笔重要程度必须是 1 到 5 之间的数字' };
+        // 检查可选字段
+        if (foreshadowingData.importance !== undefined && typeof foreshadowingData.importance !== 'number') {
+            return { valid: false, error: '伏笔重要性必须是数字' };
         }
         
         return { valid: true };
@@ -630,25 +550,17 @@ class ResponseParser {
             return { valid: false, error: '角色必须包含名称' };
         }
         
-        if (!characterData.memoryPoints || typeof characterData.memoryPoints !== 'string') {
-            return { valid: false, error: '角色必须包含记忆点' };
-        }
-        
         if (!characterData.description || typeof characterData.description !== 'string') {
             return { valid: false, error: '角色必须包含描述' };
         }
         
-        if (!characterData.template || typeof characterData.template !== 'string') {
-            return { valid: false, error: '角色必须包含模板' };
+        // 检查可选字段
+        if (characterData.importance !== undefined && typeof characterData.importance !== 'number') {
+            return { valid: false, error: '角色重要性必须是数字' };
         }
         
-        if (!characterData.relationship || typeof characterData.relationship !== 'string') {
-            return { valid: false, error: '角色必须包含与玩家关系' };
-        }
-        
-        // 验证做过的事
-        if (characterData.thingsDone && !Array.isArray(characterData.thingsDone)) {
-            return { valid: false, error: '做过的事必须是数组格式' };
+        if (characterData.status !== undefined && typeof characterData.status !== 'string') {
+            return { valid: false, error: '角色状态必须是字符串' };
         }
         
         return { valid: true };
@@ -665,173 +577,48 @@ class ResponseParser {
 
     // 验证添加角色做过的事请求
     static validateAddCharacterThingDoneRequest(request) {
-        const thingDoneData = request.value;
+        const data = request.value;
         
-        if (!thingDoneData || typeof thingDoneData !== 'object') {
-            return { valid: false, error: '添加做过的事数据格式无效' };
+        if (!data || typeof data !== 'object') {
+            return { valid: false, error: '数据格式无效' };
         }
         
-        if (!thingDoneData.name || typeof thingDoneData.name !== 'string') {
+        if (!data.name || typeof data.name !== 'string') {
             return { valid: false, error: '必须指定角色名称' };
         }
         
-        if (!thingDoneData.thingDone || typeof thingDoneData.thingDone !== 'string') {
+        if (!data.thingDone || typeof data.thingDone !== 'string') {
             return { valid: false, error: '必须指定做过的事' };
         }
         
         return { valid: true };
     }
 
-    // 批量验证数据请求
-    static validateRequests(requests) {
-        const validatedRequests = [];
-        const errors = [];
+    // 验证添加物品/资产/知识请求
+    static validateInventoryAddRequest(request) {
+        const itemData = request.value;
         
-        // 检查是否包含节拍操作和景深等级
-        let hasBeatOperation = false;
-        let hasDepthLevel = false;
-        
-        requests.forEach((request, index) => {
-            const validation = this.validateRequest(request);
-            if (validation.valid) {
-                validatedRequests.push(request);
-                
-                // 检查是否包含节拍操作
-                if (request.action === 'update' && request.path === 'narrative.storyBeatOperation') {
-                    hasBeatOperation = true;
-                }
-                
-                // 检查是否包含景深等级
-                if (request.action === 'update' && request.path === 'narrative.depthLevel') {
-                    hasDepthLevel = true;
-                }
-            } else {
-                errors.push({
-                    index,
-                    error: validation.error,
-                    request
-                });
-            }
-        });
-        
-        // 确保每次响应都包含节拍操作和景深等级
-        if (!hasBeatOperation) {
-            errors.push({
-                index: -1,
-                error: '响应必须包含节拍操作',
-                request: null
-            });
+        if (!itemData || typeof itemData !== 'object') {
+            return { valid: false, error: '数据格式无效' };
         }
         
-        if (!hasDepthLevel) {
-            errors.push({
-                index: -1,
-                error: '响应必须包含景深等级',
-                request: null
-            });
+        if (!itemData.name || typeof itemData.name !== 'string') {
+            return { valid: false, error: '必须包含名称' };
         }
         
-        return {
-            validRequests: validatedRequests,
-            errors
-        };
+        if (!itemData.description || typeof itemData.description !== 'string') {
+            return { valid: false, error: '必须包含描述' };
+        }
+        
+        return { valid: true };
     }
 
-    // 生成示例数据请求格式
-    static getExampleFormat() {
-        return `===GAME_DATA_START===
-节拍操作：推进
-当前景深等级：3
-当前时间：1925-12-26 00:00:00
-注册事件：{"name":"侦探查案","description":"侦探去调查神秘案件","startTime":"1925-12-26 00:00:00","expectedEndTime":"1925-12-29 00:00:00","status":"background","importance":3,"participants":["侦探"]}
-===GAME_DATA_END===
-
-或者：
-
-===GAME_DATA_START===
-节拍操作：维持
-当前景深等级：2
-当前时间：1925-12-26 08:30:00
-添加伏笔：{"name":"神秘符号","description":"在森林中发现的奇怪符号","occurrenceTime":"1925-12-26 08:30:00","importance":4,"meta":{"location":"森林","type":"符号"}}
-===GAME_DATA_END===
-
-或者：
-
-===GAME_DATA_START===
-节拍操作：推进
-当前景深等级：3
-当前时间：1925-12-29 00:00:00
-删除伏笔：神秘符号
-===GAME_DATA_END===
-
-或者：
-
-===GAME_DATA_START===
-节拍操作：推进
-当前景深等级：3
-当前时间：1925-12-30 00:00:00
-完成成就：霞之伟业
-显示成就：霞中车
-===GAME_DATA_END===
-
-或者：
-
-===GAME_DATA_START===
-节拍操作：推进
-当前景深等级：3
-当前时间：1925-12-30 10:00:00
-注册角色：{"name":"艾米","memoryPoints":"紫色眼睛，总是带着一本魔法书","description":"年轻的魔法师学徒","template":"法师","relationship":"朋友","thingsDone":["学习魔法","帮助玩家"]}
-===GAME_DATA_END===
-
-或者：
-
-===GAME_DATA_START===
-节拍操作：维持
-当前景深等级：3
-当前时间：1925-12-30 11:00:00
-更新角色：{"name":"艾米","memoryPoints":"紫色眼睛，总是带着一本魔法书","description":"年轻的魔法师学徒，正在研究高级法术","template":"法师","relationship":"朋友","thingsDone":["学习魔法","帮助玩家","研究高级法术"]}
-===GAME_DATA_END===
-
-或者：
-
-===GAME_DATA_START===
-节拍操作：推进
-当前景深等级：3
-当前时间：1925-12-31 00:00:00
-删除角色：不重要的角色
-===GAME_DATA_END===
-
-或者：
-
-===GAME_DATA_START===
-节拍操作：完结
-当前景深等级：3
-当前时间：1929-12-31 23:59:59
-===GAME_DATA_END===
-
-或者：
-
-===GAME_DATA_START===
-节拍操作：维持
-当前景深等级：3
-当前时间：1925-12-31 10:00:00
-添加角色做过的事：艾米，学会了火球术
-===GAME_DATA_END===
-
-或者：
-
-===GAME_DATA_START===
-节拍操作：推进
-当前景深等级：3
-当前时间：1925-12-31 15:00:00
-更新物品：{"name":"魔法剑","description":"一把具有魔法力量的剑，可以发出火焰攻击","owner":"玩家"}
-===GAME_DATA_END===
-
-注意：每次响应都必须包含节拍操作和景深等级，可以选择性包含时间设置、事件操作、伏笔操作、成就操作、角色操作和背包操作。`;
+    // 验证删除物品/资产/知识请求
+    static validateInventoryRemoveRequest(request) {
+        if (!request.value || typeof request.value !== 'string') {
+            return { valid: false, error: '必须指定名称' };
+        }
+        
+        return { valid: true };
     }
-}
-
-// 导出模块
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = ResponseParser;
 }

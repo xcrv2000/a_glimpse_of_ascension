@@ -1147,15 +1147,23 @@
         
 
         
-        // 事件监听
-        sendBtn.addEventListener('click', sendMessage);
+        // 初始化DOM元素
+        const sendBtn = document.getElementById('sendBtn');
+        const messageInput = document.getElementById('messageInput');
         
-        messageInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
+        // 事件监听
+        if (sendBtn) {
+            sendBtn.addEventListener('click', sendMessage);
+        }
+        
+        if (messageInput) {
+            messageInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+        }
         
         // 自动调整输入框高度并更新字数统计
         messageInput.addEventListener('input', () => {
@@ -1316,15 +1324,24 @@
             
             // 显示/隐藏阶段标签页
             tabs.forEach(tab => {
-                if (tab.onclick && (tab.onclick.toString().includes('phase1') || tab.onclick.toString().includes('phase2'))) {
-                    tab.style.display = isSimplified ? 'none' : 'block';
+                if (tab.onclick) {
+                    const onclickStr = tab.onclick.toString();
+                    if (onclickStr.includes('phase1') || onclickStr.includes('phase2')) {
+                        // 阶段标签页：在简略模式下隐藏
+                        tab.style.display = isSimplified ? 'none' : 'block';
+                    } else if (onclickStr.includes('ai-data')) {
+                        // AI输入/输出标签页：在完整模式下隐藏
+                        tab.style.display = isSimplified ? 'block' : 'none';
+                    }
                 }
             });
             
-            // 显示/隐藏阶段标签内容
+            // 显示/隐藏标签内容
             tabContents.forEach(content => {
                 if (content.id === 'phase1-tab' || content.id === 'phase2-tab') {
                     content.style.display = 'none';
+                } else if (content.id === 'ai-data-tab') {
+                    content.style.display = isSimplified ? 'block' : 'none';
                 }
             });
             

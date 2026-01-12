@@ -249,22 +249,28 @@ class DebugPanel {
 
     // 更新调试面板内容
     updateContent() {
-        if (debugData.lastAiResponse) {
-            document.getElementById('lastAiResponse').textContent = debugData.lastAiResponse;
-        } else {
-            document.getElementById('lastAiResponse').textContent = '无数据';
+        if (document.getElementById('lastAiResponse')) {
+            if (debugData.lastAiResponse) {
+                document.getElementById('lastAiResponse').textContent = debugData.lastAiResponse;
+            } else {
+                document.getElementById('lastAiResponse').textContent = '无数据';
+            }
         }
         
-        if (debugData.lastApiRequest) {
-            document.getElementById('lastApiRequest').textContent = debugData.lastApiRequest;
-        } else {
-            document.getElementById('lastApiRequest').textContent = '无数据';
+        if (document.getElementById('lastApiRequest')) {
+            if (debugData.lastApiRequest) {
+                document.getElementById('lastApiRequest').textContent = debugData.lastApiRequest;
+            } else {
+                document.getElementById('lastApiRequest').textContent = '无数据';
+            }
         }
         
-        if (debugData.dataJson) {
-            document.getElementById('dataJsonContent').textContent = debugData.dataJson;
-        } else {
-            document.getElementById('dataJsonContent').textContent = '加载中...';
+        if (document.getElementById('dataJsonContent')) {
+            if (debugData.dataJson) {
+                document.getElementById('dataJsonContent').textContent = debugData.dataJson;
+            } else {
+                document.getElementById('dataJsonContent').textContent = '加载中...';
+            }
         }
     }
 }
