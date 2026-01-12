@@ -123,10 +123,18 @@
         .input-area {
             display: flex;
             gap: 10px;
+            width: 100%;
+            min-width: 0;
+        }
+
+        .input-area > div {
+            flex: 1;
+            min-width: 0;
         }
 
         #message-input {
-            flex: 1;
+            width: 100%;
+            min-width: 0;
             padding: 12px;
             border: 1px solid #ddd;
             border-radius: 25px;
@@ -167,9 +175,15 @@
             
             .input-area {
                 gap: 8px;
+                width: 100%;
+            }
+            
+            .input-area > div {
+                flex: 1;
             }
             
             #message-input {
+                width: 100%;
                 padding: 10px;
                 font-size: 14px;
                 border-radius: 20px;
@@ -191,9 +205,15 @@
             /* 电脑模式 */
             .input-area {
                 gap: 12px;
+                width: 100%;
+            }
+            
+            .input-area > div {
+                flex: 1;
             }
             
             #message-input {
+                width: 100%;
                 padding: 14px;
                 font-size: 16px;
                 border-radius: 25px;
@@ -225,7 +245,7 @@
         /* 调试悬浮窗 */
         .debug-panel {
             position: fixed;
-            top: 70px;
+            top: 90px;
             left: 20px;
             width: 320px;
             max-height: 400px;
@@ -321,7 +341,7 @@
         
         .debug-toggle {
             position: fixed;
-            top: 70px;
+            top: 90px;
             left: 20px;
             background-color: #4CAF50;
             color: white;
@@ -653,10 +673,10 @@
     
     <script>
         // 全局调试属性
-        const admin = true;
+        const admin = false;
         // 防止修改
         Object.defineProperty(window, 'admin', {
-            value: true,
+            value: false,
             writable: false,
             configurable: false
         });
@@ -768,18 +788,45 @@
             document.getElementById('uncompressed-story-words').textContent = `未压缩故事：${uncompressedStoryWords}字`;
         }
         
-        // 更新当前时间显示
+        // 更新当前时间显示（显示故事中的时间）
         function updateCurrentTime() {
-            const now = new Date();
-            const timeString = now.toLocaleString('zh-CN', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
-            document.getElementById('current-time-display').textContent = timeString;
+            try {
+                // 从游戏引擎获取故事时间
+                if (GameEngineInstance) {
+                    const gameData = GameEngineInstance.getGameData();
+                    const storyTime = gameData.gameState?.currentTime || gameData.metadata?.currentTime;
+                    
+                    if (storyTime) {
+                        document.getElementById('current-time-display').textContent = storyTime;
+                        return;
+                    }
+                }
+                
+                // 如果无法获取故事时间，显示系统时间作为备用
+                const now = new Date();
+                const timeString = now.toLocaleString('zh-CN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                document.getElementById('current-time-display').textContent = timeString;
+            } catch (error) {
+                console.error('更新故事时间失败:', error);
+                // 出错时显示系统时间
+                const now = new Date();
+                const timeString = now.toLocaleString('zh-CN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                document.getElementById('current-time-display').textContent = timeString;
+            }
         }
         
         // 检查API密钥状态并更新UI

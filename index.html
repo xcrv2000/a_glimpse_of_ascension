@@ -98,7 +98,7 @@
     </div>
     
     <!-- 版本号显示 -->
-    <div class="version-info">版本 1.0.2</div>
+    <div class="version-info">版本 1.0.3</div>
     
     <style>
 
@@ -162,10 +162,10 @@
     
     <script>
         // 全局调试属性
-        const admin = true;
+        const admin = false;
         // 防止修改
         Object.defineProperty(window, 'admin', {
-            value: true,
+            value: false,
             writable: false,
             configurable: false
         });
