@@ -1162,23 +1162,25 @@
         }
         
         // 自动调整输入框高度并更新字数统计
-        messageInput.addEventListener('input', () => {
-            messageInput.style.height = 'auto';
-            messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
-            
-            // 更新字数统计
-            const charCount = document.getElementById('char-count');
-            if (charCount) {
-                const currentLength = messageInput.value.length;
-                charCount.textContent = `${currentLength}/500`;
-                // 当接近或达到字数限制时，改变颜色提醒用户
-                if (currentLength >= 480) {
-                    charCount.style.color = '#f44336';
-                } else {
-                    charCount.style.color = '#999';
+        if (messageInput) {
+            messageInput.addEventListener('input', () => {
+                messageInput.style.height = 'auto';
+                messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
+                
+                // 更新字数统计
+                const charCount = document.getElementById('char-count');
+                if (charCount) {
+                    const currentLength = messageInput.value.length;
+                    charCount.textContent = `${currentLength}/500`;
+                    // 当接近或达到字数限制时，改变颜色提醒用户
+                    if (currentLength >= 480) {
+                        charCount.style.color = '#f44336';
+                    } else {
+                        charCount.style.color = '#999';
+                    }
                 }
-            }
-        });
+            });
+        }
         
         // 页面加载完成后初始化
         window.addEventListener('load', function() {
