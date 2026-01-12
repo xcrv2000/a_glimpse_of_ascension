@@ -248,19 +248,133 @@ class ResponseParser {
                                                                             value: characterName.trim()
                                                                         });
                                                                     } else {
-                                                                        // 匹配快捷添加做过的事格式: 添加角色做过的事：角色名称，做过的事
-                                                                        const characterThingDoneMatch = line.match(/^添加角色做过的事：(.+?)，(.+)$/);
-                                                                        if (characterThingDoneMatch) {
-                                                                            const [, characterName, thingDone] = characterThingDoneMatch;
-                                                                            requests.push({
-                                                                                action: 'addCharacterThingDone',
-                                                                                value: {
-                                                                                    name: characterName.trim(),
-                                                                                    thingDone: thingDone.trim()
+                                                                                    // 匹配快捷添加做过的事格式: 添加角色做过的事：角色名称，做过的事
+                                                                                    const characterThingDoneMatch = line.match(/^添加角色做过的事：(.+?)，(.+)$/);
+                                                                                    if (characterThingDoneMatch) {
+                                                                                        const [, characterName, thingDone] = characterThingDoneMatch;
+                                                                                        requests.push({
+                                                                                            action: 'addCharacterThingDone',
+                                                                                            value: {
+                                                                                                name: characterName.trim(),
+                                                                                                thingDone: thingDone.trim()
+                                                                                            }
+                                                                                        });
+                                                                                    } else {
+                                                                                        // 匹配添加物品格式: 添加物品：{...}
+                                                                                        const addItemMatch = line.match(/^添加物品：(.+)$/);
+                                                                                        if (addItemMatch) {
+                                                                                            try {
+                                                                                                const itemData = JSON.parse(addItemMatch[1]);
+                                                                                                requests.push({
+                                                                                                    action: 'addItem',
+                                                                                                    value: itemData
+                                                                                                });
+                                                                                            } catch (e) {
+                                                                                                console.error('解析物品数据错误:', e);
+                                                                                            }
+                                                                                        } else {
+                                                                                            // 匹配添加资产格式: 添加资产：{...}
+                                                                                            const addAssetMatch = line.match(/^添加资产：(.+)$/);
+                                                                                            if (addAssetMatch) {
+                                                                                                try {
+                                                                                                    const assetData = JSON.parse(addAssetMatch[1]);
+                                                                                                    requests.push({
+                                                                                                        action: 'addAsset',
+                                                                                                        value: assetData
+                                                                                                    });
+                                                                                                } catch (e) {
+                                                                                                    console.error('解析资产数据错误:', e);
+                                                                                                }
+                                                                                            } else {
+                                                                                                // 匹配添加知识格式: 添加知识：{...}
+                                                                                                const addKnowledgeMatch = line.match(/^添加知识：(.+)$/);
+                                                                                                if (addKnowledgeMatch) {
+                                                                                                    try {
+                                                                                                        const knowledgeData = JSON.parse(addKnowledgeMatch[1]);
+                                                                                                        requests.push({
+                                                                                                            action: 'addKnowledge',
+                                                                                                            value: knowledgeData
+                                                                                                        });
+                                                                                                    } catch (e) {
+                                                                                                        console.error('解析知识数据错误:', e);
+                                                                                                    }
+                                                                                                } else {
+                                                                                                    // 匹配删除物品格式: 删除物品：物品名称
+                                                                                                    const removeItemMatch = line.match(/^删除物品：(.+)$/);
+                                                                                                    if (removeItemMatch) {
+                                                                                                        const [, itemName] = removeItemMatch;
+                                                                                                        requests.push({
+                                                                                                            action: 'removeItem',
+                                                                                                            value: itemName.trim()
+                                                                                                        });
+                                                                                                    } else {
+                                                                                                        // 匹配删除资产格式: 删除资产：资产名称
+                                                                                                        const removeAssetMatch = line.match(/^删除资产：(.+)$/);
+                                                                                                        if (removeAssetMatch) {
+                                                                                                            const [, assetName] = removeAssetMatch;
+                                                                                                            requests.push({
+                                                                                                                action: 'removeAsset',
+                                                                                                                value: assetName.trim()
+                                                                                                            });
+                                                                                                        } else {
+                                                                                                            // 匹配删除知识格式: 删除知识：知识名称
+                                                                                                            const removeKnowledgeMatch = line.match(/^删除知识：(.+)$/);
+                                                                                                            if (removeKnowledgeMatch) {
+                                                                                                                const [, knowledgeName] = removeKnowledgeMatch;
+                                                                                                                requests.push({
+                                                                                                                    action: 'removeKnowledge',
+                                                                                                                    value: knowledgeName.trim()
+                                                                                                                });
+                                                                                                            } else {
+                                                                                                                // 匹配更新物品格式: 更新物品：{...}
+                                                                                                                const updateItemMatch = line.match(/^更新物品：(.+)$/);
+                                                                                                                if (updateItemMatch) {
+                                                                                                                    try {
+                                                                                                                        const itemData = JSON.parse(updateItemMatch[1]);
+                                                                                                                        requests.push({
+                                                                                                                            action: 'updateItem',
+                                                                                                                            value: itemData
+                                                                                                                        });
+                                                                                                                    } catch (e) {
+                                                                                                                        console.error('解析物品数据错误:', e);
+                                                                                                                    }
+                                                                                                                } else {
+                                                                                                                    // 匹配更新资产格式: 更新资产：{...}
+                                                                                                                    const updateAssetMatch = line.match(/^更新资产：(.+)$/);
+                                                                                                                    if (updateAssetMatch) {
+                                                                                                                        try {
+                                                                                                                            const assetData = JSON.parse(updateAssetMatch[1]);
+                                                                                                                            requests.push({
+                                                                                                                                action: 'updateAsset',
+                                                                                                                                value: assetData
+                                                                                                                            });
+                                                                                                                        } catch (e) {
+                                                                                                                            console.error('解析资产数据错误:', e);
+                                                                                                                        }
+                                                                                                                    } else {
+                                                                                                                        // 匹配更新知识格式: 更新知识：{...}
+                                                                                                                        const updateKnowledgeMatch = line.match(/^更新知识：(.+)$/);
+                                                                                                                        if (updateKnowledgeMatch) {
+                                                                                                                            try {
+                                                                                                                                const knowledgeData = JSON.parse(updateKnowledgeMatch[1]);
+                                                                                                                                requests.push({
+                                                                                                                                    action: 'updateKnowledge',
+                                                                                                                                    value: knowledgeData
+                                                                                                                                });
+                                                                                                                            } catch (e) {
+                                                                                                                                console.error('解析知识数据错误:', e);
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                }
+                                                                                                            }
+                                                                                                        }
+                                                                                                    }
+                                                                                                }
+                                                                                            }
+                                                                                        }
+                                                                                    }
                                                                                 }
-                                                                            });
-                                                                        }
-                                                                    }
                                                                 }
                                                             }
                                                         }
@@ -316,6 +430,12 @@ class ResponseParser {
             return this.validateDeleteCharacterRequest(request);
         } else if (request.action === 'addCharacterThingDone') {
             return this.validateAddCharacterThingDoneRequest(request);
+        } else if (request.action === 'addItem' || request.action === 'addAsset' || request.action === 'addKnowledge') {
+            return this.validateInventoryAddRequest(request);
+        } else if (request.action === 'removeItem' || request.action === 'removeAsset' || request.action === 'removeKnowledge') {
+            return this.validateInventoryRemoveRequest(request);
+        } else if (request.action === 'updateItem' || request.action === 'updateAsset' || request.action === 'updateKnowledge') {
+            return this.validateInventoryAddRequest(request);
         } else if (request.action === 'update') {
             // 只允许特定的路径
             const allowedPaths = [
@@ -657,10 +777,19 @@ class ResponseParser {
 节拍操作：维持
 当前景深等级：3
 当前时间：1925-12-31 10:00:00
-【艾米，学会了火球术，添加】
+添加角色做过的事：艾米，学会了火球术
 ===GAME_DATA_END===
 
-注意：每次响应都必须包含节拍操作和景深等级，可以选择性包含时间设置、事件操作、伏笔操作、成就操作和角色操作。`;
+或者：
+
+===GAME_DATA_START===
+节拍操作：推进
+当前景深等级：3
+当前时间：1925-12-31 15:00:00
+更新物品：{"name":"魔法剑","description":"一把具有魔法力量的剑，可以发出火焰攻击","owner":"玩家"}
+===GAME_DATA_END===
+
+注意：每次响应都必须包含节拍操作和景深等级，可以选择性包含时间设置、事件操作、伏笔操作、成就操作、角色操作和背包操作。`;
     }
 }
 

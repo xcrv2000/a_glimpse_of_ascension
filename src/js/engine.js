@@ -318,6 +318,30 @@ class GameEngine {
                 await this.deleteCharacter(request.value);
             } else if (request.action === 'addCharacterThingDone') {
                 await this.addCharacterThingDone(request.value);
+            } else if (request.action === 'addItem') {
+                await this.addItem(request.value);
+            } else if (request.action === 'addAsset') {
+                await this.addAsset(request.value);
+            } else if (request.action === 'addKnowledge') {
+                await this.addKnowledge(request.value);
+            } else if (request.action === 'removeItem') {
+                await this.removeItem(request.value);
+            } else if (request.action === 'removeAsset') {
+                await this.removeAsset(request.value);
+            } else if (request.action === 'removeKnowledge') {
+                await this.removeKnowledge(request.value);
+            } else if (request.action === 'updateItem') {
+                await this.updateItem(request.value);
+            } else if (request.action === 'updateAsset') {
+                await this.updateAsset(request.value);
+            } else if (request.action === 'updateKnowledge') {
+                await this.updateKnowledge(request.value);
+            } else if (request.action === 'addForeshadowing') {
+                await this.addForeshadowing(request.value);
+            } else if (request.action === 'updateForeshadowing') {
+                await this.updateForeshadowing(request.value);
+            } else if (request.action === 'removeForeshadowing') {
+                await this.removeForeshadowing(request.value);
             } else if (request.action === 'update') {
                 // 处理节拍操作
                 if (request.path === 'narrative.storyBeatOperation') {
@@ -450,6 +474,129 @@ class GameEngine {
         } catch (error) {
             console.error('删除事件错误:', error);
             return { success: false, error: error.message };
+        }
+    }
+
+    // 添加伏笔
+    async addForeshadowing(foreshadowingData) {
+        try {
+            console.log('开始添加伏笔:', foreshadowingData);
+            
+            // 确保foreshadowings数组存在
+            if (!this.gameData.foreshadowings) {
+                this.gameData.foreshadowings = [];
+            }
+            
+            // 检查是否已存在同名伏笔
+            const existingForeshadowingIndex = this.gameData.foreshadowings.findIndex(
+                foreshadowing => foreshadowing.name === foreshadowingData.name
+            );
+            
+            if (existingForeshadowingIndex >= 0) {
+                // 存在同名伏笔，更新它
+                console.log('存在同名伏笔，更新它:', foreshadowingData.name);
+                this.gameData.foreshadowings[existingForeshadowingIndex] = {
+                    ...this.gameData.foreshadowings[existingForeshadowingIndex],
+                    ...foreshadowingData
+                };
+            } else {
+                // 不存在同名伏笔，添加新伏笔
+                console.log('添加新伏笔:', foreshadowingData.name);
+                this.gameData.foreshadowings.push(foreshadowingData);
+                
+                // 检查伏笔数量限制
+                this.checkForeshadowingLimit();
+            }
+            
+            console.log('伏笔添加成功');
+            return { success: true };
+        } catch (error) {
+            console.error('添加伏笔错误:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // 更新伏笔
+    async updateForeshadowing(foreshadowingData) {
+        try {
+            console.log('开始更新伏笔:', foreshadowingData);
+            
+            // 确保foreshadowings数组存在
+            if (!this.gameData.foreshadowings) {
+                this.gameData.foreshadowings = [];
+                return { success: false, error: '伏笔数组不存在' };
+            }
+            
+            // 查找同名伏笔
+            const existingForeshadowingIndex = this.gameData.foreshadowings.findIndex(
+                foreshadowing => foreshadowing.name === foreshadowingData.name
+            );
+            
+            if (existingForeshadowingIndex >= 0) {
+                // 更新伏笔
+                this.gameData.foreshadowings[existingForeshadowingIndex] = {
+                    ...this.gameData.foreshadowings[existingForeshadowingIndex],
+                    ...foreshadowingData
+                };
+                console.log('伏笔更新成功:', foreshadowingData.name);
+                return { success: true };
+            } else {
+                // 不存在同名伏笔，添加为新伏笔
+                console.log('不存在同名伏笔，添加为新伏笔:', foreshadowingData.name);
+                return await this.addForeshadowing(foreshadowingData);
+            }
+        } catch (error) {
+            console.error('更新伏笔错误:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // 删除伏笔
+    async removeForeshadowing(foreshadowingName) {
+        try {
+            console.log('开始删除伏笔:', foreshadowingName);
+            
+            // 确保foreshadowings数组存在
+            if (!this.gameData.foreshadowings) {
+                this.gameData.foreshadowings = [];
+                return { success: false, error: '伏笔数组不存在' };
+            }
+            
+            // 查找并删除同名伏笔
+            const initialLength = this.gameData.foreshadowings.length;
+            this.gameData.foreshadowings = this.gameData.foreshadowings.filter(
+                foreshadowing => foreshadowing.name !== foreshadowingName
+            );
+            
+            if (this.gameData.foreshadowings.length < initialLength) {
+                console.log('伏笔删除成功:', foreshadowingName);
+                return { success: true };
+            } else {
+                console.warn('伏笔不存在:', foreshadowingName);
+                return { success: false, error: '伏笔不存在' };
+            }
+        } catch (error) {
+            console.error('删除伏笔错误:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // 检查伏笔数量限制
+    checkForeshadowingLimit() {
+        // 硬限制：20个伏笔
+        const hardLimit = 20;
+        // 推荐限制：12个伏笔
+        const recommendedLimit = 12;
+        
+        // 检查硬限制
+        if (this.gameData.foreshadowings.length > hardLimit) {
+            console.log('伏笔数量超过硬限制，删除重要程度最低的伏笔');
+            // 按重要程度排序，删除重要程度最低的
+            this.gameData.foreshadowings.sort((a, b) => (b.importance || 0) - (a.importance || 0));
+            this.gameData.foreshadowings = this.gameData.foreshadowings.slice(0, hardLimit);
+        } else if (this.gameData.foreshadowings.length > recommendedLimit) {
+            console.log('伏笔数量超过推荐限制，建议删除不重要的伏笔');
+            // 这里可以添加逻辑，自动删除重要程度较低的伏笔
         }
     }
 
@@ -1085,14 +1232,16 @@ class GameEngine {
                 this.gameData.characters[existingCharacterIndex] = {
                     ...this.gameData.characters[existingCharacterIndex],
                     ...characterData,
-                    thingsDone: characterData.thingsDone || this.gameData.characters[existingCharacterIndex].thingsDone || []
+                    thingsDone: characterData.thingsDone || this.gameData.characters[existingCharacterIndex].thingsDone || [],
+                    behaviorPattern: characterData.behaviorPattern || this.gameData.characters[existingCharacterIndex].behaviorPattern || ""
                 };
             } else {
                 // 不存在同名角色，添加新角色
                 console.log('添加新角色:', characterData.name);
                 const newCharacter = {
                     ...characterData,
-                    thingsDone: characterData.thingsDone || []
+                    thingsDone: characterData.thingsDone || [],
+                    behaviorPattern: characterData.behaviorPattern || ""
                 };
                 this.gameData.characters.push(newCharacter);
             }
@@ -1146,7 +1295,8 @@ class GameEngine {
                 this.gameData.characters[existingCharacterIndex] = {
                     ...this.gameData.characters[existingCharacterIndex],
                     ...characterData,
-                    thingsDone: characterData.thingsDone || this.gameData.characters[existingCharacterIndex].thingsDone || []
+                    thingsDone: characterData.thingsDone || this.gameData.characters[existingCharacterIndex].thingsDone || [],
+                    behaviorPattern: characterData.behaviorPattern || this.gameData.characters[existingCharacterIndex].behaviorPattern || ""
                 };
                 console.log('角色更新成功:', characterData.name);
                 return { success: true };
@@ -1219,6 +1369,267 @@ class GameEngine {
             }
         } catch (error) {
             console.error('添加角色做过的事错误:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // 添加物品
+    async addItem(itemData) {
+        try {
+            console.log('开始添加物品:', itemData);
+            
+            // 确保inventory对象存在
+            if (!this.gameData.inventory) {
+                this.gameData.inventory = {
+                    items: [],
+                    assets: [],
+                    knowledge: []
+                };
+            }
+            
+            // 确保items数组存在
+            if (!this.gameData.inventory.items) {
+                this.gameData.inventory.items = [];
+            }
+            
+            // 添加物品
+            this.gameData.inventory.items.push(itemData);
+            console.log('添加物品成功:', itemData.name);
+            return { success: true };
+        } catch (error) {
+            console.error('添加物品错误:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // 添加资产
+    async addAsset(assetData) {
+        try {
+            console.log('开始添加资产:', assetData);
+            
+            // 确保inventory对象存在
+            if (!this.gameData.inventory) {
+                this.gameData.inventory = {
+                    items: [],
+                    assets: [],
+                    knowledge: []
+                };
+            }
+            
+            // 确保assets数组存在
+            if (!this.gameData.inventory.assets) {
+                this.gameData.inventory.assets = [];
+            }
+            
+            // 添加资产
+            this.gameData.inventory.assets.push(assetData);
+            console.log('添加资产成功:', assetData.name);
+            return { success: true };
+        } catch (error) {
+            console.error('添加资产错误:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // 添加知识
+    async addKnowledge(knowledgeData) {
+        try {
+            console.log('开始添加知识:', knowledgeData);
+            
+            // 确保inventory对象存在
+            if (!this.gameData.inventory) {
+                this.gameData.inventory = {
+                    items: [],
+                    assets: [],
+                    knowledge: []
+                };
+            }
+            
+            // 确保knowledge数组存在
+            if (!this.gameData.inventory.knowledge) {
+                this.gameData.inventory.knowledge = [];
+            }
+            
+            // 添加知识
+            this.gameData.inventory.knowledge.push(knowledgeData);
+            console.log('添加知识成功:', knowledgeData.name);
+            return { success: true };
+        } catch (error) {
+            console.error('添加知识错误:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // 移除物品
+    async removeItem(itemName) {
+        try {
+            console.log('开始移除物品:', itemName);
+            
+            // 确保inventory对象存在
+            if (!this.gameData.inventory || !this.gameData.inventory.items) {
+                return { success: false, error: '物品不存在' };
+            }
+            
+            // 查找并移除物品
+            const initialLength = this.gameData.inventory.items.length;
+            this.gameData.inventory.items = this.gameData.inventory.items.filter(item => item.name !== itemName);
+            
+            if (this.gameData.inventory.items.length < initialLength) {
+                console.log('移除物品成功:', itemName);
+                return { success: true };
+            } else {
+                console.warn('物品不存在:', itemName);
+                return { success: false, error: '物品不存在' };
+            }
+        } catch (error) {
+            console.error('移除物品错误:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // 移除资产
+    async removeAsset(assetName) {
+        try {
+            console.log('开始移除资产:', assetName);
+            
+            // 确保inventory对象存在
+            if (!this.gameData.inventory || !this.gameData.inventory.assets) {
+                return { success: false, error: '资产不存在' };
+            }
+            
+            // 查找并移除资产
+            const initialLength = this.gameData.inventory.assets.length;
+            this.gameData.inventory.assets = this.gameData.inventory.assets.filter(asset => asset.name !== assetName);
+            
+            if (this.gameData.inventory.assets.length < initialLength) {
+                console.log('移除资产成功:', assetName);
+                return { success: true };
+            } else {
+                console.warn('资产不存在:', assetName);
+                return { success: false, error: '资产不存在' };
+            }
+        } catch (error) {
+            console.error('移除资产错误:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // 移除知识
+    async removeKnowledge(knowledgeName) {
+        try {
+            console.log('开始移除知识:', knowledgeName);
+            
+            // 确保inventory对象存在
+            if (!this.gameData.inventory || !this.gameData.inventory.knowledge) {
+                return { success: false, error: '知识不存在' };
+            }
+            
+            // 查找并移除知识
+            const initialLength = this.gameData.inventory.knowledge.length;
+            this.gameData.inventory.knowledge = this.gameData.inventory.knowledge.filter(knowledge => knowledge.name !== knowledgeName);
+            
+            if (this.gameData.inventory.knowledge.length < initialLength) {
+                console.log('移除知识成功:', knowledgeName);
+                return { success: true };
+            } else {
+                console.warn('知识不存在:', knowledgeName);
+                return { success: false, error: '知识不存在' };
+            }
+        } catch (error) {
+            console.error('移除知识错误:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // 更新物品
+    async updateItem(itemData) {
+        try {
+            console.log('开始更新物品:', itemData);
+            
+            // 确保inventory对象存在
+            if (!this.gameData.inventory || !this.gameData.inventory.items) {
+                return { success: false, error: '物品不存在' };
+            }
+            
+            // 查找物品
+            const itemIndex = this.gameData.inventory.items.findIndex(item => item.name === itemData.name);
+            
+            if (itemIndex >= 0) {
+                // 更新物品
+                this.gameData.inventory.items[itemIndex] = {
+                    ...this.gameData.inventory.items[itemIndex],
+                    ...itemData
+                };
+                console.log('更新物品成功:', itemData.name);
+                return { success: true };
+            } else {
+                console.warn('物品不存在:', itemData.name);
+                return { success: false, error: '物品不存在' };
+            }
+        } catch (error) {
+            console.error('更新物品错误:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // 更新资产
+    async updateAsset(assetData) {
+        try {
+            console.log('开始更新资产:', assetData);
+            
+            // 确保inventory对象存在
+            if (!this.gameData.inventory || !this.gameData.inventory.assets) {
+                return { success: false, error: '资产不存在' };
+            }
+            
+            // 查找资产
+            const assetIndex = this.gameData.inventory.assets.findIndex(asset => asset.name === assetData.name);
+            
+            if (assetIndex >= 0) {
+                // 更新资产
+                this.gameData.inventory.assets[assetIndex] = {
+                    ...this.gameData.inventory.assets[assetIndex],
+                    ...assetData
+                };
+                console.log('更新资产成功:', assetData.name);
+                return { success: true };
+            } else {
+                console.warn('资产不存在:', assetData.name);
+                return { success: false, error: '资产不存在' };
+            }
+        } catch (error) {
+            console.error('更新资产错误:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // 更新知识
+    async updateKnowledge(knowledgeData) {
+        try {
+            console.log('开始更新知识:', knowledgeData);
+            
+            // 确保inventory对象存在
+            if (!this.gameData.inventory || !this.gameData.inventory.knowledge) {
+                return { success: false, error: '知识不存在' };
+            }
+            
+            // 查找知识
+            const knowledgeIndex = this.gameData.inventory.knowledge.findIndex(knowledge => knowledge.name === knowledgeData.name);
+            
+            if (knowledgeIndex >= 0) {
+                // 更新知识
+                this.gameData.inventory.knowledge[knowledgeIndex] = {
+                    ...this.gameData.inventory.knowledge[knowledgeIndex],
+                    ...knowledgeData
+                };
+                console.log('更新知识成功:', knowledgeData.name);
+                return { success: true };
+            } else {
+                console.warn('知识不存在:', knowledgeData.name);
+                return { success: false, error: '知识不存在' };
+            }
+        } catch (error) {
+            console.error('更新知识错误:', error);
             return { success: false, error: error.message };
         }
     }

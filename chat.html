@@ -419,6 +419,21 @@
                     <button class="engine-tool-btn" onclick="executeEngineTool('showAchievement', null, document.getElementById('achievement-name').value)">显示成就</button>
                 </div>
             </div>
+            <div class="debug-section">
+                <h4>伏笔操作</h4>
+                <button class="engine-tool-btn" onclick="toggleForeshadowingForm()">添加/更新伏笔</button>
+                <div id="foreshadowing-form" style="display: none; margin-top: 10px; padding: 10px; background-color: rgba(255, 255, 255, 0.1); border-radius: 5px;">
+                    <input type="text" id="foreshadowing-name" placeholder="伏笔名称" style="width: 100%; padding: 6px; margin-bottom: 6px;" />
+                    <textarea id="foreshadowing-description" placeholder="伏笔描述" rows="2" style="width: 100%; padding: 6px; margin-bottom: 6px;" ></textarea>
+                    <input type="datetime-local" id="foreshadowing-time" style="width: 100%; padding: 6px; margin-bottom: 6px;" />
+                    <input type="number" id="foreshadowing-importance" placeholder="重要程度 (1-5)" min="1" max="5" style="width: 100%; padding: 6px; margin-bottom: 6px;" />
+                    <button class="engine-tool-btn" onclick="executeForeshadowingTool('addForeshadowing')">添加伏笔</button>
+                </div>
+                <div style="margin-top: 10px;">
+                    <input type="text" id="delete-foreshadowing-name" placeholder="伏笔名称" style="width: 100%; padding: 6px; margin-bottom: 6px;" />
+                    <button class="engine-tool-btn" onclick="executeEngineTool('removeForeshadowing', null, document.getElementById('delete-foreshadowing-name').value)">删除伏笔</button>
+                </div>
+            </div>
         </div>
         <div class="debug-tab-content" id="ai-response-tab">
             <div class="debug-section">

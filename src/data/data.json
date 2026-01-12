@@ -33,8 +33,13 @@
       "memoryPoints": "头顶插着一个巨大的齿轮",
       "description": "开朗的新手向导和任务发布员",
       "template": "蝶",
-      "relationship": "新手引导",
+      "relationship": "新手引导员",
       "thingsDone": []
     }
-  ]
+  ],
+  "inventory": {
+    "items": [],
+    "assets": [],
+    "knowledge": []
+  }
 }

@@ -28,6 +28,12 @@ class DebugPanel {
         
         // 执行事件操作
         window.executeEventTool = (action) => this.executeEvent(action);
+        
+        // 切换伏笔表单显示/隐藏
+        window.toggleForeshadowingForm = () => this.toggleForeshadowingForm();
+        
+        // 执行伏笔操作
+        window.executeForeshadowingTool = (action) => this.executeForeshadowing(action);
     }
 
     togglePanel() {
@@ -79,14 +85,29 @@ class DebugPanel {
                 return;
             }
             
-            // 执行操作（这里只是模拟执行，实际执行需要调用游戏引擎）
+            // 执行操作（调用游戏引擎）
             console.log('执行引擎工具操作:', toolRequest);
             
-            // 显示成功消息
-            alert('操作执行成功!');
-            
-            // 更新游戏数据显示
-            this.updateGameDataDisplay();
+            // 实际调用游戏引擎执行操作
+            GameEngineInstance.processSingleRequest(toolRequest)
+                .then(result => {
+                    if (result.success) {
+                        // 显示成功消息
+                        alert('操作执行成功!');
+                        
+                        // 更新游戏数据显示
+                        this.updateGameDataDisplay();
+                        
+                        // 重新加载游戏数据
+                        loadDataJson();
+                    } else {
+                        alert('操作执行失败: ' + (result.error || '未知错误'));
+                    }
+                })
+                .catch(error => {
+                    console.error('执行引擎工具错误:', error);
+                    alert('执行操作时出错: ' + error.message);
+                });
         } catch (error) {
             console.error('执行引擎工具错误:', error);
             alert('执行操作时出错: ' + error.message);
@@ -155,6 +176,47 @@ class DebugPanel {
             this.executeTool(action, null, eventData);
         } catch (error) {
             console.error('执行事件工具错误:', error);
+            alert('执行操作时出错: ' + error.message);
+        }
+    }
+
+    toggleForeshadowingForm() {
+        const foreshadowingForm = document.getElementById('foreshadowing-form');
+        if (foreshadowingForm.style.display === 'none' || foreshadowingForm.style.display === '') {
+            foreshadowingForm.style.display = 'block';
+        } else {
+            foreshadowingForm.style.display = 'none';
+        }
+    }
+
+    executeForeshadowing(action) {
+        try {
+            const foreshadowingName = document.getElementById('foreshadowing-name').value;
+            const foreshadowingDescription = document.getElementById('foreshadowing-description').value;
+            const foreshadowingTime = document.getElementById('foreshadowing-time').value;
+            const foreshadowingImportance = document.getElementById('foreshadowing-importance').value;
+            
+            if (!foreshadowingName || !foreshadowingDescription || !foreshadowingTime) {
+                alert('请填写所有必填字段');
+                return;
+            }
+            
+            // 转换时间格式
+            const date = new Date(foreshadowingTime);
+            const formattedTime = date.toISOString().slice(0, 19).replace('T', ' ');
+            
+            // 创建伏笔数据对象
+            const foreshadowingData = {
+                name: foreshadowingName,
+                description: foreshadowingDescription,
+                occurrenceTime: formattedTime,
+                importance: parseInt(foreshadowingImportance) || 3
+            };
+            
+            // 执行操作
+            this.executeTool(action, null, foreshadowingData);
+        } catch (error) {
+            console.error('执行伏笔工具错误:', error);
             alert('执行操作时出错: ' + error.message);
         }
     }
