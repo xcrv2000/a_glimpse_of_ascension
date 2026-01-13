@@ -100,6 +100,29 @@
     <!-- 版本号显示 -->
     <div class="version-info">版本 <span id="version-number">1.0.4</span></div>
     
+    <script>
+        // 加载并同步版本号
+        async function loadVersion() {
+            try {
+                const response = await fetch('package.json');
+                if (response.ok) {
+                    const packageData = await response.json();
+                    const versionElement = document.getElementById('version-number');
+                    if (versionElement) {
+                        versionElement.textContent = packageData.version;
+                    }
+                }
+            } catch (error) {
+                console.error('加载版本信息失败:', error);
+            }
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('load', function() {
+            loadVersion();
+        });
+    </script>
+    
     <style>
 
         /* 模态对话框样式 */
