@@ -1173,7 +1173,7 @@
                 // 没有保存的设置，创建默认设置
                 const defaultSettings = {
                     aiProvider: 'deepseek',
-                    aiModel: 'deepseek-v3',
+                    aiModel: 'deepseek-chat',
                     apiKey: '',
                     promptMode: 'twoPhase' // 默认使用两阶段模式
                 };
@@ -1362,9 +1362,9 @@
                 const savedSettings = localStorage.getItem('gameSettings');
                 if (savedSettings) {
                     const settings = JSON.parse(savedSettings);
-                    const apiKey = settings.apiKey;
-                    const aiProvider = settings.aiProvider || 'deepseek';
-                    const aiModel = settings.aiModel || 'deepseek-v3';
+            const apiKey = settings.apiKey;
+            const aiProvider = settings.aiProvider || 'deepseek';
+            const aiModel = settings.aiModel || 'deepseek-chat';
                     
                     // 处理自定义服务商设置
                     let customSettings = null;
@@ -1543,7 +1543,7 @@
             const settings = JSON.parse(savedSettings);
             const apiKey = settings.apiKey;
             const aiProvider = settings.aiProvider || 'deepseek';
-            const aiModel = settings.aiModel || 'deepseek-v3';
+            const aiModel = settings.aiModel || 'deepseek-chat';
             
             // 处理自定义服务商设置
             let customSettings = null;
