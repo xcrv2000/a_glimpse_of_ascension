@@ -56,6 +56,9 @@ class ProviderConfig {
     static prepareRequestData(provider, model, messages, temperature = 0.7, maxTokens = 8192) {
         const config = this.getProviderConfig(provider, model);
         
+        // 使用用户指定的模型或默认模型
+        const modelName = model || config.defaultModel;
+        
         if (provider === 'google') {
             // Google Gemini 格式
             return {
@@ -71,7 +74,7 @@ class ProviderConfig {
         } else if (provider === 'anthropic') {
             // Anthropic Claude 格式
             return {
-                model: config.defaultModel,
+                model: modelName,
                 messages: messages,
                 temperature: temperature,
                 max_tokens: maxTokens
@@ -79,7 +82,7 @@ class ProviderConfig {
         } else {
             // OpenAI、DeepSeek 和自定义格式
             return {
-                model: config.defaultModel,
+                model: modelName,
                 messages: messages,
                 temperature: temperature,
                 max_tokens: maxTokens
