@@ -11,7 +11,7 @@ class ProviderConfig {
         const baseConfigs = {
             deepseek: {
                 endpoint: 'https://api.deepseek.com/v1/chat/completions',
-                defaultModel: 'deepseek-chat',
+                defaultModel: 'deepseek-v3',
                 defaultApiKey: this.DEFAULT_API_KEY
             },
             openai: {

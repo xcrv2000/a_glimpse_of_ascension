@@ -177,9 +177,9 @@ class PromptBuilder_Storyteller {
             providerConfig = ProviderConfig.getProviderConfig(aiProvider, aiModel, customSettings);
         }
         
-        // 如果没有提供API密钥，使用默认值
+        // 检查是否有API密钥
         if (!apiKey) {
-            apiKey = providerConfig.defaultApiKey;
+            throw new Error('请在设置页面配置API密钥');
         }
         
         // 准备消息格式

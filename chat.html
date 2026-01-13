@@ -905,12 +905,12 @@
     </script>
     <script>
         // 全局调试属性
-        const admin = false;
-        // 防止修改
+        let admin = false;
+        // 初始定义为可配置，以便后续可以修改
         Object.defineProperty(window, 'admin', {
             value: false,
-            writable: false,
-            configurable: false
+            writable: true,
+            configurable: true
         });
         
         // 显示加载等待条
@@ -1115,10 +1115,9 @@
                 }
             }
             
-            // 对于DeepSeek，我们有默认API密钥，所以总是启用
             // 对于自定义服务商，需要检查是否有API端点
-            // 对于其他服务商，需要检查是否有API密钥
-            const hasApiKey = aiProvider === 'deepseek' || (aiProvider === 'custom' && customEndpoint) || apiKey;
+                // 对于其他服务商，需要检查是否有API密钥
+                const hasApiKey = (aiProvider === 'custom' && customEndpoint) || apiKey;
             
             if (sendBtn) {
                 sendBtn.disabled = !hasApiKey;
@@ -1236,7 +1235,17 @@
         
         // 显示未压缩故事（实时故事）给玩家
         function displayUncompressedStory() {
-            if (uncompressedStory.length > 0 && messagesContainer) {
+            // 确保messagesContainer已初始化
+            if (!messagesContainer) {
+                // 尝试获取messagesContainer元素
+                messagesContainer = document.getElementById('messages');
+                if (!messagesContainer) {
+                    console.error('消息容器未找到，无法显示故事');
+                    return;
+                }
+            }
+            
+            if (uncompressedStory.length > 0) {
                 // 清空现有消息
                 messagesContainer.innerHTML = '';
                 
@@ -1276,15 +1285,23 @@
         
         // 添加消息到聊天界面
         async function addMessage(content, isUser = false) {
+            // 确保messagesContainer已初始化
+            if (!messagesContainer) {
+                // 尝试获取messagesContainer元素
+                messagesContainer = document.getElementById('messages');
+                if (!messagesContainer) {
+                    console.error('消息容器未找到，无法显示消息:', content);
+                    return;
+                }
+            }
+            
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isUser ? 'user' : 'ai'}`;
             messageDiv.textContent = content;
             
-            // 检查messagesContainer是否存在
-            if (messagesContainer) {
-                messagesContainer.appendChild(messageDiv);
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            }
+            // 添加消息到容器
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
             
             // 如果是用户消息，隐藏版本号
             if (isUser) {
@@ -1555,7 +1572,10 @@
                 if (!customSettings.endpoint) {
                     throw new Error('请在设置页面配置自定义API端点');
                 }
-            } else if (!apiKey && aiProvider !== 'deepseek') {
+            } 
+            
+            // 检查API密钥
+            if (!apiKey && aiProvider !== 'deepseek' && !(aiProvider === 'custom' && customSettings && customSettings.endpoint)) {
                 throw new Error('请先在设置页面配置API密钥');
             }
             
@@ -1907,9 +1927,9 @@
                 }
             }
             
-            // 如果没有提供API密钥，使用默认值
-            if (!apiKey && aiProvider === 'deepseek') {
-                apiKey = ProviderConfig.DEFAULT_API_KEY;
+            // 检查是否有API密钥
+            if (!apiKey && !(aiProvider === 'custom' && customSettings.endpoint)) {
+                throw new Error('请在设置页面配置API密钥');
             }
             
             // 使用PromptManager加载简略模式提示词
@@ -2048,9 +2068,9 @@
 
         
         // 初始化DOM元素
-        const sendBtn = document.getElementById('send-btn');
-        const messageInput = document.getElementById('message-input');
-        const messagesContainer = document.getElementById('messages');
+        let sendBtn = null;
+        let messageInput = null;
+        let messagesContainer = null;
         
         // 事件监听
         if (sendBtn) {
@@ -2089,6 +2109,43 @@
         
         // 页面加载完成后初始化
         window.addEventListener('load', function() {
+            // 重新获取DOM元素，确保DOM已完全加载
+            sendBtn = document.getElementById('send-btn');
+            messageInput = document.getElementById('message-input');
+            messagesContainer = document.getElementById('messages');
+            
+            // 添加事件监听
+            if (sendBtn) {
+                sendBtn.addEventListener('click', sendMessage);
+            }
+            
+            if (messageInput) {
+                messageInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage();
+                    }
+                });
+                
+                messageInput.addEventListener('input', () => {
+                    messageInput.style.height = 'auto';
+                    messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
+                    
+                    // 更新字数统计
+                    const charCount = document.getElementById('char-count');
+                    if (charCount) {
+                        const currentLength = messageInput.value.length;
+                        charCount.textContent = `${currentLength}/500`;
+                        // 当接近或达到字数限制时，改变颜色提醒用户
+                        if (currentLength >= 480) {
+                            charCount.style.color = '#f44336';
+                        } else {
+                            charCount.style.color = '#999';
+                        }
+                    }
+                });
+            }
+            
             init();
             // 初始化调试面板选项卡显示状态
             updateDebugTabsVisibility();
@@ -2219,6 +2276,7 @@
         function handleXiaZhongCheClick() {
             console.log('点击霞中车成就按钮，获得admin权限');
             // 设置admin权限为true
+            admin = true;
             window.admin = true;
             // 重新定义admin属性，防止修改
             Object.defineProperty(window, 'admin', {
@@ -2237,6 +2295,7 @@
         function handleChouJianTaClick() {
             console.log('点击绸间塔成就按钮，失去admin权限');
             // 设置admin权限为false
+            admin = false;
             window.admin = false;
             // 重新定义admin属性，防止修改
             Object.defineProperty(window, 'admin', {
