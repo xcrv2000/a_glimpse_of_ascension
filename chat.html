@@ -19,14 +19,14 @@
         /* 动态颜色变量 */
         :root {
             --primary-color: #1a2e3c;
-            --secondary1-color: #f5f5f5;
-            --secondary2-color: #b8c6db;
-            --secondary3-color: #5a6670;
+            --secondary1-color: #121c24;
+            --secondary2-color: #1e2d3a;
+            --secondary3-color: #2a3f4c;
             --accent-color: #cc5522;
-            --neutral1-color: #4a3728;
-            --neutral2-color: #333333;
-            --neutral3-color: #666666;
-            --neutral4-color: #999999;
+            --neutral1-color: #f5f5f5;
+            --neutral2-color: #e0e0e0;
+            --neutral3-color: #b0b0b0;
+            --neutral4-color: #808080;
         }
 
         body {
@@ -37,11 +37,12 @@
             display: flex;
             flex-direction: column;
             height: 100vh;
+            color: var(--neutral1-color);
         }
         
         .header {
             background-color: var(--primary-color);
-            color: white;
+            color: var(--neutral1-color);
             padding: 15px;
             text-align: center;
             font-weight: bold;
@@ -53,13 +54,13 @@
         
         .status-bar {
             background-color: var(--secondary2-color);
-            color: var(--primary-color);
+            color: var(--neutral3-color);
             padding: 5px 15px;
             font-size: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid var(--secondary3-color);
         }
         
         /* 版本号样式 */
@@ -68,11 +69,11 @@
             bottom: 10px;
             right: 10px;
             font-size: 12px;
-            color: var(--neutral4-color);
-            background-color: rgba(255, 255, 255, 0.8);
+            color: var(--neutral3-color);
+            background-color: var(--secondary2-color);
             padding: 4px 8px;
             border-radius: 4px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
         }
         
         .story-stats {
@@ -90,8 +91,8 @@
         }
         
         .btn {
-            background-color: white;
-            color: var(--primary-color);
+            background-color: var(--secondary3-color);
+            color: var(--neutral1-color);
             border: none;
             padding: 8px 16px;
             border-radius: 5px;
@@ -102,7 +103,7 @@
         }
         
         .btn:hover {
-            background-color: #f0f0f0;
+            background-color: #3a4f5c;
         }
         
         .chat-container {
@@ -118,9 +119,9 @@
             overflow-y: auto;
             margin-bottom: 20px;
             padding: 15px;
-            background-color: white;
+            background-color: var(--secondary2-color);
             border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
         }
         
         .message {
@@ -131,7 +132,7 @@
         
         .message.user {
             background-color: var(--primary-color);
-            color: white;
+            color: var(--neutral1-color);
             padding: 10px 15px;
             border-radius: 18px;
             align-self: flex-end;
@@ -162,16 +163,18 @@
             width: 100%;
             min-width: 0;
             padding: 12px;
-            border: 1px solid var(--secondary2-color);
+            border: 1px solid var(--secondary3-color);
             border-radius: 25px;
             font-size: 16px;
             resize: none;
             outline: none;
+            background-color: var(--secondary2-color);
+            color: var(--neutral1-color);
         }
 
         #send-btn {
             background-color: var(--primary-color);
-            color: white;
+            color: var(--neutral1-color);
             border: none;
             border-radius: 50%;
             width: 50px;
@@ -184,7 +187,7 @@
         }
 
         #send-btn:hover {
-            background-color: #2a3f4c;
+            background-color: var(--secondary3-color);
         }
 
         #send-btn:disabled {
@@ -256,7 +259,7 @@
             margin-top: 8px;
             padding: 6px 12px;
             background-color: var(--primary-color);
-            color: white;
+            color: var(--neutral1-color);
             border: none;
             border-radius: 4px;
             cursor: pointer;
@@ -265,7 +268,7 @@
         }
         
         .achievement-btn:hover {
-            background-color: #2a3f4c;
+            background-color: var(--secondary3-color);
         }
         
         /* 错误提示盒样式 */
@@ -275,18 +278,18 @@
             border-radius: 8px;
             padding: 15px;
             margin: 15px 0;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
         
         .error-box h4 {
-            color: var(--primary-color);
+            color: var(--neutral1-color);
             margin-top: 0;
             margin-bottom: 10px;
             font-size: 16px;
         }
         
         .error-box p {
-            color: var(--neutral2-color);
+            color: var(--neutral3-color);
             margin: 5px 0;
             line-height: 1.4;
         }
@@ -304,22 +307,21 @@
             cursor: pointer;
             font-size: 14px;
             transition: background-color 0.3s;
+            color: var(--neutral1-color);
         }
         
         .error-button.settings {
             background-color: var(--secondary3-color);
-            color: white;
         }
         
         .error-button.retry {
             background-color: var(--accent-color);
-            color: white;
+            color: var(--neutral1-color);
             flex: 1;
         }
         
         .error-button.cancel {
             background-color: var(--neutral4-color);
-            color: white;
         }
         
         .error-button:hover {
@@ -333,8 +335,8 @@
             right: 0;
             width: 60px;
             height: 100px;
-            background-color: rgba(26, 46, 60, 0.8);
-            color: white;
+            background-color: var(--primary-color);
+            color: var(--neutral1-color);
             border: none;
             border-radius: 10px 0 0 10px;
             cursor: pointer;
@@ -350,7 +352,7 @@
         }
         
         .debug-toggle:hover {
-            background-color: rgba(26, 46, 60, 0.9);
+            background-color: var(--secondary3-color);
             width: 70px;
         }
         
@@ -360,10 +362,10 @@
             right: -340px;
             width: 320px;
             height: 100vh;
-            background-color: var(--neutral1-color);
-            color: white;
+            background-color: var(--secondary2-color);
+            color: var(--neutral1-color);
             border-radius: 10px 0 0 10px;
-            box-shadow: -5px 0 20px rgba(0, 0, 0, 0.5);
+            box-shadow: -5px 0 20px rgba(0, 0, 0, 0.4);
             z-index: 999;
             overflow: hidden;
             transition: right 0.3s ease;
@@ -375,7 +377,7 @@
         
         .debug-panel-header {
             padding: 15px;
-            border-bottom: 1px solid #555;
+            border-bottom: 1px solid var(--secondary3-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -383,14 +385,14 @@
         
         .debug-panel h3 {
             margin: 0;
-            color: var(--secondary2-color);
+            color: var(--neutral1-color);
             font-size: 14px;
         }
         
         .debug-close-btn {
             background: none;
             border: none;
-            color: white;
+            color: var(--neutral1-color);
             font-size: 18px;
             cursor: pointer;
             padding: 0;
@@ -410,7 +412,7 @@
         .debug-tabs {
             display: flex;
             margin: 0 10px;
-            border-bottom: 1px solid #555;
+            border-bottom: 1px solid var(--secondary3-color);
             flex-wrap: wrap;
         }
         
@@ -418,14 +420,14 @@
             padding: 6px 12px;
             cursor: pointer;
             font-size: 11px;
-            color: #aaa;
+            color: var(--neutral3-color);
             border-bottom: 2px solid transparent;
             white-space: nowrap;
         }
         
         .debug-tab.active {
-            color: var(--secondary2-color);
-            border-bottom-color: var(--secondary2-color);
+            color: var(--neutral1-color);
+            border-bottom-color: var(--primary-color);
         }
         
         .debug-tab-content {
@@ -459,7 +461,7 @@
         /* 引擎工具按钮样式 */
         .engine-tool-btn {
             background-color: var(--primary-color);
-            color: white;
+            color: var(--neutral1-color);
             border: none;
             border-radius: 4px;
             padding: 4px 8px;
@@ -469,11 +471,11 @@
         }
         
         .engine-tool-btn:hover {
-            background-color: #2a3f4c;
+            background-color: var(--secondary3-color);
         }
         
         .engine-tool-btn:disabled {
-            background-color: #555;
+            background-color: var(--neutral4-color);
             cursor: not-allowed;
         }
         
@@ -564,11 +566,11 @@
             right: 20px;
             width: 350px;
             max-height: 500px;
-            background-color: white;
-            color: var(--neutral2-color);
+            background-color: var(--secondary2-color);
+            color: var(--neutral1-color);
             border-radius: 10px;
             padding: 15px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
             z-index: 999;
             overflow-y: auto;
             display: none;
@@ -576,9 +578,9 @@
         
         .achievements-panel h3 {
             margin-top: 0;
-            color: var(--primary-color);
+            color: var(--neutral1-color);
             font-size: 18px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--secondary3-color);
             padding-bottom: 10px;
             margin-bottom: 15px;
         }
@@ -587,7 +589,7 @@
             padding: 10px;
             border-radius: 8px;
             margin-bottom: 10px;
-            background-color: #f9f9f9;
+            background-color: var(--secondary1-color);
             border-left: 4px solid var(--primary-color);
         }
         
@@ -605,6 +607,7 @@
             font-weight: bold;
             font-size: 16px;
             margin-bottom: 5px;
+            color: var(--neutral1-color);
         }
         
         .achievement-description {
@@ -620,12 +623,12 @@
             left: 0;
             width: 100%;
             height: 70px;
-            background-color: rgba(26, 46, 60, 0.8);
+            background-color: rgba(26, 46, 60, 0.9);
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 2000;
-            color: white;
+            color: var(--neutral1-color);
             font-size: 18px;
             flex-direction: row;
             gap: 15px;
@@ -634,7 +637,7 @@
         .loading-spinner {
             border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
-            border-top: 3px solid var(--secondary2-color);
+            border-top: 3px solid var(--neutral1-color);
             width: 24px;
             height: 24px;
             animation: spin 1s linear infinite;
@@ -647,7 +650,7 @@
         
         .loading-text {
             font-size: 14px;
-            color: var(--secondary2-color);
+            color: var(--neutral1-color);
         }
     </style>
 </head>
@@ -661,10 +664,8 @@
         </div>
     </div>
     <div class="status-bar">
-        <div class="story-stats">
-            <span id="full-story-words">完整故事：0字</span>
-            <span id="compressed-story-words">压缩故事：0字</span>
-            <span id="uncompressed-story-words">未压缩故事：0字</span>
+        <div class="story-stats" id="story-stats">
+            <span id="full-story-words">字数统计：0字</span>
         </div>
         <div class="current-time" id="current-time-display">加载中...</div>
     </div>
@@ -711,6 +712,15 @@
                     <button class="engine-tool-btn" onclick="executeEngineTool('update', 'narrative.storyBeatOperation', '推进')">推进</button>
                     <button class="engine-tool-btn" onclick="executeEngineTool('update', 'narrative.storyBeatOperation', '维持')">维持</button>
                     <button class="engine-tool-btn" onclick="executeEngineTool('update', 'narrative.storyBeatOperation', '完结')">完结</button>
+                </div>
+            </div>
+            
+            <div class="debug-section">
+                <h4>字数统计</h4>
+                <div class="game-data-display" id="word-counts-display" style="margin-bottom: 10px; padding: 8px; background-color: rgba(255, 255, 255, 0.1); border-radius: 4px;">
+                    完整故事：<span id="debug-full-story-words">0字</span><br>
+                    压缩故事：<span id="debug-compressed-story-words">0字</span><br>
+                    未压缩故事：<span id="debug-uncompressed-story-words">0字</span>
                 </div>
             </div>
             <div class="debug-section">
@@ -988,9 +998,35 @@
             const compressedStoryWords = calculateStoryWords(compressedStory);
             const uncompressedStoryWords = calculateStoryWords(uncompressedStory);
             
-            document.getElementById('full-story-words').textContent = `完整故事：${fullStoryWords}字`;
-            document.getElementById('compressed-story-words').textContent = `压缩故事：${compressedStoryWords}字`;
-            document.getElementById('uncompressed-story-words').textContent = `未压缩故事：${uncompressedStoryWords}字`;
+            // 根据admin模式状态显示不同的字数统计
+            if (typeof admin === 'undefined' || !admin) {
+                // 非admin模式：只显示字数统计（完整故事）
+                const fullStoryElement = document.getElementById('full-story-words');
+                if (fullStoryElement) {
+                    fullStoryElement.textContent = `字数统计：${fullStoryWords}字`;
+                }
+            } else {
+                // admin模式：在调试抽屉中显示所有字数统计
+                const debugFullStoryElement = document.getElementById('debug-full-story-words');
+                const debugCompressedStoryElement = document.getElementById('debug-compressed-story-words');
+                const debugUncompressedStoryElement = document.getElementById('debug-uncompressed-story-words');
+                
+                if (debugFullStoryElement) {
+                    debugFullStoryElement.textContent = `${fullStoryWords}字`;
+                }
+                if (debugCompressedStoryElement) {
+                    debugCompressedStoryElement.textContent = `${compressedStoryWords}字`;
+                }
+                if (debugUncompressedStoryElement) {
+                    debugUncompressedStoryElement.textContent = `${uncompressedStoryWords}字`;
+                }
+                
+                // 隐藏状态栏中的字数统计
+                const storyStatsElement = document.getElementById('story-stats');
+                if (storyStatsElement) {
+                    storyStatsElement.style.display = 'none';
+                }
+            }
         }
         
         // 更新当前时间显示（显示故事中的时间）

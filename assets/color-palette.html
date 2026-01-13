@@ -7,32 +7,37 @@
     <style>
         body {
             font-family: 'Microsoft YaHei', Arial, sans-serif;
-            background-color: #f5f5f5;
+            background-color: #121c24;
             margin: 0;
             padding: 20px;
+            color: #f5f5f5;
         }
         
         .container {
             max-width: 800px;
             margin: 0 auto;
-            background-color: white;
+            background-color: #1e2d3a;
             border-radius: 10px;
             padding: 30px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
         }
         
         h1 {
-            color: #1a2e3c;
+            color: #f5f5f5;
             text-align: center;
             margin-bottom: 30px;
         }
         
         h2 {
-            color: #333333;
+            color: #e0e0e0;
             margin-top: 30px;
             margin-bottom: 20px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #2a3f4c;
             padding-bottom: 10px;
+        }
+        
+        p {
+            color: #b0b0b0;
         }
         
         .color-palette {
@@ -91,26 +96,26 @@
         
         .color-info {
             padding: 10px;
-            background-color: white;
-            border-top: 1px solid #eee;
+            background-color: #121c24;
+            border-top: 1px solid #2a3f4c;
         }
         
         .color-name {
             font-weight: bold;
-            color: #333333;
+            color: #f5f5f5;
             margin-bottom: 5px;
         }
         
         .color-code {
             font-family: monospace;
-            color: #666666;
+            color: #cc5522;
             font-size: 14px;
             margin-bottom: 5px;
         }
         
         .usage {
             font-size: 12px;
-            color: #999999;
+            color: #b0b0b0;
             margin-top: 5px;
         }
         
@@ -127,7 +132,7 @@
         
         .source-image p {
             margin-top: 10px;
-            color: #666666;
+            color: #b0b0b0;
             font-size: 14px;
         }
         
@@ -213,33 +218,33 @@
         <h2>辅助色</h2>
         <div class="color-palette">
             <div class="color-item">
-                <div class="color-swatch" style="background-color: #f5f5f5;" data-color-name="secondary1">辅助色1</div>
-                <input type="color" class="color-picker" value="#f5f5f5" data-color-name="secondary1">
+                <div class="color-swatch" style="background-color: #121c24;" data-color-name="secondary1">辅助色1</div>
+                <input type="color" class="color-picker" value="#121c24" data-color-name="secondary1">
                 <button class="reset-btn" onclick="resetSingleColor('secondary1')">重置</button>
                 <div class="color-info">
-                    <div class="color-name">雪白色</div>
-                    <div class="color-code" data-color-name="secondary1">#f5f5f5</div>
-                    <div class="usage">用于背景、卡片等</div>
+                    <div class="color-name">深色背景</div>
+                    <div class="color-code" data-color-name="secondary1">#121c24</div>
+                    <div class="usage">用于主页背景、游戏界面背景等大面积区域</div>
                 </div>
             </div>
             <div class="color-item">
-                <div class="color-swatch" style="background-color: #b8c6db;" data-color-name="secondary2">辅助色2</div>
-                <input type="color" class="color-picker" value="#b8c6db" data-color-name="secondary2">
+                <div class="color-swatch" style="background-color: #1e2d3a;" data-color-name="secondary2">辅助色2</div>
+                <input type="color" class="color-picker" value="#1e2d3a" data-color-name="secondary2">
                 <button class="reset-btn" onclick="resetSingleColor('secondary2')">重置</button>
                 <div class="color-info">
-                    <div class="color-name">天空灰色</div>
-                    <div class="color-code" data-color-name="secondary2">#b8c6db</div>
-                    <div class="usage">用于次要背景、分隔线等</div>
+                    <div class="color-name">中深色背景</div>
+                    <div class="color-code" data-color-name="secondary2">#1e2d3a</div>
+                    <div class="usage">用于卡片、输入框等背景</div>
                 </div>
             </div>
             <div class="color-item">
-                <div class="color-swatch" style="background-color: #5a6670;" data-color-name="secondary3">辅助色3</div>
-                <input type="color" class="color-picker" value="#5a6670" data-color-name="secondary3">
+                <div class="color-swatch" style="background-color: #2a3f4c;" data-color-name="secondary3">辅助色3</div>
+                <input type="color" class="color-picker" value="#2a3f4c" data-color-name="secondary3">
                 <button class="reset-btn" onclick="resetSingleColor('secondary3')">重置</button>
                 <div class="color-info">
-                    <div class="color-name">轨道灰色</div>
-                    <div class="color-code" data-color-name="secondary3">#5a6670</div>
-                    <div class="usage">用于次要文本、边框等</div>
+                    <div class="color-name">浅深色背景</div>
+                    <div class="color-code" data-color-name="secondary3">#2a3f4c</div>
+                    <div class="usage">用于悬停状态、边框等</div>
                 </div>
             </div>
         </div>
@@ -261,43 +266,43 @@
         <h2>中性色</h2>
         <div class="color-palette">
             <div class="color-item">
-                <div class="color-swatch" style="background-color: #4a3728;" data-color-name="neutral1">中性色1</div>
-                <input type="color" class="color-picker" value="#4a3728" data-color-name="neutral1">
+                <div class="color-swatch" style="background-color: #f5f5f5;" data-color-name="neutral1">中性色1</div>
+                <input type="color" class="color-picker" value="#f5f5f5" data-color-name="neutral1">
                 <button class="reset-btn" onclick="resetSingleColor('neutral1')">重置</button>
                 <div class="color-info">
-                    <div class="color-name">栅栏暗棕</div>
-                    <div class="color-code" data-color-name="neutral1">#4a3728</div>
-                    <div class="usage">用于深色背景、强调文本等</div>
+                    <div class="color-name">白色</div>
+                    <div class="color-code" data-color-name="neutral1">#f5f5f5</div>
+                    <div class="usage">用于主要文本、标题等</div>
                 </div>
             </div>
             <div class="color-item">
-                <div class="color-swatch" style="background-color: #333333;" data-color-name="neutral2">中性色2</div>
-                <input type="color" class="color-picker" value="#333333" data-color-name="neutral2">
+                <div class="color-swatch" style="background-color: #e0e0e0;" data-color-name="neutral2">中性色2</div>
+                <input type="color" class="color-picker" value="#e0e0e0" data-color-name="neutral2">
                 <button class="reset-btn" onclick="resetSingleColor('neutral2')">重置</button>
                 <div class="color-info">
-                    <div class="color-name">深灰</div>
-                    <div class="color-code" data-color-name="neutral2">#333333</div>
-                    <div class="usage">用于主要文本</div>
-                </div>
-            </div>
-            <div class="color-item">
-                <div class="color-swatch" style="background-color: #666666;" data-color-name="neutral3">中性色3</div>
-                <input type="color" class="color-picker" value="#666666" data-color-name="neutral3">
-                <button class="reset-btn" onclick="resetSingleColor('neutral3')">重置</button>
-                <div class="color-info">
-                    <div class="color-name">中灰</div>
-                    <div class="color-code" data-color-name="neutral3">#666666</div>
+                    <div class="color-name">浅灰</div>
+                    <div class="color-code" data-color-name="neutral2">#e0e0e0</div>
                     <div class="usage">用于次要文本</div>
                 </div>
             </div>
             <div class="color-item">
-                <div class="color-swatch" style="background-color: #999999;" data-color-name="neutral4">中性色4</div>
-                <input type="color" class="color-picker" value="#999999" data-color-name="neutral4">
+                <div class="color-swatch" style="background-color: #b0b0b0;" data-color-name="neutral3">中性色3</div>
+                <input type="color" class="color-picker" value="#b0b0b0" data-color-name="neutral3">
+                <button class="reset-btn" onclick="resetSingleColor('neutral3')">重置</button>
+                <div class="color-info">
+                    <div class="color-name">中灰</div>
+                    <div class="color-code" data-color-name="neutral3">#b0b0b0</div>
+                    <div class="usage">用于辅助文本、提示信息等</div>
+                </div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background-color: #808080;" data-color-name="neutral4">中性色4</div>
+                <input type="color" class="color-picker" value="#808080" data-color-name="neutral4">
                 <button class="reset-btn" onclick="resetSingleColor('neutral4')">重置</button>
                 <div class="color-info">
-                    <div class="color-name">浅灰</div>
-                    <div class="color-code" data-color-name="neutral4">#999999</div>
-                    <div class="usage">用于辅助文本、提示信息等</div>
+                    <div class="color-name">深灰</div>
+                    <div class="color-code" data-color-name="neutral4">#808080</div>
+                    <div class="usage">用于禁用状态、分割线等</div>
                 </div>
             </div>
         </div>
@@ -313,27 +318,27 @@
         // 颜色映射对象
         const colorMap = {
             primary: '#1a2e3c',
-            secondary1: '#f5f5f5',
-            secondary2: '#b8c6db',
-            secondary3: '#5a6670',
+            secondary1: '#121c24',
+            secondary2: '#1e2d3a',
+            secondary3: '#2a3f4c',
             accent: '#cc5522',
-            neutral1: '#4a3728',
-            neutral2: '#333333',
-            neutral3: '#666666',
-            neutral4: '#999999'
+            neutral1: '#f5f5f5',
+            neutral2: '#e0e0e0',
+            neutral3: '#b0b0b0',
+            neutral4: '#808080'
         };
         
         // 默认颜色值
         const defaultColors = {
             primary: '#1a2e3c',
-            secondary1: '#f5f5f5',
-            secondary2: '#b8c6db',
-            secondary3: '#5a6670',
+            secondary1: '#121c24',
+            secondary2: '#1e2d3a',
+            secondary3: '#2a3f4c',
             accent: '#cc5522',
-            neutral1: '#4a3728',
-            neutral2: '#333333',
-            neutral3: '#666666',
-            neutral4: '#999999'
+            neutral1: '#f5f5f5',
+            neutral2: '#e0e0e0',
+            neutral3: '#b0b0b0',
+            neutral4: '#808080'
         };
         
         // 页面加载时初始化颜色选择器事件

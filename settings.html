@@ -8,14 +8,14 @@
         /* 动态颜色变量 */
         :root {
             --primary-color: #1a2e3c;
-            --secondary1-color: #f5f5f5;
-            --secondary2-color: #b8c6db;
-            --secondary3-color: #5a6670;
+            --secondary1-color: #121c24;
+            --secondary2-color: #1e2d3a;
+            --secondary3-color: #2a3f4c;
             --accent-color: #cc5522;
-            --neutral1-color: #4a3728;
-            --neutral2-color: #333333;
-            --neutral3-color: #666666;
-            --neutral4-color: #999999;
+            --neutral1-color: #f5f5f5;
+            --neutral2-color: #e0e0e0;
+            --neutral3-color: #b0b0b0;
+            --neutral4-color: #808080;
         }
         body {
             font-family: 'Microsoft YaHei', Arial, sans-serif;
@@ -25,11 +25,12 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            color: var(--neutral1-color);
         }
         
         .header {
             background-color: var(--primary-color);
-            color: white;
+            color: var(--neutral1-color);
             padding: 15px;
             text-align: center;
             font-weight: bold;
@@ -40,8 +41,8 @@
         }
         
         .btn {
-            background-color: white;
-            color: var(--primary-color);
+            background-color: var(--secondary3-color);
+            color: var(--neutral1-color);
             border: none;
             padding: 8px 16px;
             border-radius: 5px;
@@ -52,7 +53,7 @@
         }
         
         .btn:hover {
-            background-color: #f0f0f0;
+            background-color: #3a4f5c;
         }
         
         .container {
@@ -65,18 +66,18 @@
         }
         
         .section {
-            background-color: white;
+            background-color: var(--secondary2-color);
             border-radius: 10px;
             padding: 20px;
             margin-bottom: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
         }
         
         h2 {
-            color: var(--primary-color);
+            color: var(--neutral1-color);
             margin-top: 0;
             font-size: 20px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--secondary3-color);
             padding-bottom: 10px;
         }
         
@@ -88,31 +89,34 @@
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
-            color: var(--neutral3-color);
+            color: var(--neutral2-color);
         }
         
         .setting-input {
             width: 100%;
             padding: 10px;
-            border: 1px solid var(--secondary2-color);
+            border: 1px solid var(--secondary3-color);
             border-radius: 5px;
             font-size: 16px;
             box-sizing: border-box;
+            background-color: var(--secondary1-color);
+            color: var(--neutral1-color);
         }
         
         .setting-select {
             width: 100%;
             padding: 10px;
-            border: 1px solid var(--secondary2-color);
+            border: 1px solid var(--secondary3-color);
             border-radius: 5px;
             font-size: 16px;
-            background-color: white;
+            background-color: var(--secondary1-color);
+            color: var(--neutral1-color);
             box-sizing: border-box;
         }
         
         .action-btn {
             background-color: var(--primary-color);
-            color: white;
+            color: var(--neutral1-color);
             border: none;
             padding: 10px 20px;
             border-radius: 5px;
@@ -123,7 +127,7 @@
         }
         
         .action-btn:hover {
-            background-color: #2a3f4c;
+            background-color: var(--secondary3-color);
         }
         
         .action-btn.secondary {
@@ -131,7 +135,7 @@
         }
         
         .action-btn.secondary:hover {
-            background-color: #6a7680;
+            background-color: #3a4f5c;
         }
         
         .action-btn.danger {
@@ -171,7 +175,7 @@
             width: 26px;
             left: 4px;
             bottom: 4px;
-            background-color: white;
+            background-color: var(--neutral1-color);
             transition: .4s;
             border-radius: 50%;
         }
@@ -186,6 +190,19 @@
         
         input:checked + .toggle-slider:before {
             transform: translateX(26px);
+        }
+        
+        /* 版本号样式 */
+        .version-info {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            font-size: 12px;
+            color: var(--neutral3-color);
+            background-color: var(--secondary2-color);
+            padding: 4px 8px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
         }
     </style>
 </head>
@@ -248,7 +265,7 @@
                     </label>
                     <span>两阶段模式</span>
                 </div>
-                <small style="color: #666; margin-top: 5px; display: block;">
+        <small style="color: var(--neutral3-color); margin-top: 5px; display: block;">
                     简略模式：传统的单阶段交互，提示词包含引擎调用信息<br>
                     两阶段模式：新的两阶段交互，叙事与引擎调用分离
                 </small>
