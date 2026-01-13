@@ -103,6 +103,13 @@
             color: var(--neutral1-color);
         }
         
+        .setting-input[type="password"] {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
         .setting-select {
             width: 100%;
             padding: 10px;
@@ -463,8 +470,8 @@
                 if (promptModeToggle) {
                     promptModeToggle.checked = true; // true表示两阶段模式
                 }
-                // 不显示默认API密钥，保持密码字段为空
-                document.getElementById('api-key').value = '';
+                // 设置默认API密钥
+                document.getElementById('api-key').value = 'sk-dbb1ecc67a704d93b803f3c1d74626b9';
             }
         }
         
@@ -523,6 +530,27 @@
 
         // 页面加载时加载设置
         window.addEventListener('load', loadSettings);
+        
+        // 阻止API密钥输入框的复制操作
+        window.addEventListener('load', function() {
+            const apiKeyInput = document.getElementById('api-key');
+            if (apiKeyInput) {
+                // 阻止复制
+                apiKeyInput.addEventListener('copy', function(e) {
+                    e.preventDefault();
+                });
+                
+                // 阻止剪切
+                apiKeyInput.addEventListener('cut', function(e) {
+                    e.preventDefault();
+                });
+                
+                // 阻止右键菜单
+                apiKeyInput.addEventListener('contextmenu', function(e) {
+                    e.preventDefault();
+                });
+            }
+        });
     </script>
     
     <script>

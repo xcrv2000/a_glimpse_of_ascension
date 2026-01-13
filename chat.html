@@ -356,7 +356,7 @@
             right: 0;
             width: 60px;
             height: 100px;
-            background-color: var(--primary-color);
+            background-color: var(--accent-color);
             color: var(--neutral1-color);
             border: none;
             border-radius: 10px 0 0 10px;
@@ -373,7 +373,8 @@
         }
         
         .debug-toggle:hover {
-            background-color: var(--secondary3-color);
+            background-color: var(--accent-color);
+            opacity: 0.8;
             width: 70px;
         }
         
@@ -383,7 +384,7 @@
             right: -340px;
             width: 320px;
             height: 100vh;
-            background-color: var(--secondary2-color);
+            background-color: var(--neutral2-color);
             color: var(--neutral1-color);
             border-radius: 10px 0 0 10px;
             box-shadow: -5px 0 20px rgba(0, 0, 0, 0.4);
@@ -398,7 +399,7 @@
         
         .debug-panel-header {
             padding: 15px;
-            border-bottom: 1px solid var(--secondary3-color);
+            border-bottom: 1px solid var(--neutral3-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -433,7 +434,7 @@
         .debug-tabs {
             display: flex;
             margin: 0 10px;
-            border-bottom: 1px solid var(--secondary3-color);
+            border-bottom: 1px solid var(--neutral3-color);
             flex-wrap: wrap;
         }
         
@@ -448,7 +449,7 @@
         
         .debug-tab.active {
             color: var(--neutral1-color);
-            border-bottom-color: var(--primary-color);
+            border-bottom-color: var(--accent-color);
         }
         
         .debug-tab-content {
@@ -464,11 +465,11 @@
         .debug-section h4 {
             margin: 0 0 5px 0;
             font-size: 12px;
-            color: #aaa;
+            color: var(--neutral3-color);
         }
         
         .debug-content {
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: var(--neutral3-color);
             border-radius: 5px;
             padding: 8px;
             font-size: 11px;
@@ -481,7 +482,7 @@
         
         /* 引擎工具按钮样式 */
         .engine-tool-btn {
-            background-color: var(--primary-color);
+            background-color: var(--neutral3-color);
             color: var(--neutral1-color);
             border: none;
             border-radius: 4px;
@@ -492,7 +493,7 @@
         }
         
         .engine-tool-btn:hover {
-            background-color: var(--secondary3-color);
+            background-color: var(--neutral4-color);
         }
         
         .engine-tool-btn:disabled {
@@ -504,7 +505,7 @@
             position: fixed;
             top: 90px;
             left: 20px;
-            background-color: var(--primary-color);
+            background-color: var(--accent-color);
             color: white;
             border: none;
             border-radius: 5px;

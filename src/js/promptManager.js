@@ -6,7 +6,9 @@ class PromptManager {
             const settings = localStorage.getItem('gameSettings');
             if (settings) {
                 const parsedSettings = JSON.parse(settings);
-                return parsedSettings.promptMode || 'twoPhase'; // 默认两阶段模式
+                const mode = parsedSettings.promptMode;
+                // 只有当明确设置为'simplified'时才使用简略模式，否则默认使用两阶段模式
+                return mode === 'simplified' ? 'simplified' : 'twoPhase';
             }
             return 'twoPhase';
         } catch (error) {
