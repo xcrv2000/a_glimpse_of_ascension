@@ -61,13 +61,15 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid var(--secondary3-color);
+            position: relative;
         }
         
         /* 版本号样式 */
         .version-info {
-            position: fixed;
-            top: 10px;
+            position: absolute;
+            top: 50%;
             right: 10px;
+            transform: translateY(-50%);
             font-size: 12px;
             color: var(--neutral3-color);
             background-color: var(--secondary2-color);
@@ -1282,6 +1284,14 @@
             if (messagesContainer) {
                 messagesContainer.appendChild(messageDiv);
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+            
+            // 如果是用户消息，隐藏版本号
+            if (isUser) {
+                const versionInfo = document.querySelector('.version-info');
+                if (versionInfo) {
+                    versionInfo.style.display = 'none';
+                }
             }
             
             // 计算消息字数
