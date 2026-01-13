@@ -41,7 +41,7 @@
         }
         
         .header {
-            background-color: var(--primary-color);
+            background-color: var(--secondary1-color);
             color: var(--neutral1-color);
             padding: 15px;
             text-align: center;
@@ -66,7 +66,7 @@
         /* 版本号样式 */
         .version-info {
             position: fixed;
-            bottom: 10px;
+            top: 10px;
             right: 10px;
             font-size: 12px;
             color: var(--neutral3-color);
@@ -74,6 +74,7 @@
             padding: 4px 8px;
             border-radius: 4px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            z-index: 100;
         }
         
         .story-stats {
@@ -149,20 +150,25 @@
         
         .input-area {
             display: flex;
+            align-items: flex-end;
             gap: 10px;
             width: 100%;
             min-width: 0;
+            box-sizing: border-box;
         }
 
         .input-area > div {
             flex: 1;
             min-width: 0;
+            position: relative;
         }
 
         #message-input {
             width: 100%;
             min-width: 0;
-            padding: 12px;
+            min-height: 40px;
+            max-height: 120px;
+            padding: 12px 40px 12px 15px;
             border: 1px solid var(--secondary3-color);
             border-radius: 25px;
             font-size: 16px;
@@ -170,6 +176,15 @@
             outline: none;
             background-color: var(--secondary2-color);
             color: var(--neutral1-color);
+            box-sizing: border-box;
+        }
+
+        #char-count {
+            position: absolute;
+            bottom: 8px;
+            right: 10px;
+            font-size: 12px;
+            color: var(--neutral4-color);
         }
 
         #send-btn {
@@ -177,13 +192,14 @@
             color: var(--neutral1-color);
             border: none;
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            font-size: 20px;
+            width: 45px;
+            height: 45px;
+            font-size: 18px;
             cursor: pointer;
             display: flex;
             justify-content: center;
             align-items: center;
+            flex-shrink: 0;
         }
 
         #send-btn:hover {

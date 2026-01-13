@@ -181,7 +181,7 @@
         }
         
         input:checked + .toggle-slider {
-            background-color: var(--primary-color);
+            background-color: var(--accent-color);
         }
         
         input:focus + .toggle-slider {
@@ -258,12 +258,12 @@
             <div class="setting-group">
                 <label class="setting-label" for="prompt-mode">模式选择</label>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <span>简略模式</span>
+                    <span>两阶段模式</span>
                     <label class="toggle-switch">
                         <input type="checkbox" id="prompt-mode">
                         <span class="toggle-slider"></span>
                     </label>
-                    <span>两阶段模式</span>
+                    <span>简略模式</span>
                 </div>
         <small style="color: var(--neutral3-color); margin-top: 5px; display: block;">
                     简略模式：传统的单阶段交互，提示词包含引擎调用信息<br>
@@ -455,14 +455,14 @@
                 // 加载提示词模式设置
                 const promptModeToggle = document.getElementById('prompt-mode');
                 if (promptModeToggle) {
-                    // 简略模式为true，两阶段模式为false
-                    promptModeToggle.checked = settings.promptMode === 'simplified';
+                    // 两阶段模式为true，简略模式为false
+                    promptModeToggle.checked = settings.promptMode === 'twoPhase';
                 }
             } else {
                 // 没有保存的设置，默认选择两阶段模式
                 const promptModeToggle = document.getElementById('prompt-mode');
                 if (promptModeToggle) {
-                    promptModeToggle.checked = false; // false表示两阶段模式
+                    promptModeToggle.checked = true; // true表示两阶段模式
                 }
                 // 不显示默认API密钥，保持密码字段为空
                 document.getElementById('api-key').value = '';
@@ -473,7 +473,7 @@
         function saveSettings() {
             // 获取提示词模式设置
             const promptModeToggle = document.getElementById('prompt-mode');
-            const promptMode = promptModeToggle.checked ? 'simplified' : 'twoPhase';
+            const promptMode = promptModeToggle.checked ? 'twoPhase' : 'simplified';
             
             // 获取AI服务商和模型选择
             const aiProviderSelect = document.getElementById('ai-provider');
