@@ -37,10 +37,10 @@ class DebugPanel {
     }
 
     togglePanel() {
-        if (this.panel.style.display === 'none') {
-            this.panel.style.display = 'block';
+        if (this.panel.classList.contains('open')) {
+            this.panel.classList.remove('open');
         } else {
-            this.panel.style.display = 'none';
+            this.panel.classList.add('open');
         }
     }
 

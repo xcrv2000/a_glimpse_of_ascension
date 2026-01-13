@@ -189,14 +189,17 @@
             <h2>AI模型配置</h2>
             <div class="setting-group">
                 <label class="setting-label" for="ai-model">AI模型</label>
-                <select class="setting-select" id="ai-model" disabled>
+                <select class="setting-select" id="ai-model">
                     <option value="deepseek" selected>DeepSeek</option>
+                    <option value="openai">OpenAI</option>
+                    <option value="anthropic">Anthropic</option>
+                    <option value="google">Google</option>
                 </select>
             </div>
             
             <div class="setting-group">
                 <label class="setting-label" for="api-key">API密钥</label>
-                <input type="password" class="setting-input" id="api-key" placeholder="输入DeepSeek API密钥...">
+                <input type="password" class="setting-input" id="api-key" placeholder="输入API密钥...">
             </div>
             
             <button class="action-btn" onclick="saveSettings()">保存设置</button>
@@ -277,6 +280,11 @@
                 if (settings.apiKey) {
                     document.getElementById('api-key').value = settings.apiKey;
                 }
+                // 加载AI模型选择
+                const aiModelSelect = document.getElementById('ai-model');
+                if (aiModelSelect && settings.aiModel) {
+                    aiModelSelect.value = settings.aiModel;
+                }
                 // 加载提示词模式设置
                 const promptModeToggle = document.getElementById('prompt-mode');
                 if (promptModeToggle) {
@@ -300,9 +308,13 @@
             const promptModeToggle = document.getElementById('prompt-mode');
             const promptMode = promptModeToggle.checked ? 'simplified' : 'twoPhase';
             
+            // 获取AI模型选择
+            const aiModelSelect = document.getElementById('ai-model');
+            const aiModel = aiModelSelect.value;
+            
             // 将API密钥保存到本地存储
             const settings = {
-                aiModel: "deepseek",
+                aiModel: aiModel,
                 apiKey: document.getElementById('api-key').value,
                 promptMode: promptMode
             };

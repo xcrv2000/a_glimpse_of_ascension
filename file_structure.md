@@ -7,6 +7,7 @@ a_glimpse_of_ascension/
 ├── index.html           # 首页
 ├── chat.html            # 游戏聊天页面
 ├── settings.html        # 设置页面
+├── assets/              # 美术资产文件夹（图标、背景图等）
 ├── src/                 # 存放源代码
 │   ├── js/              # JavaScript文件
 │   │   ├── engine.js               # 游戏引擎核心

@@ -69,8 +69,35 @@ class PromptBuilder_Storyteller {
         return fullSystemPrompt;
     }
     
+    // 获取服务商配置
+    static getProviderConfig(aiModel) {
+        const configs = {
+            deepseek: {
+                endpoint: 'https://api.deepseek.com/v1/chat/completions',
+                defaultModel: 'deepseek-chat',
+                defaultApiKey: 'sk-13cf1d781bca49d49cd15136a4859607'
+            },
+            openai: {
+                endpoint: 'https://api.openai.com/v1/chat/completions',
+                defaultModel: 'gpt-4',
+                defaultApiKey: ''
+            },
+            anthropic: {
+                endpoint: 'https://api.anthropic.com/v1/messages',
+                defaultModel: 'claude-3-opus-20240229',
+                defaultApiKey: ''
+            },
+            google: {
+                endpoint: 'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent',
+                defaultModel: 'gemini-pro',
+                defaultApiKey: ''
+            }
+        };
+        return configs[aiModel] || configs.deepseek;
+    }
+
     // 准备API请求数据 - 第一阶段
-    static prepareRequestData(apiKey, userMessage, compressedStory, uncompressedStory, latestUserMessage) {
+    static prepareRequestData(apiKey, userMessage, compressedStory, uncompressedStory, latestUserMessage, aiModel = 'deepseek') {
         // 加载提示词
         return this.loadPrompts().then(prompts => {
             // 拼装系统提示词
@@ -139,50 +166,106 @@ class PromptBuilder_Storyteller {
                 });
             }
             
+            // 获取服务商配置
+            const providerConfig = this.getProviderConfig(aiModel);
+            
             // 准备最终的请求数据
-            const requestData = {
-                model: 'deepseek-chat',
-                messages: messages,
-                temperature: 0.7,
-                max_tokens: 8192
-            };
+            let requestData;
+            if (aiModel === 'google') {
+                // Google Gemini 格式
+                requestData = {
+                    contents: messages.map(msg => ({
+                        role: msg.role,
+                        parts: [{ text: msg.content }]
+                    })),
+                    generationConfig: {
+                        temperature: 0.7,
+                        maxOutputTokens: 8192
+                    }
+                };
+            } else if (aiModel === 'anthropic') {
+                // Anthropic Claude 格式
+                requestData = {
+                    model: providerConfig.defaultModel,
+                    messages: messages,
+                    temperature: 0.7,
+                    max_tokens: 8192
+                };
+            } else {
+                // OpenAI 和 DeepSeek 格式
+                requestData = {
+                    model: providerConfig.defaultModel,
+                    messages: messages,
+                    temperature: 0.7,
+                    max_tokens: 8192
+                };
+            }
             
             // 调试日志：输出发送给AI的完整请求数据
-            console.log('发送给DeepSeek API的数据（故事讲述者）:', JSON.stringify(requestData, null, 2));
+            console.log(`发送给${aiModel} API的数据（故事讲述者）:`, JSON.stringify(requestData, null, 2));
             console.log('API调用上下文：系统提示词长度:', (fullSystemPrompt || '').length, '压缩故事数:', compressedStory.length, '未压缩故事数:', uncompressedStory.length);
             
             return {
                 requestData,
-                apiKey
+                apiKey,
+                aiModel,
+                providerConfig
             };
         });
     }
     
     // 发送API请求
-    static async sendApiRequest(requestData, apiKey) {
-        // 如果没有提供API密钥，使用默认值
-        if (!apiKey) {
-            apiKey = 'sk-13cf1d781bca49d49cd15136a4859607';
+    static async sendApiRequest(requestData, apiKey, aiModel = 'deepseek', providerConfig = null) {
+        // 获取服务商配置
+        if (!providerConfig) {
+            providerConfig = this.getProviderConfig(aiModel);
         }
         
-        // 发送请求到DeepSeek API
-        const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+        // 如果没有提供API密钥，使用默认值
+        if (!apiKey) {
+            apiKey = providerConfig.defaultApiKey;
+        }
+        
+        // 准备请求配置
+        const requestConfig = {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify(requestData)
-        });
+        };
+        
+        // 对于Google Gemini，使用不同的认证头
+        if (aiModel === 'google') {
+            requestConfig.headers = {
+                'Content-Type': 'application/json'
+            };
+            requestConfig.body = JSON.stringify(requestData);
+            // Google API密钥作为查询参数
+            providerConfig.endpoint += `?key=${apiKey}`;
+        }
+        
+        // 对于Anthropic，使用正确的认证头
+        if (aiModel === 'anthropic') {
+            requestConfig.headers = {
+                'Content-Type': 'application/json',
+                'x-api-key': apiKey,
+                'anthropic-version': '2023-06-01'
+            };
+        }
+        
+        // 发送请求到API
+        const response = await fetch(providerConfig.endpoint, requestConfig);
         
         // 调试日志：输出API响应状态
-        console.log('DeepSeek API响应状态:', response.status, response.statusText);
+        console.log(`${aiModel} API响应状态:`, response.status, response.statusText);
         
         // 获取响应数据，无论成功或失败
         let responseData;
         try {
             responseData = await response.json();
-            console.log('DeepSeek API响应数据:', JSON.stringify(responseData, null, 2));
+            console.log(`${aiModel} API响应数据:`, JSON.stringify(responseData, null, 2));
         } catch (parseError) {
             console.error('解析API响应失败:', parseError);
             responseData = null;
@@ -190,19 +273,41 @@ class PromptBuilder_Storyteller {
         
         if (!response.ok) {
             // 提供更详细的错误信息
-            const errorMessage = responseData && responseData.error 
-                ? `${response.status} ${response.statusText}: ${responseData.error.message}`
-                : `API请求失败: ${response.status} ${response.statusText}`;
+            let errorMessage;
+            if (responseData && responseData.error) {
+                if (typeof responseData.error === 'string') {
+                    errorMessage = `${response.status} ${response.statusText}: ${responseData.error}`;
+                } else if (responseData.error.message) {
+                    errorMessage = `${response.status} ${response.statusText}: ${responseData.error.message}`;
+                } else {
+                    errorMessage = `${response.status} ${response.statusText}: ${JSON.stringify(responseData.error)}`;
+                }
+            } else {
+                errorMessage = `API请求失败: ${response.status} ${response.statusText}`;
+            }
             
             // 检查是否是余额不足错误
-            if (responseData && responseData.error && responseData.error.message && responseData.error.message.includes('余额不足')) {
-                throw new Error(`API余额不足，请在设置页面配置您自己的DeepSeek API密钥: ${errorMessage}`);
+            if (responseData && responseData.error && 
+                ((typeof responseData.error === 'string' && responseData.error.includes('余额不足')) ||
+                 (responseData.error.message && responseData.error.message.includes('余额不足')))) {
+                throw new Error(`API余额不足，请在设置页面配置您自己的${aiModel} API密钥: ${errorMessage}`);
             }
             
             throw new Error(errorMessage);
         }
         
-        const content = responseData.choices[0].message.content;
+        // 提取响应内容，根据不同服务商的格式
+        let content;
+        if (aiModel === 'google') {
+            // Google Gemini 格式
+            content = responseData.candidates[0].content.parts[0].text;
+        } else if (aiModel === 'anthropic') {
+            // Anthropic Claude 格式
+            content = responseData.content[0].text;
+        } else {
+            // OpenAI 和 DeepSeek 格式
+            content = responseData.choices[0].message.content;
+        }
         
         // 解析响应，提取故事和秘密信息
         return this.parseResponse(content);
