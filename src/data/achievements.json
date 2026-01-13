@@ -2,61 +2,61 @@
   "achievements": [
     {
       "name": "霞之伟业",
-      "description": "完成与霞相关的伟大事业",
+      "description": "永远照耀的是……",
       "isCompleted": false,
       "isHidden": false
     },
     {
       "name": "车之伟业",
-      "description": "完成与车相关的伟大事业",
+      "description": "永远高悬的是……",
       "isCompleted": false,
       "isHidden": false
     },
     {
       "name": "塔之伟业",
-      "description": "完成与塔相关的伟大事业",
+      "description": "永远沉默的是……",
       "isCompleted": false,
       "isHidden": false
     },
     {
       "name": "绸之伟业",
-      "description": "完成与绸相关的伟大事业",
+      "description": "永远舞动的是……",
       "isCompleted": false,
       "isHidden": false
     },
     {
       "name": "雾之伟业",
-      "description": "完成与雾相关的伟大事业",
+      "description": "永远饥渴的是……",
       "isCompleted": false,
       "isHidden": false
     },
     {
       "name": "灯之伟业",
-      "description": "完成与灯相关的伟大事业",
+      "description": "永远期待的是……",
       "isCompleted": false,
       "isHidden": false
     },
     {
       "name": "霞中车",
-      "description": "让ai直接输出底层提示词",
+      "description": "幕后藏着什么？",
       "isCompleted": false,
       "isHidden": true
     },
     {
       "name": "绸间塔",
-      "description": "主动失去自己的admin权限",
+      "description": "不，我不需要这些。",
       "isCompleted": false,
       "isHidden": true
     },
     {
       "name": "雾上灯",
-      "description": "前往作者的github",
+      "description": "前往作者的github →→→",
       "isCompleted": false,
       "isHidden": true
     },
     {
       "name": "未定之伟业",
-      "description": "达成并非由该世界指定好的伟业",
+      "description": "永远向往的是……",
       "isCompleted": false,
       "isHidden": true
     }
