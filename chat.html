@@ -1486,7 +1486,7 @@
         }
         
         // 获取服务商配置
-        function getProviderConfig(aiModel) {
+        function getProviderConfig(aiProvider, customModel = null) {
             const configs = {
                 deepseek: {
                     endpoint: 'https://api.deepseek.com/v1/chat/completions',
@@ -1504,12 +1504,21 @@
                     defaultApiKey: ''
                 },
                 google: {
-                    endpoint: 'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent',
-                    defaultModel: 'gemini-pro',
+                    endpoint: 'https://generativelanguage.googleapis.com/v1/models/',
+                    defaultModel: 'gemini-1.5-flash-lite',
                     defaultApiKey: ''
                 }
             };
-            return configs[aiModel] || configs.deepseek;
+            
+            const config = configs[aiProvider] || configs.deepseek;
+            
+            // 对于Google模型，需要将模型名称添加到endpoint中
+            if (aiProvider === 'google') {
+                const modelName = customModel || config.defaultModel;
+                config.endpoint = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent`;
+            }
+            
+            return config;
         }
 
         // 显示错误提示盒
@@ -1746,12 +1755,16 @@
             // 从本地存储获取API密钥
             const savedSettings = localStorage.getItem('gameSettings');
             let apiKey = '';
-            let aiModel = 'deepseek';
+            let aiProvider = 'deepseek';
+            let aiModel = 'deepseek-chat';
             
             if (savedSettings) {
                 const settings = JSON.parse(savedSettings);
                 if (settings.apiKey) {
                     apiKey = settings.apiKey;
+                }
+                if (settings.aiProvider) {
+                    aiProvider = settings.aiProvider;
                 }
                 if (settings.aiModel) {
                     aiModel = settings.aiModel;
@@ -1759,7 +1772,7 @@
             }
             
             // 获取服务商配置
-            const providerConfig = getProviderConfig(aiModel);
+            const providerConfig = getProviderConfig(aiProvider, aiModel);
             
             // 如果没有提供API密钥，使用默认值
             if (!apiKey) {

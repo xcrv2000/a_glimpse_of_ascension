@@ -188,12 +188,19 @@
         <div class="section">
             <h2>AI模型配置</h2>
             <div class="setting-group">
-                <label class="setting-label" for="ai-model">AI模型</label>
-                <select class="setting-select" id="ai-model">
+                <label class="setting-label" for="ai-provider">AI服务商</label>
+                <select class="setting-select" id="ai-provider" onchange="updateModelOptions()">
                     <option value="deepseek" selected>DeepSeek</option>
                     <option value="openai">OpenAI</option>
                     <option value="anthropic">Anthropic</option>
                     <option value="google">Google</option>
+                </select>
+            </div>
+            
+            <div class="setting-group">
+                <label class="setting-label" for="ai-model">模型选择</label>
+                <select class="setting-select" id="ai-model">
+                    <!-- 模型选项将通过JavaScript动态生成 -->
                 </select>
             </div>
             
@@ -236,6 +243,68 @@
     </div>
     
     <script>
+        // 模型配置
+        const modelConfig = {
+            'deepseek': {
+                models: [
+                    { value: 'deepseek-chat', name: 'DeepSeek Chat' },
+                    { value: 'deepseek-llm-7b-chat', name: 'DeepSeek LLM 7B' },
+                    { value: 'deepseek-llm-16b-chat', name: 'DeepSeek LLM 16B' }
+                ],
+                defaultModel: 'deepseek-chat'
+            },
+            'openai': {
+                models: [
+                    { value: 'gpt-4', name: 'GPT-4' },
+                    { value: 'gpt-4-turbo', name: 'GPT-4 Turbo' },
+                    { value: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo' },
+                    { value: 'gpt-4o', name: 'GPT-4o' }
+                ],
+                defaultModel: 'gpt-4'
+            },
+            'anthropic': {
+                models: [
+                    { value: 'claude-3-opus-20240229', name: 'Claude 3 Opus' },
+                    { value: 'claude-3-sonnet-20240229', name: 'Claude 3 Sonnet' },
+                    { value: 'claude-3-haiku-20240307', name: 'Claude 3 Haiku' },
+                    { value: 'claude-2.1', name: 'Claude 2.1' }
+                ],
+                defaultModel: 'claude-3-opus-20240229'
+            },
+            'google': {
+                models: [
+                    { value: 'gemini-1.5-flash-lite', name: 'Gemini 1.5 Flash Lite' },
+                    { value: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash' },
+                    { value: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro' },
+                    { value: 'gemini-1.0-pro', name: 'Gemini 1.0 Pro' }
+                ],
+                defaultModel: 'gemini-1.5-flash-lite'
+            }
+        };
+        
+        // 更新模型选项
+        function updateModelOptions() {
+            const providerSelect = document.getElementById('ai-provider');
+            const modelSelect = document.getElementById('ai-model');
+            const selectedProvider = providerSelect.value;
+            
+            // 清空现有选项
+            modelSelect.innerHTML = '';
+            
+            // 添加新选项
+            if (modelConfig[selectedProvider]) {
+                modelConfig[selectedProvider].models.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model.value;
+                    option.textContent = model.name;
+                    modelSelect.appendChild(option);
+                });
+                
+                // 设置默认值
+                modelSelect.value = modelConfig[selectedProvider].defaultModel;
+            }
+        }
+        
         // 返回上一页
         function goBack() {
             window.history.back();
@@ -273,6 +342,9 @@
         
         // 加载设置
         function loadSettings() {
+            // 先初始化模型选项
+            updateModelOptions();
+            
             // 从本地存储加载API密钥
             const savedSettings = localStorage.getItem('gameSettings');
             if (savedSettings) {
@@ -280,10 +352,17 @@
                 if (settings.apiKey) {
                     document.getElementById('api-key').value = settings.apiKey;
                 }
-                // 加载AI模型选择
-                const aiModelSelect = document.getElementById('ai-model');
-                if (aiModelSelect && settings.aiModel) {
-                    aiModelSelect.value = settings.aiModel;
+                // 加载AI服务商选择
+                const aiProviderSelect = document.getElementById('ai-provider');
+                if (aiProviderSelect && settings.aiProvider) {
+                    aiProviderSelect.value = settings.aiProvider;
+                    // 更新模型选项
+                    updateModelOptions();
+                    // 加载模型选择
+                    const aiModelSelect = document.getElementById('ai-model');
+                    if (aiModelSelect && settings.aiModel) {
+                        aiModelSelect.value = settings.aiModel;
+                    }
                 }
                 // 加载提示词模式设置
                 const promptModeToggle = document.getElementById('prompt-mode');
@@ -308,12 +387,15 @@
             const promptModeToggle = document.getElementById('prompt-mode');
             const promptMode = promptModeToggle.checked ? 'simplified' : 'twoPhase';
             
-            // 获取AI模型选择
+            // 获取AI服务商和模型选择
+            const aiProviderSelect = document.getElementById('ai-provider');
             const aiModelSelect = document.getElementById('ai-model');
+            const aiProvider = aiProviderSelect.value;
             const aiModel = aiModelSelect.value;
             
             // 将API密钥保存到本地存储
             const settings = {
+                aiProvider: aiProvider,
                 aiModel: aiModel,
                 apiKey: document.getElementById('api-key').value,
                 promptMode: promptMode

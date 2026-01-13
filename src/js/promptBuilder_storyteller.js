@@ -70,31 +70,40 @@ class PromptBuilder_Storyteller {
     }
     
     // 获取服务商配置
-    static getProviderConfig(aiModel) {
-        const configs = {
-            deepseek: {
-                endpoint: 'https://api.deepseek.com/v1/chat/completions',
-                defaultModel: 'deepseek-chat',
-                defaultApiKey: 'sk-13cf1d781bca49d49cd15136a4859607'
-            },
-            openai: {
-                endpoint: 'https://api.openai.com/v1/chat/completions',
-                defaultModel: 'gpt-4',
-                defaultApiKey: ''
-            },
-            anthropic: {
-                endpoint: 'https://api.anthropic.com/v1/messages',
-                defaultModel: 'claude-3-opus-20240229',
-                defaultApiKey: ''
-            },
-            google: {
-                endpoint: 'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent',
-                defaultModel: 'gemini-pro',
-                defaultApiKey: ''
+        static getProviderConfig(aiProvider, customModel = null) {
+            const configs = {
+                deepseek: {
+                    endpoint: 'https://api.deepseek.com/v1/chat/completions',
+                    defaultModel: 'deepseek-chat',
+                    defaultApiKey: 'sk-13cf1d781bca49d49cd15136a4859607'
+                },
+                openai: {
+                    endpoint: 'https://api.openai.com/v1/chat/completions',
+                    defaultModel: 'gpt-4',
+                    defaultApiKey: ''
+                },
+                anthropic: {
+                    endpoint: 'https://api.anthropic.com/v1/messages',
+                    defaultModel: 'claude-3-opus-20240229',
+                    defaultApiKey: ''
+                },
+                google: {
+                    endpoint: 'https://generativelanguage.googleapis.com/v1/models/',
+                    defaultModel: 'gemini-1.5-flash-lite',
+                    defaultApiKey: ''
+                }
+            };
+            
+            const config = configs[aiProvider] || configs.deepseek;
+            
+            // 对于Google模型，需要将模型名称添加到endpoint中
+            if (aiProvider === 'google') {
+                const modelName = customModel || config.defaultModel;
+                config.endpoint = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent`;
             }
-        };
-        return configs[aiModel] || configs.deepseek;
-    }
+            
+            return config;
+        }
 
     // 准备API请求数据 - 第一阶段
     static prepareRequestData(apiKey, userMessage, compressedStory, uncompressedStory, latestUserMessage, aiModel = 'deepseek') {

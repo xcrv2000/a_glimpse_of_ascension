@@ -72,10 +72,10 @@ class PromptBuilder_Recorder {
                 defaultApiKey: ''
             },
             google: {
-                endpoint: 'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent',
-                defaultModel: 'gemini-pro',
-                defaultApiKey: ''
-            }
+                    endpoint: 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-lite:generateContent',
+                    defaultModel: 'gemini-1.5-flash-lite',
+                    defaultApiKey: ''
+                }
         };
         return configs[aiModel] || configs.deepseek;
     }
