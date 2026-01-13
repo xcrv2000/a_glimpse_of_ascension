@@ -6,9 +6,21 @@
     <title>擢升一瞥 - 欢迎页面</title>
     <script src="src/js/storyStorage.js"></script>
     <style>
+        /* 动态颜色变量 */
+        :root {
+            --primary-color: #1a2e3c;
+            --secondary1-color: #f5f5f5;
+            --secondary2-color: #b8c6db;
+            --secondary3-color: #5a6670;
+            --accent-color: #cc5522;
+            --neutral1-color: #4a3728;
+            --neutral2-color: #333333;
+            --neutral3-color: #666666;
+            --neutral4-color: #999999;
+        }
         body {
             font-family: 'Microsoft YaHei', Arial, sans-serif;
-            background-color: #f0f2f5;
+            background-color: var(--secondary1-color);
             margin: 0;
             padding: 0;
             display: flex;
@@ -28,12 +40,12 @@
         }
         
         h1 {
-            color: #333;
+            color: var(--primary-color);
             margin-bottom: 20px;
         }
         
         p {
-            color: #666;
+            color: var(--neutral3-color);
             margin-bottom: 30px;
             line-height: 1.6;
         }
@@ -46,7 +58,7 @@
             font-weight: bold;
             text-decoration: none;
             color: white;
-            background-color: #4CAF50;
+            background-color: var(--primary-color);
             border: none;
             border-radius: 5px;
             cursor: pointer;
@@ -54,23 +66,24 @@
         }
         
         .btn:hover {
-            background-color: #45a049;
+            background-color: #2a3f4c;
         }
         
         .btn-secondary {
-            background-color: #2196F3;
+            background-color: var(--secondary3-color);
         }
         
         .btn-secondary:hover {
-            background-color: #0b7dda;
+            background-color: #6a7680;
         }
         
         .btn-continue {
-            background-color: #ff9800;
+            background-color: var(--accent-color);
+            color: white;
         }
         
         .btn-continue:hover {
-            background-color: #f57c00;
+            background-color: #b84a1e;
         }
         
         /* 版本号样式 */
@@ -79,7 +92,7 @@
             bottom: 10px;
             right: 10px;
             font-size: 12px;
-            color: #999;
+            color: var(--neutral4-color);
             background-color: rgba(255, 255, 255, 0.8);
             padding: 4px 8px;
             border-radius: 4px;
@@ -163,20 +176,22 @@
             font-size: 16px;
         }
         
+
         .modal-btn.cancel {
-            background-color: #ccc;
-            color: black;
+            background-color: var(--neutral4-color);
+            color: white;
         }
         
         .modal-btn.export {
-            background-color: #2196F3;
+            background-color: var(--primary-color);
             color: white;
         }
         
         .modal-btn.delete {
-            background-color: #f44336;
+            background-color: var(--accent-color);
             color: white;
         }
+
         
         .modal-btn:hover {
             opacity: 0.8;
@@ -344,6 +359,35 @@
         
         // 页面加载完成后检查
         window.addEventListener('load', checkForUnfinishedStory);
+    </script>
+    
+    <script>
+        // 从localStorage加载颜色设置
+        function loadColors() {
+            try {
+                const savedColors = localStorage.getItem('gameColors');
+                if (savedColors) {
+                    const colors = JSON.parse(savedColors);
+                    const root = document.documentElement;
+                    
+                    // 更新CSS变量
+                    root.style.setProperty('--primary-color', colors.primary || '#1a2e3c');
+                    root.style.setProperty('--secondary1-color', colors.secondary1 || '#f5f5f5');
+                    root.style.setProperty('--secondary2-color', colors.secondary2 || '#b8c6db');
+                    root.style.setProperty('--secondary3-color', colors.secondary3 || '#5a6670');
+                    root.style.setProperty('--accent-color', colors.accent || '#cc5522');
+                    root.style.setProperty('--neutral1-color', colors.neutral1 || '#4a3728');
+                    root.style.setProperty('--neutral2-color', colors.neutral2 || '#333333');
+                    root.style.setProperty('--neutral3-color', colors.neutral3 || '#666666');
+                    root.style.setProperty('--neutral4-color', colors.neutral4 || '#999999');
+                }
+            } catch (error) {
+                console.error('加载颜色设置失败:', error);
+            }
+        }
+        
+        // 页面加载时加载颜色设置
+        window.addEventListener('load', loadColors);
     </script>
 </body>
 </html>

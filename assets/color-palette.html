@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>擢升一瞥 - 配色方案</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #1a2e3c;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h2 {
+            color: #333333;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .color-item {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .color-swatch {
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+        
+        .color-picker {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            width: 30px;
+            height: 30px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 10;
+        }
+        
+        .reset-btn {
+            position: absolute;
+            bottom: 5px;
+            left: 5px;
+            padding: 2px 6px;
+            background-color: rgba(255, 255, 255, 0.8);
+            color: #333;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            z-index: 10;
+        }
+        
+        .reset-btn:hover {
+            background-color: white;
+        }
+        
+        .color-info {
+            padding: 10px;
+            background-color: white;
+            border-top: 1px solid #eee;
+        }
+        
+        .color-name {
+            font-weight: bold;
+            color: #333333;
+            margin-bottom: 5px;
+        }
+        
+        .color-code {
+            font-family: monospace;
+            color: #666666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .usage {
+            font-size: 12px;
+            color: #999999;
+            margin-top: 5px;
+        }
+        
+        .source-image {
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .source-image img {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .source-image p {
+            margin-top: 10px;
+            color: #666666;
+            font-size: 14px;
+        }
+        
+        .action-buttons {
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .action-button {
+            background-color: #1a2e3c;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 0 10px;
+            transition: background-color 0.3s;
+        }
+        
+        .action-button:hover {
+            background-color: #2a3f4c;
+        }
+        
+        .action-button.secondary {
+            background-color: #5a6670;
+        }
+        
+        .action-button.secondary:hover {
+            background-color: #6a7680;
+        }
+        
+        .notification {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+        }
+        
+        .notification.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        
+        .notification.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>擢升一瞥 - 配色方案</h1>
+        
+        <p>本配色方案基于 "The train in the snow" 图片设计，主色调为火车的青黑色，营造出一种神秘而宁静的氛围。</p>
+        
+        <div class="action-buttons">
+            <button class="action-button" onclick="applyColors()">应用配色到所有页面</button>
+            <button class="action-button secondary" onclick="resetColors()">重置为默认配色</button>
+        </div>
+        
+        <div class="notification" id="notification"></div>
+        
+        <h2>主色调</h2>
+        <div class="color-palette">
+            <div class="color-item">
+                <div class="color-swatch" style="background-color: #1a2e3c;" data-color-name="primary">主色调</div>
+                <input type="color" class="color-picker" value="#1a2e3c" data-color-name="primary">
+                <button class="reset-btn" onclick="resetSingleColor('primary')">重置</button>
+                <div class="color-info">
+                    <div class="color-name">火车青黑色</div>
+                    <div class="color-code" data-color-name="primary">#1a2e3c</div>
+                    <div class="usage">用于标题、按钮、导航栏等主要元素</div>
+                </div>
+            </div>
+        </div>
+        
+        <h2>辅助色</h2>
+        <div class="color-palette">
+            <div class="color-item">
+                <div class="color-swatch" style="background-color: #f5f5f5;" data-color-name="secondary1">辅助色1</div>
+                <input type="color" class="color-picker" value="#f5f5f5" data-color-name="secondary1">
+                <button class="reset-btn" onclick="resetSingleColor('secondary1')">重置</button>
+                <div class="color-info">
+                    <div class="color-name">雪白色</div>
+                    <div class="color-code" data-color-name="secondary1">#f5f5f5</div>
+                    <div class="usage">用于背景、卡片等</div>
+                </div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background-color: #b8c6db;" data-color-name="secondary2">辅助色2</div>
+                <input type="color" class="color-picker" value="#b8c6db" data-color-name="secondary2">
+                <button class="reset-btn" onclick="resetSingleColor('secondary2')">重置</button>
+                <div class="color-info">
+                    <div class="color-name">天空灰色</div>
+                    <div class="color-code" data-color-name="secondary2">#b8c6db</div>
+                    <div class="usage">用于次要背景、分隔线等</div>
+                </div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background-color: #5a6670;" data-color-name="secondary3">辅助色3</div>
+                <input type="color" class="color-picker" value="#5a6670" data-color-name="secondary3">
+                <button class="reset-btn" onclick="resetSingleColor('secondary3')">重置</button>
+                <div class="color-info">
+                    <div class="color-name">轨道灰色</div>
+                    <div class="color-code" data-color-name="secondary3">#5a6670</div>
+                    <div class="usage">用于次要文本、边框等</div>
+                </div>
+            </div>
+        </div>
+        
+        <h2>重点色/警示色</h2>
+        <div class="color-palette">
+            <div class="color-item">
+                <div class="color-swatch" style="background-color: #cc5522;" data-color-name="accent">重点色</div>
+                <input type="color" class="color-picker" value="#cc5522" data-color-name="accent">
+                <button class="reset-btn" onclick="resetSingleColor('accent')">重置</button>
+                <div class="color-info">
+                    <div class="color-name">车灯橙</div>
+                    <div class="color-code" data-color-name="accent">#cc5522</div>
+                    <div class="usage">用于重点按钮、警示信息等</div>
+                </div>
+            </div>
+        </div>
+        
+        <h2>中性色</h2>
+        <div class="color-palette">
+            <div class="color-item">
+                <div class="color-swatch" style="background-color: #4a3728;" data-color-name="neutral1">中性色1</div>
+                <input type="color" class="color-picker" value="#4a3728" data-color-name="neutral1">
+                <button class="reset-btn" onclick="resetSingleColor('neutral1')">重置</button>
+                <div class="color-info">
+                    <div class="color-name">栅栏暗棕</div>
+                    <div class="color-code" data-color-name="neutral1">#4a3728</div>
+                    <div class="usage">用于深色背景、强调文本等</div>
+                </div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background-color: #333333;" data-color-name="neutral2">中性色2</div>
+                <input type="color" class="color-picker" value="#333333" data-color-name="neutral2">
+                <button class="reset-btn" onclick="resetSingleColor('neutral2')">重置</button>
+                <div class="color-info">
+                    <div class="color-name">深灰</div>
+                    <div class="color-code" data-color-name="neutral2">#333333</div>
+                    <div class="usage">用于主要文本</div>
+                </div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background-color: #666666;" data-color-name="neutral3">中性色3</div>
+                <input type="color" class="color-picker" value="#666666" data-color-name="neutral3">
+                <button class="reset-btn" onclick="resetSingleColor('neutral3')">重置</button>
+                <div class="color-info">
+                    <div class="color-name">中灰</div>
+                    <div class="color-code" data-color-name="neutral3">#666666</div>
+                    <div class="usage">用于次要文本</div>
+                </div>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background-color: #999999;" data-color-name="neutral4">中性色4</div>
+                <input type="color" class="color-picker" value="#999999" data-color-name="neutral4">
+                <button class="reset-btn" onclick="resetSingleColor('neutral4')">重置</button>
+                <div class="color-info">
+                    <div class="color-name">浅灰</div>
+                    <div class="color-code" data-color-name="neutral4">#999999</div>
+                    <div class="usage">用于辅助文本、提示信息等</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="source-image">
+            <h2>颜色来源</h2>
+            <img src="The train in the snow.jpeg" alt="The train in the snow">
+            <p>基于此图片提取的颜色方案</p>
+        </div>
+    </div>
+    
+    <script>
+        // 颜色映射对象
+        const colorMap = {
+            primary: '#1a2e3c',
+            secondary1: '#f5f5f5',
+            secondary2: '#b8c6db',
+            secondary3: '#5a6670',
+            accent: '#cc5522',
+            neutral1: '#4a3728',
+            neutral2: '#333333',
+            neutral3: '#666666',
+            neutral4: '#999999'
+        };
+        
+        // 默认颜色值
+        const defaultColors = {
+            primary: '#1a2e3c',
+            secondary1: '#f5f5f5',
+            secondary2: '#b8c6db',
+            secondary3: '#5a6670',
+            accent: '#cc5522',
+            neutral1: '#4a3728',
+            neutral2: '#333333',
+            neutral3: '#666666',
+            neutral4: '#999999'
+        };
+        
+        // 页面加载时初始化颜色选择器事件
+        document.addEventListener('DOMContentLoaded', function() {
+            const colorPickers = document.querySelectorAll('.color-picker');
+            colorPickers.forEach(picker => {
+                picker.addEventListener('change', function() {
+                    const colorName = this.getAttribute('data-color-name');
+                    const newColor = this.value;
+                    updateColor(colorName, newColor);
+                });
+            });
+        });
+        
+        // 更新颜色
+        function updateColor(colorName, newColor) {
+            // 更新颜色映射
+            colorMap[colorName] = newColor;
+            
+            // 更新颜色块
+            const colorSwatch = document.querySelector(`.color-swatch[data-color-name="${colorName}"]`);
+            if (colorSwatch) {
+                colorSwatch.style.backgroundColor = newColor;
+            }
+            
+            // 更新颜色代码
+            const colorCode = document.querySelector(`.color-code[data-color-name="${colorName}"]`);
+            if (colorCode) {
+                colorCode.textContent = newColor;
+            }
+        }
+        
+        // 应用配色到所有页面
+        function applyColors() {
+            try {
+                // 这里可以添加代码来更新所有HTML文件的颜色
+                // 由于是前端环境，我们使用localStorage来存储颜色设置
+                localStorage.setItem('gameColors', JSON.stringify(colorMap));
+                
+                // 显示成功通知
+                showNotification('配色已成功更新！请刷新其他页面查看效果。', 'success');
+            } catch (error) {
+                showNotification('更新配色失败：' + error.message, 'error');
+            }
+        }
+        
+        // 重置为默认配色
+        function resetColors() {
+            // 重置颜色映射
+            Object.assign(colorMap, defaultColors);
+            
+            // 更新所有颜色块和颜色代码
+            for (const colorName in defaultColors) {
+                updateColor(colorName, defaultColors[colorName]);
+                
+                // 更新颜色选择器
+                const colorPicker = document.querySelector(`.color-picker[data-color-name="${colorName}"]`);
+                if (colorPicker) {
+                    colorPicker.value = defaultColors[colorName];
+                }
+            }
+            
+            // 清除localStorage中的颜色设置
+            localStorage.removeItem('gameColors');
+            
+            // 显示成功通知
+            showNotification('配色已重置为默认值！', 'success');
+        }
+        
+        // 重置单个颜色
+        function resetSingleColor(colorName) {
+            // 获取默认颜色值
+            const defaultColor = defaultColors[colorName];
+            
+            // 更新颜色映射
+            colorMap[colorName] = defaultColor;
+            
+            // 更新颜色块
+            const colorSwatch = document.querySelector(`.color-swatch[data-color-name="${colorName}"]`);
+            if (colorSwatch) {
+                colorSwatch.style.backgroundColor = defaultColor;
+            }
+            
+            // 更新颜色代码
+            const colorCode = document.querySelector(`.color-code[data-color-name="${colorName}"]`);
+            if (colorCode) {
+                colorCode.textContent = defaultColor;
+            }
+            
+            // 更新颜色选择器
+            const colorPicker = document.querySelector(`.color-picker[data-color-name="${colorName}"]`);
+            if (colorPicker) {
+                colorPicker.value = defaultColor;
+            }
+            
+            // 显示成功通知
+            showNotification(`${colorName} 颜色已重置为默认值！`, 'success');
+        }
+        
+        // 显示通知
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            
+            // 3秒后自动隐藏通知
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
