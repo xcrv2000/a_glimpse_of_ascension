@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>擢升一瞥 - 游戏界面</title>
+    <script src="src/js/configLoader.js"></script>
     <script src="src/js/dataManager.js"></script>
     <script src="src/js/responseParser.js"></script>
     <script src="src/js/engine.js"></script>
@@ -140,7 +141,7 @@
             border-radius: 18px;
             align-self: flex-end;
             margin-left: auto;
-            max-width: fit-content;
+            width: fit-content;
             text-align: right;
             max-width: 80%;
         }
@@ -905,12 +906,31 @@
     </script>
     <script>
         // 全局调试属性
-        let admin = false;
-        // 初始定义为可配置，以便后续可以修改
-        Object.defineProperty(window, 'admin', {
-            value: false,
-            writable: true,
-            configurable: true
+        let admin = true; // 默认值，会在加载配置后更新
+        
+        // 加载配置
+        async function initConfig() {
+            const config = await configLoader.load();
+            admin = config.admin || true;
+            
+            // 定义全局admin属性
+            Object.defineProperty(window, 'admin', {
+                value: admin,
+                writable: true,
+                configurable: true
+            });
+            
+            console.log('配置加载完成:', config);
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('load', async function() {
+            await initConfig();
+            loadVersion();
+            // 加载data.json内容
+            if (admin) {
+                loadDataJson();
+            }
         });
         
         // 显示加载等待条
@@ -946,18 +966,8 @@
             dataJson: null
         };
         
-        // 页面加载时检查admin权限并隐藏调试按钮
-        window.addEventListener('load', function() {
-            const debugToggle = document.getElementById('debugToggle');
-            if (typeof admin === 'undefined' || !admin) {
-                if (debugToggle) {
-                    debugToggle.style.display = 'none';
-                }
-            } else {
-                // 加载data.json内容
-                loadDataJson();
-            }
-        });
+        // 页面加载时检查admin权限
+        // 注意：此代码已移至上面的initConfig函数中
         
         // 加载data.json内容
         async function loadDataJson() {
@@ -1515,6 +1525,9 @@
                 
                 // 使用游戏引擎处理记录者响应
                 const processResult = await GameEngineInstance.processAIResponse(recorderResult);
+                
+                // 添加处理后的故事到聊天界面
+                await addMessage(processResult.story);
                 
                 console.log('两阶段交互完成');
             } catch (error) {

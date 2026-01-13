@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>擢升一瞥 - 欢迎页面</title>
+    <script src="src/js/configLoader.js"></script>
     <script src="src/js/storyStorage.js"></script>
     <style>
         /* 动态颜色变量 */
@@ -131,10 +132,6 @@
             }
         }
         
-        // 页面加载完成后初始化
-        window.addEventListener('load', function() {
-            loadVersion();
-        });
     </script>
     
     <style>
@@ -210,12 +207,28 @@
     
     <script>
         // 全局调试属性
-        const admin = false;
-        // 防止修改
-        Object.defineProperty(window, 'admin', {
-            value: false,
-            writable: false,
-            configurable: false
+        let admin = true; // 默认值，会在加载配置后更新
+        
+        // 加载配置
+        async function initConfig() {
+            const config = await configLoader.load();
+            admin = config.admin || true;
+            
+            // 定义全局admin属性
+            Object.defineProperty(window, 'admin', {
+                value: admin,
+                writable: true,
+                configurable: true
+            });
+            
+            console.log('配置加载完成:', config);
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('load', async function() {
+            await initConfig();
+            loadVersion();
+            checkForUnfinishedStory();
         });
         
         // 检查是否有未完成的故事
