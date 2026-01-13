@@ -10,6 +10,7 @@
     <script src="src/js/engine.js"></script>
     <script src="src/js/storyStorage.js"></script>
     <script src="src/js/promptManager.js"></script>
+    <script src="src/js/providerConfig.js"></script>
     <script src="src/js/promptBuilder_storyteller.js"></script>
     <script src="src/js/promptBuilder_recorder.js"></script>
     <script src="src/js/contextCompressor.js"></script>
@@ -1006,22 +1007,27 @@
             
             // 从本地存储获取设置
             const savedSettings = localStorage.getItem('gameSettings');
-            let aiModel = 'deepseek';
+            let aiProvider = 'deepseek';
             let apiKey = '';
+            let customEndpoint = '';
             
             if (savedSettings) {
                 const settings = JSON.parse(savedSettings);
-                if (settings.aiModel) {
-                    aiModel = settings.aiModel;
+                if (settings.aiProvider) {
+                    aiProvider = settings.aiProvider;
                 }
                 if (settings.apiKey) {
                     apiKey = settings.apiKey;
                 }
+                if (settings.customEndpoint) {
+                    customEndpoint = settings.customEndpoint;
+                }
             }
             
             // 对于DeepSeek，我们有默认API密钥，所以总是启用
+            // 对于自定义服务商，需要检查是否有API端点
             // 对于其他服务商，需要检查是否有API密钥
-            const hasApiKey = aiModel === 'deepseek' || apiKey;
+            const hasApiKey = aiProvider === 'deepseek' || (aiProvider === 'custom' && customEndpoint) || apiKey;
             
             if (sendBtn) {
                 sendBtn.disabled = !hasApiKey;
@@ -1037,6 +1043,9 @@
         async function init() {
             // 检查是否是新游戏
             checkForNewGame();
+            
+            // 初始化默认设置（如果本地存储中没有）
+            initializeDefaultSettings();
             
             // 检查API密钥状态
             const hasApiKey = checkApiKeyStatus();
@@ -1064,6 +1073,22 @@
             
             // 检查本地存储中是否有错误信息，如果有则显示错误提示盒
             checkForSavedError();
+        }
+        
+        // 初始化默认设置
+        function initializeDefaultSettings() {
+            const savedSettings = localStorage.getItem('gameSettings');
+            if (!savedSettings) {
+                // 没有保存的设置，创建默认设置
+                const defaultSettings = {
+                    aiProvider: 'deepseek',
+                    aiModel: 'deepseek-v3',
+                    apiKey: '',
+                    promptMode: 'twoPhase' // 默认使用两阶段模式
+                };
+                localStorage.setItem('gameSettings', JSON.stringify(defaultSettings));
+                console.log('已初始化默认设置，默认模式为两阶段模式');
+            }
         }
         
         // 检查本地存储中是否有错误信息
@@ -1239,13 +1264,23 @@
                 if (savedSettings) {
                     const settings = JSON.parse(savedSettings);
                     const apiKey = settings.apiKey;
-                    const aiModel = settings.aiModel || 'deepseek';
+                    const aiProvider = settings.aiProvider || 'deepseek';
+                    const aiModel = settings.aiModel || 'deepseek-v3';
                     
-                    if (apiKey || aiModel === 'deepseek') {
+                    // 处理自定义服务商设置
+                    let customSettings = null;
+                    if (aiProvider === 'custom') {
+                        customSettings = {
+                            model: settings.customModel || 'custom',
+                            endpoint: settings.customEndpoint || ''
+                        };
+                    }
+                    
+                    if ((apiKey || aiProvider === 'deepseek') || (aiProvider === 'custom' && customSettings.endpoint)) {
                         try {
                             // 压缩最早的16条消息
                         const messagesToCompress = uncompressedStory.slice(0, 16);
-                        const compressedMessage = await ContextCompressor.compressContext(messagesToCompress, apiKey, aiModel);
+                        const compressedMessage = await ContextCompressor.compressContext(messagesToCompress, apiKey, aiProvider, aiModel, customSettings);
                         if (compressedMessage) {
                             // 更新压缩故事
                             compressedStory.push(compressedMessage);
@@ -1408,24 +1443,37 @@
             
             const settings = JSON.parse(savedSettings);
             const apiKey = settings.apiKey;
-            const aiModel = settings.aiModel || 'deepseek';
+            const aiProvider = settings.aiProvider || 'deepseek';
+            const aiModel = settings.aiModel || 'deepseek-v3';
             
-            if (!apiKey && aiModel !== 'deepseek') {
+            // 处理自定义服务商设置
+            let customSettings = null;
+            if (aiProvider === 'custom') {
+                customSettings = {
+                    model: settings.customModel || 'custom',
+                    endpoint: settings.customEndpoint || ''
+                };
+                if (!customSettings.endpoint) {
+                    throw new Error('请在设置页面配置自定义API端点');
+                }
+            } else if (!apiKey && aiProvider !== 'deepseek') {
                 throw new Error('请先在设置页面配置API密钥');
             }
             
             // 使用PromptBuilder_Storyteller准备请求数据并发送API请求
-            const { requestData, apiKey: finalApiKey, aiModel: finalAiModel, providerConfig } = await PromptBuilder_Storyteller.prepareRequestData(
+            const { requestData, apiKey: finalApiKey, aiProvider: finalAiProvider, aiModel: finalAiModel, providerConfig } = await PromptBuilder_Storyteller.prepareRequestData(
                 apiKey, 
                 userMessage, 
                 compressedStory, 
                 uncompressedStory, 
                 latestUserMessage,
-                aiModel
+                aiProvider,
+                aiModel,
+                customSettings
             );
             
             // 发送API请求
-            const storytellerResult = await PromptBuilder_Storyteller.sendApiRequest(requestData, finalApiKey, finalAiModel, providerConfig);
+            const storytellerResult = await PromptBuilder_Storyteller.sendApiRequest(requestData, finalApiKey, finalAiProvider, finalAiModel, providerConfig, null, null, customSettings);
             
             // 存储完整请求数据到调试数据
             debugData.phase1.input = JSON.stringify(requestData, null, 2);
@@ -1452,9 +1500,20 @@
             
             const settings = JSON.parse(savedSettings);
             const apiKey = settings.apiKey;
-            const aiModel = settings.aiModel || 'deepseek';
+            const aiProvider = settings.aiProvider || 'deepseek';
+            const aiModel = settings.aiModel || 'deepseek-chat';
             
-            if (!apiKey && aiModel !== 'deepseek') {
+            // 处理自定义服务商设置
+            let customSettings = null;
+            if (aiProvider === 'custom') {
+                customSettings = {
+                    model: settings.customModel || 'custom',
+                    endpoint: settings.customEndpoint || ''
+                };
+                if (!customSettings.endpoint) {
+                    throw new Error('请在设置页面配置自定义API端点');
+                }
+            } else if (!apiKey && aiProvider !== 'deepseek') {
                 throw new Error('请先在设置页面配置API密钥');
             }
             
@@ -1465,10 +1524,12 @@
                 secretInfo, 
                 compressedStory, 
                 uncompressedStory,
-                aiModel
+                aiProvider,
+                aiModel,
+                customSettings
             );
             
-            const response = await PromptBuilder_Recorder.sendApiRequest(requestData, finalApiKey, finalAiModel, providerConfig);
+            const response = await PromptBuilder_Recorder.sendApiRequest(requestData, finalApiKey, aiProvider, aiModel, providerConfig, null, null, customSettings);
             
             // 存储完整请求数据到调试数据
             debugData.phase2.input = JSON.stringify(requestData, null, 2);
@@ -1485,42 +1546,7 @@
             return response;
         }
         
-        // 获取服务商配置
-        function getProviderConfig(aiProvider, customModel = null) {
-            const configs = {
-                deepseek: {
-                    endpoint: 'https://api.deepseek.com/v1/chat/completions',
-                    defaultModel: 'deepseek-chat',
-                    defaultApiKey: 'sk-13cf1d781bca49d49cd15136a4859607'
-                },
-                openai: {
-                    endpoint: 'https://api.openai.com/v1/chat/completions',
-                    defaultModel: 'gpt-4',
-                    defaultApiKey: ''
-                },
-                anthropic: {
-                    endpoint: 'https://api.anthropic.com/v1/messages',
-                    defaultModel: 'claude-3-opus-20240229',
-                    defaultApiKey: ''
-                },
-                google: {
-                    endpoint: 'https://generativelanguage.googleapis.com/v1/models/',
-                    defaultModel: 'gemini-1.5-flash-lite',
-                    defaultApiKey: ''
-                }
-            };
-            
-            const config = configs[aiProvider] || configs.deepseek;
-            
-            // 对于Google模型，需要将模型名称添加到endpoint中
-            if (aiProvider === 'google') {
-                const modelName = customModel || config.defaultModel;
-                config.endpoint = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent`;
-            }
-            
-            return config;
-        }
-
+        
         // 显示错误提示盒
         function showErrorBox(phase, errorMessage) {
             // 确定错误类型
@@ -1757,6 +1783,7 @@
             let apiKey = '';
             let aiProvider = 'deepseek';
             let aiModel = 'deepseek-chat';
+            let customSettings = null;
             
             if (savedSettings) {
                 const settings = JSON.parse(savedSettings);
@@ -1769,14 +1796,21 @@
                 if (settings.aiModel) {
                     aiModel = settings.aiModel;
                 }
+                // 处理自定义服务商设置
+                if (aiProvider === 'custom') {
+                    customSettings = {
+                        model: settings.customModel || 'custom',
+                        endpoint: settings.customEndpoint || ''
+                    };
+                    if (!customSettings.endpoint) {
+                        throw new Error('请在设置页面配置自定义API端点');
+                    }
+                }
             }
             
-            // 获取服务商配置
-            const providerConfig = getProviderConfig(aiProvider, aiModel);
-            
             // 如果没有提供API密钥，使用默认值
-            if (!apiKey) {
-                apiKey = providerConfig.defaultApiKey;
+            if (!apiKey && aiProvider === 'deepseek') {
+                apiKey = ProviderConfig.DEFAULT_API_KEY;
             }
             
             // 使用PromptManager加载简略模式提示词
@@ -1796,7 +1830,7 @@
                 fullSystemPrompt += "\n\n===数据部分结束===";
             }
             
-            // 准备请求数据
+            // 准备消息
             const messages = [];
             if (fullSystemPrompt) {
                 messages.push({ role: 'system', content: fullSystemPrompt });
@@ -1853,40 +1887,11 @@
                 });
             }
             
-            // 准备请求数据
-            let requestData;
-            if (aiModel === 'google') {
-                // Google Gemini 格式
-                requestData = {
-                    contents: messages.map(msg => ({
-                        role: msg.role,
-                        parts: [{ text: msg.content }]
-                    })),
-                    generationConfig: {
-                        temperature: 0.7,
-                        maxOutputTokens: 8192
-                    }
-                };
-            } else if (aiModel === 'anthropic') {
-                // Anthropic Claude 格式
-                requestData = {
-                    model: providerConfig.defaultModel,
-                    messages: messages,
-                    temperature: 0.7,
-                    max_tokens: 8192
-                };
-            } else {
-                // OpenAI 和 DeepSeek 格式
-                requestData = {
-                    model: providerConfig.defaultModel,
-                    messages: messages,
-                    temperature: 0.7,
-                    max_tokens: 8192
-                };
-            }
+            // 使用ProviderConfig构建请求配置
+            const { endpoint, requestConfig } = ProviderConfig.buildRequestConfig(aiProvider, aiModel, messages, apiKey, customSettings);
             
             // 存储完整请求数据到调试数据
-            debugData.lastApiRequest = JSON.stringify(requestData, null, 2);
+            debugData.lastApiRequest = JSON.stringify(requestConfig, null, 2);
             if (window.DebugPanelInstance) {
                 window.DebugPanelInstance.updateContent();
             }
@@ -1894,37 +1899,8 @@
             // 更新调试面板显示
             updateDebugPanel();
             
-            // 准备请求配置
-            const requestConfig = {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`
-                },
-                body: JSON.stringify(requestData)
-            };
-            
-            // 对于Google Gemini，使用不同的认证头
-            if (aiModel === 'google') {
-                requestConfig.headers = {
-                    'Content-Type': 'application/json'
-                };
-                requestConfig.body = JSON.stringify(requestData);
-                // Google API密钥作为查询参数
-                providerConfig.endpoint += `?key=${apiKey}`;
-            }
-            
-            // 对于Anthropic，使用正确的认证头
-            if (aiModel === 'anthropic') {
-                requestConfig.headers = {
-                    'Content-Type': 'application/json',
-                    'x-api-key': apiKey,
-                    'anthropic-version': '2023-06-01'
-                };
-            }
-            
             // 发送API请求
-            const response = await fetch(providerConfig.endpoint, requestConfig);
+            const response = await fetch(endpoint, requestConfig);
             
             if (!response.ok) {
                 try {
@@ -1933,7 +1909,7 @@
                     if (errorData.error && 
                         ((typeof errorData.error === 'string' && errorData.error.includes('余额不足')) ||
                          (errorData.error.message && errorData.error.message.includes('余额不足')))) {
-                        throw new Error(`API余额不足，请在设置页面配置您自己的${aiModel} API密钥: ${response.status} ${errorData.error.message || errorData.error}`);
+                        throw new Error(`API余额不足，请在设置页面配置您自己的${aiProvider} API密钥: ${response.status} ${errorData.error.message || errorData.error}`);
                     }
                     let errorMessage;
                     if (errorData.error) {
@@ -1955,18 +1931,8 @@
             
             const responseData = await response.json();
             
-            // 提取响应内容，根据不同服务商的格式
-            let content;
-            if (aiModel === 'google') {
-                // Google Gemini 格式
-                content = responseData.candidates[0].content.parts[0].text;
-            } else if (aiModel === 'anthropic') {
-                // Anthropic Claude 格式
-                content = responseData.content[0].text;
-            } else {
-                // OpenAI 和 DeepSeek 格式
-                content = responseData.choices[0].message.content;
-            }
+            // 使用ProviderConfig处理API响应
+            const content = ProviderConfig.processApiResponse(aiProvider, responseData);
             
             // 存储最后一次AI回复到调试数据
             debugData.lastAiResponse = content;
