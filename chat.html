@@ -385,7 +385,7 @@
             right: -340px;
             width: 320px;
             height: 100vh;
-            background-color: var(--neutral2-color);
+            background-color: var(--secondary2-color);
             color: var(--neutral1-color);
             border-radius: 10px 0 0 10px;
             box-shadow: -5px 0 20px rgba(0, 0, 0, 0.4);
@@ -400,7 +400,7 @@
         
         .debug-panel-header {
             padding: 15px;
-            border-bottom: 1px solid var(--neutral3-color);
+            border-bottom: 1px solid var(--secondary3-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -435,7 +435,7 @@
         .debug-tabs {
             display: flex;
             margin: 0 10px;
-            border-bottom: 1px solid var(--neutral3-color);
+            border-bottom: 1px solid var(--secondary3-color);
             flex-wrap: wrap;
         }
         
@@ -443,7 +443,7 @@
             padding: 6px 12px;
             cursor: pointer;
             font-size: 11px;
-            color: var(--neutral3-color);
+            color: var(--neutral1-color);
             border-bottom: 2px solid transparent;
             white-space: nowrap;
         }
@@ -466,11 +466,11 @@
         .debug-section h4 {
             margin: 0 0 5px 0;
             font-size: 12px;
-            color: var(--neutral3-color);
+            color: var(--neutral1-color);
         }
         
         .debug-content {
-            background-color: var(--neutral3-color);
+            background-color: var(--secondary3-color);
             border-radius: 5px;
             padding: 8px;
             font-size: 11px;
@@ -479,11 +479,12 @@
             word-wrap: break-word;
             max-height: 200px;
             overflow-y: auto;
+            color: var(--neutral1-color);
         }
         
         /* 引擎工具按钮样式 */
         .engine-tool-btn {
-            background-color: var(--neutral3-color);
+            background-color: var(--secondary1-color);
             color: var(--neutral1-color);
             border: none;
             border-radius: 4px;
@@ -494,11 +495,11 @@
         }
         
         .engine-tool-btn:hover {
-            background-color: var(--neutral4-color);
+            background-color: var(--secondary3-color);
         }
         
         .engine-tool-btn:disabled {
-            background-color: var(--neutral4-color);
+            background-color: var(--secondary3-color);
             cursor: not-allowed;
         }
         
@@ -520,6 +521,7 @@
         .game-data-display {
             font-size: 11px;
             line-height: 1.4;
+            color: var(--neutral1-color);
         }
         
         /* 响应式设计 */
@@ -823,6 +825,28 @@
                     <h5>输出 (AI回复)</h5>
                     <div class="debug-content" id="aiOutput">无数据</div>
                 </div>
+                <div class="debug-section">
+                    <h5>两阶段模式 - 阶段一 (故事讲述者)</h5>
+                    <div class="debug-section">
+                        <h6>输入</h6>
+                        <div class="debug-content" id="phase1Input">无数据</div>
+                    </div>
+                    <div class="debug-section">
+                        <h6>输出</h6>
+                        <div class="debug-content" id="phase1Output">无数据</div>
+                    </div>
+                </div>
+                <div class="debug-section">
+                    <h5>两阶段模式 - 阶段二 (故事记录者)</h5>
+                    <div class="debug-section">
+                        <h6>输入</h6>
+                        <div class="debug-content" id="phase2Input">无数据</div>
+                    </div>
+                    <div class="debug-section">
+                        <h6>输出</h6>
+                        <div class="debug-content" id="phase2Output">无数据</div>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="debug-tab-content" id="phase1-tab" style="display: none;">
@@ -937,19 +961,30 @@
         
         // 显示加载等待条
         function showLoading(text = '世界加载中...') {
+            console.log('调用showLoading函数，文本:', text);
             const overlay = document.getElementById('loadingOverlay');
             const loadingText = document.getElementById('loadingText');
+            console.log('加载条元素:', overlay);
+            console.log('加载条文本元素:', loadingText);
             if (overlay && loadingText) {
                 loadingText.textContent = text;
                 overlay.style.display = 'flex';
+                console.log('加载条显示成功');
+            } else {
+                console.error('加载条元素未找到');
             }
         }
         
         // 隐藏加载等待条
         function hideLoading() {
+            console.log('调用hideLoading函数');
             const overlay = document.getElementById('loadingOverlay');
+            console.log('加载条元素:', overlay);
             if (overlay) {
                 overlay.style.display = 'none';
+                console.log('加载条隐藏成功');
+            } else {
+                console.error('加载条元素未找到');
             }
         }
         
@@ -1475,12 +1510,16 @@
                 try {
                     // 检查当前模式
                     const currentMode = PromptManager.getCurrentMode();
+                    console.log('当前模式:', currentMode);
                     
                     if (currentMode === 'twoPhase') {
+                        console.log('使用两阶段模式');
                         // 使用两阶段模式
                         await sendMessageTwoPhase(message);
                     } else {
+                        console.log('使用简略模式');
                         // 使用简略模式
+                        showLoading('世界加载中...');
                         // 调用AI API获取回复
                         const aiResponse = await callAIApi(message);
                         
@@ -1489,6 +1528,8 @@
                         
                         // 添加处理后的故事到聊天界面
                         await addMessage(processResult.story);
+                        
+                        hideLoading();
                     }
                     
                     // 成功发送后清除最后一条消息
@@ -1499,6 +1540,8 @@
                     console.error('调用API失败:', error);
                     showErrorBox('简略模式', error.message || '未知错误');
                 } finally {
+                    // 隐藏加载条
+                    hideLoading();
                     // 恢复发送按钮和输入框
                     sendBtn.disabled = false;
                     sendBtn.textContent = '➤';
@@ -1509,27 +1552,40 @@
         
         // 两阶段交互逻辑
         async function sendMessageTwoPhase(message) {
+            console.log('开始两阶段交互:', message);
             try {
                 // 阶段一：故事讲述者
+                console.log('阶段一：故事讲述者');
                 showLoading('世界加载中...');
                 
                 // 调用故事讲述者API
+                console.log('调用故事讲述者API');
                 const storytellerResult = await callStorytellerAPI(message);
+                console.log('故事讲述者API调用完成:', storytellerResult);
                 
                 // 添加故事到聊天界面
+                console.log('添加故事到聊天界面:', storytellerResult.story);
                 await addMessage(storytellerResult.story);
+                console.log('故事添加完成');
                 
                 // 阶段二：故事记录者
+                console.log('阶段二：故事记录者');
                 showLoading('世界解算中...');
                 
                 // 调用故事记录者API
+                console.log('调用故事记录者API');
                 const recorderResult = await callRecorderAPI(storytellerResult.story, storytellerResult.secretInfo);
+                console.log('故事记录者API调用完成:', recorderResult);
                 
                 // 使用游戏引擎处理记录者响应
+                console.log('使用游戏引擎处理记录者响应');
                 const processResult = await GameEngineInstance.processAIResponse(recorderResult);
+                console.log('游戏引擎处理完成:', processResult);
                 
                 // 添加处理后的故事到聊天界面
+                console.log('添加处理后的故事到聊天界面:', processResult.story);
                 await addMessage(processResult.story);
+                console.log('处理后的故事添加完成');
                 
                 console.log('两阶段交互完成');
             } catch (error) {
@@ -2369,7 +2425,6 @@
             
             // 获取所有选项卡
             const tabs = document.querySelectorAll('.debug-tab');
-            const tabContents = document.querySelectorAll('.debug-tab-content');
             
             // 显示/隐藏阶段标签页
             tabs.forEach(tab => {
@@ -2385,19 +2440,11 @@
                 }
             });
             
-            // 显示/隐藏标签内容
-            tabContents.forEach(content => {
-                if (content.id === 'phase1-tab' || content.id === 'phase2-tab') {
-                    content.style.display = 'none';
-                } else if (content.id === 'ai-data-tab') {
-                    content.style.display = isSimplified ? 'block' : 'none';
-                }
-            });
-            
             // 确保当前显示的是正确的选项卡
             if (isSimplified) {
                 switchDebugTab('ai-data');
             } else {
+                // 在两阶段模式下，默认显示阶段一标签页
                 switchDebugTab('phase1');
             }
         }
