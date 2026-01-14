@@ -2,7 +2,11 @@
 class ProviderConfig {
     // 默认API密钥（仅用于DeepSeek）
     static get DEFAULT_API_KEY() {
-        return 'sk-dbb1ecc67a704d93b803f3c1d74626b9';
+        // 从Utils获取默认API密钥
+        if (typeof Utils !== 'undefined') {
+            return Utils.getDefaultApiKey();
+        }
+        return '';
     }
 
     // 获取服务商配置

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>擢升一瞥 - 设置</title>
+    <script src="src/js/apiKeyManager.js"></script>
     <style>
         /* 动态颜色变量 */
         :root {
@@ -471,7 +472,9 @@
                     promptModeToggle.checked = true; // true表示两阶段模式
                 }
                 // 设置默认API密钥
-                document.getElementById('api-key').value = 'sk-dbb1ecc67a704d93b803f3c1d74626b9';
+                if (typeof Utils !== 'undefined') {
+                    document.getElementById('api-key').value = Utils.getDefaultApiKey();
+                }
             }
         }
         
