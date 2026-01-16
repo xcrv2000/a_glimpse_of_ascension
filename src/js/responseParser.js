@@ -59,12 +59,69 @@ class ResponseParser {
             const storyLines = [];
             const lines = content.split('\n');
             
+            let inJsonBlock = false;
+            let currentJsonBuffer = '';
+            let currentRequestType = null;
+            let jsonOpenBraces = 0;
+            
             lines.forEach(line => {
                 // 保留原始行（包括空格和换行）用于story
                 const originalLine = line;
                 
                 // 处理数据请求时使用trimmed版本
                 const trimmedLine = line.trim();
+                
+                // 检查是否在JSON块中
+                if (inJsonBlock) {
+                    // 累加JSON内容
+                    currentJsonBuffer += line + '\n';
+                    
+                    // 统计花括号数量
+                    jsonOpenBraces += (line.match(/{/g) || []).length;
+                    jsonOpenBraces -= (line.match(/}/g) || []).length;
+                    
+                    // 如果花括号匹配，说明JSON块结束
+                    if (jsonOpenBraces === 0) {
+                        try {
+                            // 解析完整的JSON
+                            const jsonData = JSON.parse(currentJsonBuffer.trim());
+                            
+                            // 根据请求类型创建请求
+                            const actionMap = {
+                                '注册事件': 'registerEvent',
+                                '更新事件': 'updateEvent',
+                                '添加伏笔': 'addForeshadowing',
+                                '更新伏笔': 'updateForeshadowing',
+                                '注册角色': 'registerCharacter',
+                                '更新角色': 'updateCharacter',
+                                '添加物品': 'addItem',
+                                '添加资产': 'addAsset',
+                                '添加知识': 'addKnowledge',
+                                '添加地点': 'addLocation',
+                                '更新物品': 'updateItem',
+                                '更新资产': 'updateAsset',
+                                '更新知识': 'updateKnowledge',
+                                '更新地点': 'updateLocation'
+                            };
+                            
+                            if (actionMap[currentRequestType]) {
+                                requests.push({
+                                    action: actionMap[currentRequestType],
+                                    value: jsonData
+                                });
+                            }
+                        } catch (e) {
+                            console.error(`解析${currentRequestType}数据错误:`, e);
+                        }
+                        
+                        // 重置状态
+                        inJsonBlock = false;
+                        currentJsonBuffer = '';
+                        currentRequestType = null;
+                    }
+                    return;
+                }
+                
                 if (!trimmedLine) {
                     // 保留空行到story中
                     storyLines.push(originalLine);
@@ -108,35 +165,7 @@ class ResponseParser {
                     return;
                 }
                 
-                // 匹配注册事件格式: 注册事件：{...}
-                const eventRegisterMatch = trimmedLine.match(/^注册事件：(.+)$/);
-                if (eventRegisterMatch) {
-                    try {
-                        const eventData = JSON.parse(eventRegisterMatch[1]);
-                        requests.push({
-                            action: 'registerEvent',
-                            value: eventData
-                        });
-                    } catch (e) {
-                        console.error('解析事件数据错误:', e);
-                    }
-                    return;
-                }
-                
-                // 匹配更新事件格式: 更新事件：{...}
-                const eventUpdateMatch = trimmedLine.match(/^更新事件：(.+)$/);
-                if (eventUpdateMatch) {
-                    try {
-                        const eventData = JSON.parse(eventUpdateMatch[1]);
-                        requests.push({
-                            action: 'updateEvent',
-                            value: eventData
-                        });
-                    } catch (e) {
-                        console.error('解析事件数据错误:', e);
-                    }
-                    return;
-                }
+                // 匹配单行请求格式
                 
                 // 匹配删除事件格式: 删除事件：事件名称
                 const eventDeleteMatch = trimmedLine.match(/^删除事件：(.+)$/);
@@ -146,36 +175,6 @@ class ResponseParser {
                         action: 'deleteEvent',
                         value: eventName.trim()
                     });
-                    return;
-                }
-                
-                // 匹配添加伏笔格式: 添加伏笔：{...}
-                const foreshadowingAddMatch = trimmedLine.match(/^添加伏笔：(.+)$/);
-                if (foreshadowingAddMatch) {
-                    try {
-                        const foreshadowingData = JSON.parse(foreshadowingAddMatch[1]);
-                        requests.push({
-                            action: 'addForeshadowing',
-                            value: foreshadowingData
-                        });
-                    } catch (e) {
-                        console.error('解析伏笔数据错误:', e);
-                    }
-                    return;
-                }
-                
-                // 匹配更新伏笔格式: 更新伏笔：{...}
-                const foreshadowingUpdateMatch = trimmedLine.match(/^更新伏笔：(.+)$/);
-                if (foreshadowingUpdateMatch) {
-                    try {
-                        const foreshadowingData = JSON.parse(foreshadowingUpdateMatch[1]);
-                        requests.push({
-                            action: 'updateForeshadowing',
-                            value: foreshadowingData
-                        });
-                    } catch (e) {
-                        console.error('解析伏笔数据错误:', e);
-                    }
                     return;
                 }
                 
@@ -212,36 +211,6 @@ class ResponseParser {
                     return;
                 }
                 
-                // 匹配注册角色格式: 注册角色：{...}
-                const characterRegisterMatch = trimmedLine.match(/^注册角色：(.+)$/);
-                if (characterRegisterMatch) {
-                    try {
-                        const characterData = JSON.parse(characterRegisterMatch[1]);
-                        requests.push({
-                            action: 'registerCharacter',
-                            value: characterData
-                        });
-                    } catch (e) {
-                        console.error('解析角色数据错误:', e);
-                    }
-                    return;
-                }
-                
-                // 匹配更新角色格式: 更新角色：{...}
-                const characterUpdateMatch = trimmedLine.match(/^更新角色：(.+)$/);
-                if (characterUpdateMatch) {
-                    try {
-                        const characterData = JSON.parse(characterUpdateMatch[1]);
-                        requests.push({
-                            action: 'updateCharacter',
-                            value: characterData
-                        });
-                    } catch (e) {
-                        console.error('解析角色数据错误:', e);
-                    }
-                    return;
-                }
-                
                 // 匹配删除角色格式: 删除角色：角色名称
                 const characterDeleteMatch = trimmedLine.match(/^删除角色：(.+)$/);
                 if (characterDeleteMatch) {
@@ -253,63 +222,57 @@ class ResponseParser {
                     return;
                 }
                 
-                // 匹配添加物品格式: 添加物品：{...}
-                const addItemMatch = trimmedLine.match(/^添加物品：(.+)$/);
-                if (addItemMatch) {
+                // 匹配添加角色做过的事格式: 添加角色做过的事：角色名称，做过的事
+                const addCharacterThingDoneMatch = trimmedLine.match(/^添加角色做过的事：(.+)$/);
+                if (addCharacterThingDoneMatch) {
+                    const [, value] = addCharacterThingDoneMatch;
                     try {
-                        const itemData = JSON.parse(addItemMatch[1]);
-                        requests.push({
-                            action: 'addItem',
-                            value: itemData
-                        });
+                        // 解析格式：角色名称，做过的事
+                        const parts = value.split('，');
+                        if (parts.length >= 2) {
+                            const name = parts[0].trim();
+                            const thingDone = parts.slice(1).join('，').trim();
+                            requests.push({
+                                action: 'addCharacterThingDone',
+                                value: {
+                                    name,
+                                    thingDone
+                                }
+                            });
+                        }
                     } catch (e) {
-                        console.error('解析物品数据错误:', e);
+                        console.error('解析添加角色做过的事错误:', e);
                     }
                     return;
                 }
                 
-                // 匹配添加资产格式: 添加资产：{...}
-                const addAssetMatch = trimmedLine.match(/^添加资产：(.+)$/);
-                if (addAssetMatch) {
-                    try {
-                        const assetData = JSON.parse(addAssetMatch[1]);
-                        requests.push({
-                            action: 'addAsset',
-                            value: assetData
-                        });
-                    } catch (e) {
-                        console.error('解析资产数据错误:', e);
-                    }
+                // 匹配移除物品/资产/知识/地点格式: 移除物品：物品名称
+                const removeMatch = trimmedLine.match(/^移除(物品|资产|知识|地点)：(.+)$/);
+                if (removeMatch) {
+                    const [, type, name] = removeMatch;
+                    const actionMap = {
+                        '物品': 'removeItem',
+                        '资产': 'removeAsset',
+                        '知识': 'removeKnowledge',
+                        '地点': 'removeLocation'
+                    };
+                    requests.push({
+                        action: actionMap[type],
+                        value: name.trim()
+                    });
                     return;
                 }
                 
-                // 匹配添加知识格式: 添加知识：{...}
-                const addKnowledgeMatch = trimmedLine.match(/^添加知识：(.+)$/);
-                if (addKnowledgeMatch) {
-                    try {
-                        const knowledgeData = JSON.parse(addKnowledgeMatch[1]);
-                        requests.push({
-                            action: 'addKnowledge',
-                            value: knowledgeData
-                        });
-                    } catch (e) {
-                        console.error('解析知识数据错误:', e);
-                    }
-                    return;
-                }
-                
-                // 匹配添加地点格式: 添加地点：{...}
-                const addLocationMatch = trimmedLine.match(/^添加地点：(.+)$/);
-                if (addLocationMatch) {
-                    try {
-                        const locationData = JSON.parse(addLocationMatch[1]);
-                        requests.push({
-                            action: 'addLocation',
-                            value: locationData
-                        });
-                    } catch (e) {
-                        console.error('解析地点数据错误:', e);
-                    }
+                // 匹配JSON块起始的请求类型
+                const jsonRequestMatch = trimmedLine.match(/^(注册事件|更新事件|添加伏笔|更新伏笔|注册角色|更新角色|添加物品|添加资产|添加知识|添加地点|更新物品|更新资产|更新知识|更新地点)：\{/);
+                if (jsonRequestMatch) {
+                    // 进入JSON块模式
+                    inJsonBlock = true;
+                    currentRequestType = jsonRequestMatch[1];
+                    currentJsonBuffer = trimmedLine.replace(jsonRequestMatch[0], '{') + '\n';
+                    
+                    // 初始化花括号计数
+                    jsonOpenBraces = 1; // 已经有一个开放的花括号
                     return;
                 }
                 
