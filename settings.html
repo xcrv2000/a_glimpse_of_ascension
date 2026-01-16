@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>擢升一瞥 - 设置</title>
     <script src="src/js/apiKeyManager.js"></script>
+    <script src="src/js/promptManager.js"></script>
     <style>
         /* 动态颜色变量 */
         :root {
@@ -273,12 +274,12 @@
             <div class="setting-group">
                 <label class="setting-label" for="prompt-mode">模式选择</label>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <span>两阶段模式</span>
+                    <span>简略模式</span>
                     <label class="toggle-switch">
                         <input type="checkbox" id="prompt-mode">
                         <span class="toggle-slider"></span>
                     </label>
-                    <span>简略模式</span>
+                    <span>两阶段模式</span>
                 </div>
         <small style="color: var(--neutral3-color); margin-top: 5px; display: block;">
                     简略模式：传统的单阶段交互，提示词包含引擎调用信息<br>
@@ -546,6 +547,22 @@
 
         // 页面加载时加载设置
         window.addEventListener('load', loadSettings);
+        
+        // 为提示词模式切换添加事件监听器
+        window.addEventListener('load', function() {
+            const promptModeToggle = document.getElementById('prompt-mode');
+            if (promptModeToggle) {
+                promptModeToggle.addEventListener('change', function() {
+                    // 立即保存设置
+                    saveSettings();
+                    // 立即更新PromptManager模式
+                    const promptMode = this.checked ? 'twoPhase' : 'simplified';
+                    if (typeof PromptManager !== 'undefined' && PromptManager.setMode) {
+                        PromptManager.setMode(promptMode);
+                    }
+                });
+            }
+        });
         
         // 阻止API密钥输入框的复制操作
         window.addEventListener('load', function() {
