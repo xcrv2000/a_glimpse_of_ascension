@@ -1437,7 +1437,10 @@
             
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isUser ? 'user' : 'ai'}`;
-            messageDiv.textContent = content;
+            messageDiv.innerHTML = content.replace(/\n/g, '<br>');
+            // 处理连续换行，确保段落间距正确
+            messageDiv.innerHTML = messageDiv.innerHTML.replace(/(<br>\s*){2,}/g, '<br><br>');
+
             
             // 添加消息到容器
             messagesContainer.appendChild(messageDiv);

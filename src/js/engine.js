@@ -689,14 +689,17 @@ class GameEngine {
         try {
             console.log('处理故事节拍操作:', operation);
             
-            // 检查是否已经在后日谈
+            // 检查是否已经在后日谈（通过节拍或时间判断）
             const currentBeat = this.gameData.narrative?.storyBeat || '起';
-            if (currentBeat === '后日谈') {
+            const currentTime = this.gameData.metadata?.currentTime;
+            
+            // 如果当前节拍是后日谈，或者当前时间是后日谈，忽略所有节拍操作
+            if (currentBeat === '后日谈' || currentTime === '后日谈') {
                 console.log('已在后日谈，节拍操作无效');
-                return currentBeat;
+                return currentBeat || '后日谈';
             }
             
-            // 处理完结操作（在任何节拍都有效）
+            // 处理完结操作（在任何节拍都有效，除了后日谈）
             if (operation === '完结') {
                 // 直接进入后日谈
                 const newBeat = '后日谈';

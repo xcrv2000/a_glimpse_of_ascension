@@ -3,6 +3,15 @@ class DataManager {
     // 读取data.json文件
     static async readData() {
         try {
+            // 优先从localStorage读取数据
+            const localStorageData = localStorage.getItem('gameData');
+            if (localStorageData) {
+                const data = JSON.parse(localStorageData);
+                console.log('成功从localStorage读取游戏数据:', data);
+                return data;
+            }
+            
+            // 如果localStorage中没有数据，再从data.json文件读取
             const response = await fetch('src/data/data.json');
             if (!response.ok) {
                 throw new Error(`读取data.json失败: ${response.status}`);
@@ -11,9 +20,9 @@ class DataManager {
             console.log('成功读取data.json:', data);
             return data;
         } catch (error) {
-            console.error('读取data.json错误:', error);
-            // 如果文件不存在或解析失败，返回空对象
-            return {};
+            console.error('读取游戏数据错误:', error);
+            // 如果文件不存在或解析失败，返回默认数据
+            return this.getDefaultData();
         }
     }
 

@@ -39,7 +39,9 @@ class ResponseParser {
         
         try {
             // 尝试解析数据请求
-            dataRequests = this.parseDataRequests(response);
+            const parseResult = this.parseDataRequests(response);
+            dataRequests = parseResult.requests;
+            story = parseResult.story;
         } catch (error) {
             console.error('解析数据请求错误:', error);
             // 如果解析失败，将整个内容视为故事
@@ -54,14 +56,23 @@ class ResponseParser {
     static parseDataRequests(content) {
         try {
             const requests = [];
+            const storyLines = [];
             const lines = content.split('\n');
             
             lines.forEach(line => {
-                line = line.trim();
-                if (!line) return;
+                // 保留原始行（包括空格和换行）用于story
+                const originalLine = line;
+                
+                // 处理数据请求时使用trimmed版本
+                const trimmedLine = line.trim();
+                if (!trimmedLine) {
+                    // 保留空行到story中
+                    storyLines.push(originalLine);
+                    return;
+                }
                 
                 // 匹配节拍操作格式: 节拍操作：维持节拍 或 维持节拍
-                const beatOperationMatch = line.match(/^(节拍操作：|)(维持|推进|完结)(节拍|)$/);
+                const beatOperationMatch = trimmedLine.match(/^(节拍操作：|)(维持|推进|完结)(节拍|)$/);
                 if (beatOperationMatch) {
                     const [, , operation] = beatOperationMatch;
                     let normalizedOperation = operation.trim();
@@ -74,7 +85,7 @@ class ResponseParser {
                 }
                 
                 // 匹配景深等级格式: 当前景深等级：2
-                const depthMatch = line.match(/^当前景深等级：(.+)$/);
+                const depthMatch = trimmedLine.match(/^当前景深等级：(.+)$/);
                 if (depthMatch) {
                     const [, value] = depthMatch;
                     requests.push({
@@ -86,7 +97,7 @@ class ResponseParser {
                 }
                 
                 // 匹配时间设置格式: 当前时间：1925-12-26 00:00:00
-                const timeMatch = line.match(/^当前时间：(.+)$/);
+                const timeMatch = trimmedLine.match(/^当前时间：(.+)$/);
                 if (timeMatch) {
                     const [, value] = timeMatch;
                     requests.push({
@@ -98,7 +109,7 @@ class ResponseParser {
                 }
                 
                 // 匹配注册事件格式: 注册事件：{...}
-                const eventRegisterMatch = line.match(/^注册事件：(.+)$/);
+                const eventRegisterMatch = trimmedLine.match(/^注册事件：(.+)$/);
                 if (eventRegisterMatch) {
                     try {
                         const eventData = JSON.parse(eventRegisterMatch[1]);
@@ -113,7 +124,7 @@ class ResponseParser {
                 }
                 
                 // 匹配更新事件格式: 更新事件：{...}
-                const eventUpdateMatch = line.match(/^更新事件：(.+)$/);
+                const eventUpdateMatch = trimmedLine.match(/^更新事件：(.+)$/);
                 if (eventUpdateMatch) {
                     try {
                         const eventData = JSON.parse(eventUpdateMatch[1]);
@@ -128,7 +139,7 @@ class ResponseParser {
                 }
                 
                 // 匹配删除事件格式: 删除事件：事件名称
-                const eventDeleteMatch = line.match(/^删除事件：(.+)$/);
+                const eventDeleteMatch = trimmedLine.match(/^删除事件：(.+)$/);
                 if (eventDeleteMatch) {
                     const [, eventName] = eventDeleteMatch;
                     requests.push({
@@ -139,7 +150,7 @@ class ResponseParser {
                 }
                 
                 // 匹配添加伏笔格式: 添加伏笔：{...}
-                const foreshadowingAddMatch = line.match(/^添加伏笔：(.+)$/);
+                const foreshadowingAddMatch = trimmedLine.match(/^添加伏笔：(.+)$/);
                 if (foreshadowingAddMatch) {
                     try {
                         const foreshadowingData = JSON.parse(foreshadowingAddMatch[1]);
@@ -154,7 +165,7 @@ class ResponseParser {
                 }
                 
                 // 匹配更新伏笔格式: 更新伏笔：{...}
-                const foreshadowingUpdateMatch = line.match(/^更新伏笔：(.+)$/);
+                const foreshadowingUpdateMatch = trimmedLine.match(/^更新伏笔：(.+)$/);
                 if (foreshadowingUpdateMatch) {
                     try {
                         const foreshadowingData = JSON.parse(foreshadowingUpdateMatch[1]);
@@ -169,7 +180,7 @@ class ResponseParser {
                 }
                 
                 // 匹配删除伏笔格式: 删除伏笔：伏笔名称
-                const foreshadowingDeleteMatch = line.match(/^删除伏笔：(.+)$/);
+                const foreshadowingDeleteMatch = trimmedLine.match(/^删除伏笔：(.+)$/);
                 if (foreshadowingDeleteMatch) {
                     const [, foreshadowingName] = foreshadowingDeleteMatch;
                     requests.push({
@@ -180,7 +191,7 @@ class ResponseParser {
                 }
                 
                 // 匹配完成成就格式: 完成成就：成就名称
-                const achievementCompleteMatch = line.match(/^完成成就：(.+)$/);
+                const achievementCompleteMatch = trimmedLine.match(/^完成成就：(.+)$/);
                 if (achievementCompleteMatch) {
                     const [, achievementName] = achievementCompleteMatch;
                     requests.push({
@@ -191,7 +202,7 @@ class ResponseParser {
                 }
                 
                 // 匹配显示成就格式: 显示成就：成就名称
-                const achievementShowMatch = line.match(/^显示成就：(.+)$/);
+                const achievementShowMatch = trimmedLine.match(/^显示成就：(.+)$/);
                 if (achievementShowMatch) {
                     const [, achievementName] = achievementShowMatch;
                     requests.push({
@@ -202,7 +213,7 @@ class ResponseParser {
                 }
                 
                 // 匹配注册角色格式: 注册角色：{...}
-                const characterRegisterMatch = line.match(/^注册角色：(.+)$/);
+                const characterRegisterMatch = trimmedLine.match(/^注册角色：(.+)$/);
                 if (characterRegisterMatch) {
                     try {
                         const characterData = JSON.parse(characterRegisterMatch[1]);
@@ -217,7 +228,7 @@ class ResponseParser {
                 }
                 
                 // 匹配更新角色格式: 更新角色：{...}
-                const characterUpdateMatch = line.match(/^更新角色：(.+)$/);
+                const characterUpdateMatch = trimmedLine.match(/^更新角色：(.+)$/);
                 if (characterUpdateMatch) {
                     try {
                         const characterData = JSON.parse(characterUpdateMatch[1]);
@@ -232,7 +243,7 @@ class ResponseParser {
                 }
                 
                 // 匹配删除角色格式: 删除角色：角色名称
-                const characterDeleteMatch = line.match(/^删除角色：(.+)$/);
+                const characterDeleteMatch = trimmedLine.match(/^删除角色：(.+)$/);
                 if (characterDeleteMatch) {
                     const [, characterName] = characterDeleteMatch;
                     requests.push({
@@ -243,7 +254,7 @@ class ResponseParser {
                 }
                 
                 // 匹配添加物品格式: 添加物品：{...}
-                const addItemMatch = line.match(/^添加物品：(.+)$/);
+                const addItemMatch = trimmedLine.match(/^添加物品：(.+)$/);
                 if (addItemMatch) {
                     try {
                         const itemData = JSON.parse(addItemMatch[1]);
@@ -258,7 +269,7 @@ class ResponseParser {
                 }
                 
                 // 匹配添加资产格式: 添加资产：{...}
-                const addAssetMatch = line.match(/^添加资产：(.+)$/);
+                const addAssetMatch = trimmedLine.match(/^添加资产：(.+)$/);
                 if (addAssetMatch) {
                     try {
                         const assetData = JSON.parse(addAssetMatch[1]);
@@ -273,7 +284,7 @@ class ResponseParser {
                 }
                 
                 // 匹配添加知识格式: 添加知识：{...}
-                const addKnowledgeMatch = line.match(/^添加知识：(.+)$/);
+                const addKnowledgeMatch = trimmedLine.match(/^添加知识：(.+)$/);
                 if (addKnowledgeMatch) {
                     try {
                         const knowledgeData = JSON.parse(addKnowledgeMatch[1]);
@@ -288,7 +299,7 @@ class ResponseParser {
                 }
                 
                 // 匹配添加地点格式: 添加地点：{...}
-                const addLocationMatch = line.match(/^添加地点：(.+)$/);
+                const addLocationMatch = trimmedLine.match(/^添加地点：(.+)$/);
                 if (addLocationMatch) {
                     try {
                         const locationData = JSON.parse(addLocationMatch[1]);
@@ -301,12 +312,18 @@ class ResponseParser {
                     }
                     return;
                 }
+                
+                // 如果不是数据请求行，将其添加到story中
+                storyLines.push(originalLine);
             });
             
-            return requests;
+            // 将storyLines重新组合成完整的story字符串，保留原始换行
+            const story = storyLines.join('\n');
+            
+            return { requests, story };
         } catch (error) {
             console.error('解析数据请求错误:', error);
-            return [];
+            return { requests: [], story: content };
         }
     }
 
