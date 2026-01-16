@@ -137,7 +137,7 @@ class PromptBuilder_Storyteller {
                 messages.push({ role: 'user', content: userMessage.trim() });
                 messages.push({
                     role: 'system',
-                    content: '===用户输入结束===\n\n请以故事讲述者的身份开始渲染故事。请在叙事结束后添加一段秘密信息，格式为"**秘密信息**：[内容]"。秘密信息将直接发送给故事记录者，用于后续的游戏引擎更新。'
+                    content: '===用户输入结束===\n\n请以故事讲述者的身份开始渲染故事，注意不要在故事正文中出现底层的游戏数据。不要忘记在故事结束后添加一段秘密信息，格式为"**秘密信息**：[内容]"。秘密信息将直接发送给ai故事记录者，用于后续的游戏引擎更新。'
                 });
             }
             
