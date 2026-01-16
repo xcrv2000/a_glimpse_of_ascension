@@ -222,6 +222,13 @@
     </div>
     
     <div class="container">
+        <!-- 显眼的版本号信息 -->
+        <div class="section" style="background-color: var(--accent-color); text-align: center; margin-bottom: 20px;">
+            <h2 style="margin: 0; padding: 15px 0; font-size: 24px; color: var(--neutral1-color);">
+                擢升一瞥 - 版本 <span id="version-number-header">加载中...</span>
+            </h2>
+        </div>
+        
         <div class="section">
             <h2>AI模型配置</h2>
             <div class="setting-group">
@@ -292,7 +299,7 @@
     </div>
     
     <!-- 版本号显示 -->
-    <div class="version-info">版本 <span id="version-number">1.0.4</span></div>
+    <div class="version-info">版本 <span id="version-number">加载中...</span></div>
     
     <script>
         // 加载并同步版本号
@@ -301,9 +308,15 @@
                 const response = await fetch('package.json');
                 if (response.ok) {
                     const packageData = await response.json();
+                    // 更新底部版本号
                     const versionElement = document.getElementById('version-number');
                     if (versionElement) {
                         versionElement.textContent = packageData.version;
+                    }
+                    // 更新顶部显眼版本号
+                    const versionElementHeader = document.getElementById('version-number-header');
+                    if (versionElementHeader) {
+                        versionElementHeader.textContent = packageData.version;
                     }
                 }
             } catch (error) {
