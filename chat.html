@@ -2445,6 +2445,26 @@
             }
         }
         
+        // 显示系统提示消息（不会进入故事数据）
+        function showSystemMessage(content) {
+            // 确保messagesContainer已初始化
+            if (!messagesContainer) {
+                messagesContainer = document.getElementById('messages');
+                if (!messagesContainer) {
+                    console.error('消息容器未找到，无法显示系统消息:', content);
+                    return;
+                }
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message system';
+            messageDiv.textContent = content;
+            
+            // 添加消息到容器
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
         // 处理霞中车成就按钮点击（获得admin权限）
         function handleXiaZhongCheClick() {
             console.log('点击霞中车成就按钮，获得admin权限');
@@ -2472,8 +2492,8 @@
             
             // 重新加载成就数据，更新UI
             loadAchievementsData();
-            // 显示成功消息
-            addMessage('你获得了管理员权限！', false);
+            // 显示系统提示消息（不会进入故事数据）
+            showSystemMessage('你获得了管理员权限！');
         }
         
         // 处理绸间塔成就按钮点击（失去admin权限）
@@ -2511,8 +2531,8 @@
             
             // 重新加载成就数据，更新UI
             loadAchievementsData();
-            // 显示成功消息
-            addMessage('你失去了管理员权限。', false);
+            // 显示系统提示消息（不会进入故事数据）
+            showSystemMessage('你失去了管理员权限。');
         }
         
         // 处理雾上灯成就按钮点击（前往GitHub）
