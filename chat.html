@@ -356,7 +356,7 @@
             top: 33.33%;
             right: 0;
             width: 30px;
-            height: 100px;
+            height: 120px;
             background-color: var(--accent-color);
             color: var(--neutral1-color);
             border: none;
@@ -380,13 +380,13 @@
         }
         
         /* 调试面板展开时，调试按钮左移 */
-        .debug-panel[style*="display: block"] ~ .debug-toggle {
+        .debug-panel.open ~ .debug-toggle {
             right: 320px;
         }
         
         /* 移动端调试面板展开时，隐藏调试按钮 */
         @media (max-width: 768px) {
-            .debug-panel[style*="display: block"] ~ .debug-toggle {
+            .debug-panel.open ~ .debug-toggle {
                 display: none;
             }
         }
@@ -2428,20 +2428,14 @@
         // 切换调试面板显示/隐藏
         function toggleDebugPanel() {
             const debugPanel = document.getElementById('debugPanel');
-            const debugToggle = document.getElementById('debugToggle');
-            
             if (debugPanel.style.display === 'none' || debugPanel.style.display === '') {
                 debugPanel.style.display = 'block';
-                // 使用transform移动调试按钮到面板左侧
-                debugToggle.style.transform = 'translateX(-320px)';
                 // 每次显示时更新调试面板内容
                 updateDebugPanel();
                 // 更新选项卡显示状态
                 updateDebugTabsVisibility();
             } else {
                 debugPanel.style.display = 'none';
-                // 恢复调试按钮到右侧
-                debugToggle.style.transform = 'translateX(0)';
             }
         }
         
