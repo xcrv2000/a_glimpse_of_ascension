@@ -1221,12 +1221,18 @@
             if (savedSettings) {
                 try {
                     settings = JSON.parse(savedSettings);
-                    // 检查是否包含promptMode字段
-                    if (!settings.promptMode) {
-                        // 如果没有promptMode字段，添加默认值
+                    // 检查是否包含promptMode字段，并且是否明确设置为'simplified'
+                    // 根据游戏逻辑，默认应该使用两阶段模式
+                    if (!settings.promptMode || settings.promptMode !== 'simplified') {
+                        // 如果没有promptMode字段，或者不是明确的'simplified'，则使用默认的两阶段模式
                         settings.promptMode = 'twoPhase';
                         localStorage.setItem('gameSettings', JSON.stringify(settings));
-                        console.log('已更新设置，添加默认promptMode为两阶段模式');
+                        // 确保PromptManager知道我们使用的是两阶段模式
+                        PromptManager.setMode('twoPhase');
+                        console.log('已更新设置，使用默认promptMode为两阶段模式');
+                    } else {
+                        // 确保PromptManager知道当前模式
+                        PromptManager.setMode(settings.promptMode);
                     }
                 } catch (error) {
                     console.error('解析保存的设置失败，使用默认设置:', error);
@@ -1243,6 +1249,8 @@
                     promptMode: 'twoPhase' // 默认使用两阶段模式
                 };
                 localStorage.setItem('gameSettings', JSON.stringify(defaultSettings));
+                // 确保PromptManager知道我们使用的是两阶段模式
+                PromptManager.setMode('twoPhase');
                 console.log('已初始化默认设置，默认模式为两阶段模式');
             }
         }
@@ -1281,7 +1289,20 @@
             if (newGame === 'true') {
                 // 清空所有故事数据
                 StoryStorage.clearAll();
-                console.log('已清空所有故事数据，开始新游戏');
+                
+                // 重置游戏设置，使用默认的两阶段模式
+                const defaultSettings = {
+                    aiProvider: 'deepseek',
+                    aiModel: 'deepseek-chat',
+                    apiKey: '',
+                    promptMode: 'twoPhase' // 默认使用两阶段模式
+                };
+                localStorage.setItem('gameSettings', JSON.stringify(defaultSettings));
+                
+                // 确保PromptManager知道我们使用的是两阶段模式
+                PromptManager.setMode('twoPhase');
+                
+                console.log('已清空所有故事数据并重置设置，开始新游戏，默认使用两阶段模式');
             }
         }
         

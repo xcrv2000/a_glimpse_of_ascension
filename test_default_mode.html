@@ -1,0 +1,161 @@
+// 测试脚本：验证游戏默认模式是否为两阶段模式
+// 模拟localStorage
+const localStorageMock = {
+    getItem: function(key) {
+        return this[key];
+    },
+    setItem: function(key, value) {
+        this[key] = value;
+    },
+    removeItem: function(key) {
+        delete this[key];
+    },
+    clear: function() {
+        for (const key in this) {
+            if (this.hasOwnProperty(key) && typeof this[key] !== 'function') {
+                delete this[key];
+            }
+        }
+    }
+};
+
+// 模拟window.localStorage
+Object.defineProperty(window, 'localStorage', {
+    value: localStorageMock,
+    writable: true
+});
+
+// 模拟PromptManager类
+class PromptManager {
+    // 获取当前提示词模式
+    static getCurrentMode() {
+        try {
+            const settings = localStorage.getItem('gameSettings');
+            if (settings) {
+                const parsedSettings = JSON.parse(settings);
+                const mode = parsedSettings.promptMode;
+                // 只有当明确设置为'simplified'时才使用简略模式，否则默认使用两阶段模式
+                return mode === 'simplified' ? 'simplified' : 'twoPhase';
+            }
+            return 'twoPhase';
+        } catch (error) {
+            console.error('获取提示词模式失败，使用默认的两阶段模式:', error);
+            return 'twoPhase';
+        }
+    }
+
+    // 设置提示词模式
+    static setMode(mode) {
+        try {
+            const settings = localStorage.getItem('gameSettings');
+            let parsedSettings = {};
+            if (settings) {
+                parsedSettings = JSON.parse(settings);
+            }
+            parsedSettings.promptMode = mode;
+            localStorage.setItem('gameSettings', JSON.stringify(parsedSettings));
+            console.log('提示词模式已设置为:', mode);
+        } catch (error) {
+            console.error('设置提示词模式失败:', error);
+        }
+    }
+
+    // 加载提示词文件
+    static async loadPrompts(mode = null) {
+        const currentMode = mode || this.getCurrentMode();
+        console.log(`正在加载${currentMode}模式提示词`);
+        return { systemPrompt: '测试提示词', loreContent: '', dataContent: '' };
+    }
+}
+
+// 初始化默认设置函数（修复后的版本）
+function initializeDefaultSettings() {
+    let savedSettings = localStorage.getItem('gameSettings');
+    let settings;
+    
+    // 检查是否存在保存的设置，并且是否为有效的JSON
+    if (savedSettings) {
+        try {
+            settings = JSON.parse(savedSettings);
+            // 检查是否包含promptMode字段，并且是否明确设置为'simplified'
+            // 根据游戏逻辑，默认应该使用两阶段模式
+            if (!settings.promptMode || settings.promptMode !== 'simplified') {
+                // 如果没有promptMode字段，或者不是明确的'simplified'，则使用默认的两阶段模式
+                settings.promptMode = 'twoPhase';
+                localStorage.setItem('gameSettings', JSON.stringify(settings));
+                // 确保PromptManager知道我们使用的是两阶段模式
+                PromptManager.setMode('twoPhase');
+                console.log('已更新设置，使用默认promptMode为两阶段模式');
+            } else {
+                // 确保PromptManager知道当前模式
+                PromptManager.setMode(settings.promptMode);
+            }
+        } catch (error) {
+            console.error('解析保存的设置失败，使用默认设置:', error);
+            settings = null;
+        }
+    }
+    
+    if (!settings) {
+        // 没有保存的设置或设置无效，创建默认设置
+        const defaultSettings = {
+            aiProvider: 'deepseek',
+            aiModel: 'deepseek-chat',
+            apiKey: '',
+            promptMode: 'twoPhase' // 默认使用两阶段模式
+        };
+        localStorage.setItem('gameSettings', JSON.stringify(defaultSettings));
+        // 确保PromptManager知道我们使用的是两阶段模式
+        PromptManager.setMode('twoPhase');
+        console.log('已初始化默认设置，默认模式为两阶段模式');
+    }
+}
+
+// 测试1：localStorage为空时，默认使用两阶段模式
+console.log('=== 测试1：localStorage为空时，默认使用两阶段模式 ===');
+localStorage.clear();
+initializeDefaultSettings();
+const mode1 = PromptManager.getCurrentMode();
+console.log(`当前模式：${mode1}`);
+console.log(`测试1 ${mode1 === 'twoPhase' ? '通过' : '失败'}`);
+
+// 测试2：localStorage中存在无效JSON时，默认使用两阶段模式
+console.log('\n=== 测试2：localStorage中存在无效JSON时，默认使用两阶段模式 ===');
+localStorage.clear();
+localStorage.setItem('gameSettings', 'invalid json');
+initializeDefaultSettings();
+const mode2 = PromptManager.getCurrentMode();
+console.log(`当前模式：${mode2}`);
+console.log(`测试2 ${mode2 === 'twoPhase' ? '通过' : '失败'}`);
+
+// 测试3：localStorage中存在有效JSON但没有promptMode字段时，默认使用两阶段模式
+console.log('\n=== 测试3：localStorage中存在有效JSON但没有promptMode字段时，默认使用两阶段模式 ===');
+localStorage.clear();
+localStorage.setItem('gameSettings', JSON.stringify({ aiProvider: 'deepseek' }));
+initializeDefaultSettings();
+const mode3 = PromptManager.getCurrentMode();
+console.log(`当前模式：${mode3}`);
+console.log(`测试3 ${mode3 === 'twoPhase' ? '通过' : '失败'}`);
+
+// 测试4：localStorage中存在有效JSON且promptMode为'not-simplified'时，默认使用两阶段模式
+console.log('\n=== 测试4：localStorage中存在有效JSON且promptMode为"not-simplified"时，默认使用两阶段模式 ===');
+localStorage.clear();
+localStorage.setItem('gameSettings', JSON.stringify({ promptMode: 'not-simplified' }));
+initializeDefaultSettings();
+const mode4 = PromptManager.getCurrentMode();
+console.log(`当前模式：${mode4}`);
+console.log(`测试4 ${mode4 === 'twoPhase' ? '通过' : '失败'}`);
+
+// 测试5：localStorage中存在有效JSON且promptMode为'simplified'时，使用简略模式
+console.log('\n=== 测试5：localStorage中存在有效JSON且promptMode为"simplified"时，使用简略模式 ===');
+localStorage.clear();
+localStorage.setItem('gameSettings', JSON.stringify({ promptMode: 'simplified' }));
+initializeDefaultSettings();
+const mode5 = PromptManager.getCurrentMode();
+console.log(`当前模式：${mode5}`);
+console.log(`测试5 ${mode5 === 'simplified' ? '通过' : '失败'}`);
+
+// 总结
+console.log('\n=== 测试总结 ===');
+console.log('所有测试已完成。');
+console.log('游戏默认应该使用两阶段模式，只有当明确设置为"simplified"时才使用简略模式。');
