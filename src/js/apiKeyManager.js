@@ -1,29 +1,8 @@
 // API密钥管理器
 class ApiKeyManager {
-    // 获取默认API密钥（DeepSeek）
+    // 获取默认API密钥
     static getDefaultApiKey() {
-        // 使用字符编码和拼接的方式隐藏API密钥
-        // 这样在GitHub上查看源代码时不会直接看到完整的密钥
-        const parts = [
-            'sk-',
-            'dbb1',
-            'ecc6',
-            '7a70',
-            '4d93',
-            'b803',
-            'f3c1',
-            'd746',
-            '26b9'
-        ];
-        
-        // 使用数组方法和字符串操作进一步混淆
-        return parts.reduce((acc, part, index) => {
-            if (index % 2 === 0) {
-                return acc + part;
-            } else {
-                return acc + part.split('').reverse().join('');
-            }
-        }, '').split('').reverse().join('').split('').reverse().join('');
+        return 'sk-4a622bdb6569416b9d11802ae92ddca1';
     }
     
     // 从本地存储获取API密钥

@@ -1235,26 +1235,18 @@
                         // 确保PromptManager知道我们使用的是两阶段模式
                         PromptManager.setMode('twoPhase');
                         console.log('initializeDefaultSettings - 已调用PromptManager.setMode(twoPhase)');
-                        // 弹出提示框，显示当前的模式和设置
-                        alert('initializeDefaultSettings - promptMode不存在或不是simplified，设置为twoPhase\n当前设置: ' + localStorage.getItem('gameSettings'));
                     } else {
                         console.log('initializeDefaultSettings - promptMode是simplified，保持不变');
                         // 确保PromptManager知道当前模式
                         PromptManager.setMode(settings.promptMode);
                         console.log('initializeDefaultSettings - 已调用PromptManager.setMode(simplified)');
-                        // 弹出提示框，显示当前的模式和设置
-                        alert('initializeDefaultSettings - promptMode是simplified，保持不变\n当前设置: ' + localStorage.getItem('gameSettings'));
                     }
                 } catch (error) {
                     console.error('initializeDefaultSettings - 解析保存的设置失败，使用默认设置:', error);
                     settings = null;
-                    // 弹出提示框，显示当前的模式和设置
-                    alert('initializeDefaultSettings - 解析保存的设置失败，使用默认设置\n错误: ' + error.message);
                 }
             } else {
                 console.log('initializeDefaultSettings - 没有保存的设置');
-                // 弹出提示框，显示当前的模式和设置
-                alert('initializeDefaultSettings - 没有保存的设置');
             }
             
             if (!settings) {
@@ -1281,8 +1273,6 @@
                 // 确保PromptManager知道我们使用的是两阶段模式
                 PromptManager.setMode('twoPhase');
                 console.log('initializeDefaultSettings - 已调用PromptManager.setMode(twoPhase)');
-                // 弹出提示框，显示当前的模式和设置
-                alert('initializeDefaultSettings - 使用默认设置\n当前设置: ' + localStorage.getItem('gameSettings'));
             }
             console.log('initializeDefaultSettings - 执行完成');
         }
@@ -1350,9 +1340,6 @@
                 // 确保PromptManager知道我们使用的是两阶段模式
                 PromptManager.setMode('twoPhase');
                 console.log('checkForNewGame - 已调用PromptManager.setMode(twoPhase)');
-                
-                // 弹出提示框，显示当前的模式和设置
-                alert('checkForNewGame - 当前模式: twoPhase\n设置: ' + localStorage.getItem('gameSettings'));
                 
                 console.log('checkForNewGame - 新游戏处理完成');
             }
@@ -1604,9 +1591,6 @@
                     // 检查当前模式
                     const currentMode = PromptManager.getCurrentMode();
                     console.log('当前模式:', currentMode);
-                    
-                    // 弹出提示框，显示当前的模式和设置
-                    alert('sendMessage - 当前模式: ' + currentMode + '\n设置: ' + localStorage.getItem('gameSettings'));
                     
                     if (currentMode === 'twoPhase') {
                         console.log('使用两阶段模式');
