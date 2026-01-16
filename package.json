@@ -1,6 +1,6 @@
 {
   "name": "a_glimpse_of_ascension",
-  "version": "1.1.13",
+  "version": "1.2.0",
   "description": "AI驱动的聊天冒险游戏",
   "main": "index.html",
   "scripts": {
@@ -10,7 +10,7 @@
   "author": "xcrv2000",
   "license": "MIT",
   "gameConfig": {
-    "admin": true,
+    "admin": false,
     "gameTitle": "擢升一瞥"
   }
 }
