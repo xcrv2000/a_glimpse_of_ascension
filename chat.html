@@ -946,15 +946,16 @@
                 configurable: true
             });
             
-            // 根据admin状态控制调试面板和调试按钮的显示/隐藏
-            const debugPanel = document.getElementById('debugPanel');
+            // 根据admin状态控制调试按钮的显示/隐藏
             const debugToggle = document.getElementById('debugToggle');
-            if (admin) {
-                if (debugPanel) debugPanel.style.display = 'block';
-                if (debugToggle) debugToggle.style.display = 'block';
-            } else {
-                if (debugPanel) debugPanel.style.display = 'none';
-                if (debugToggle) debugToggle.style.display = 'none';
+            if (debugToggle) {
+                debugToggle.style.display = admin ? 'block' : 'none';
+            }
+            
+            // 调试面板通过CSS类'open'控制滑入滑出，不要修改display属性
+            // 只在admin为true时初始化DebugPanelInstance
+            if (admin && typeof DebugPanel !== 'undefined' && !window.DebugPanelInstance) {
+                window.DebugPanelInstance = new DebugPanel();
             }
             
             console.log('配置加载完成:', config);
@@ -2423,15 +2424,24 @@
         
         // 切换调试面板显示/隐藏
         function toggleDebugPanel() {
-            const debugPanel = document.getElementById('debugPanel');
-            if (debugPanel.style.display === 'none' || debugPanel.style.display === '') {
-                debugPanel.style.display = 'block';
-                // 每次显示时更新调试面板内容
-                updateDebugPanel();
-                // 更新选项卡显示状态
-                updateDebugTabsVisibility();
+            // 优先使用DebugPanelInstance的togglePanel方法（如果存在）
+            if (window.DebugPanelInstance) {
+                window.DebugPanelInstance.togglePanel();
             } else {
-                debugPanel.style.display = 'none';
+                // 兼容处理：直接控制调试面板的显示/隐藏
+                const debugPanel = document.getElementById('debugPanel');
+                if (debugPanel) {
+                    // 切换open类来控制滑入滑出效果
+                    if (debugPanel.classList.contains('open')) {
+                        debugPanel.classList.remove('open');
+                    } else {
+                        debugPanel.classList.add('open');
+                        // 每次显示时更新调试面板内容
+                        updateDebugPanel();
+                        // 更新选项卡显示状态
+                        updateDebugTabsVisibility();
+                    }
+                }
             }
         }
         
@@ -2441,19 +2451,24 @@
             // 设置admin权限为true
             admin = true;
             window.admin = true;
-            // 重新定义admin属性，防止修改
+            // 保持admin属性可配置，以便后续可以修改
             Object.defineProperty(window, 'admin', {
                 value: true,
-                writable: false,
-                configurable: false
+                writable: true,
+                configurable: true
             });
             console.log('admin权限已设置为:', window.admin);
             
-            // 显示调试面板和调试按钮
-            const debugPanel = document.getElementById('debugPanel');
+            // 显示调试按钮
             const debugToggle = document.getElementById('debugToggle');
-            if (debugPanel) debugPanel.style.display = 'block';
-            if (debugToggle) debugToggle.style.display = 'block';
+            if (debugToggle) {
+                debugToggle.style.display = 'block';
+            }
+            
+            // 初始化DebugPanelInstance（如果尚未初始化）
+            if (typeof DebugPanel !== 'undefined' && !window.DebugPanelInstance) {
+                window.DebugPanelInstance = new DebugPanel();
+            }
             
             // 重新加载成就数据，更新UI
             loadAchievementsData();
@@ -2467,19 +2482,32 @@
             // 设置admin权限为false
             admin = false;
             window.admin = false;
-            // 重新定义admin属性，防止修改
+            // 保持admin属性可配置，以便后续可以修改
             Object.defineProperty(window, 'admin', {
                 value: false,
-                writable: false,
-                configurable: false
+                writable: true,
+                configurable: true
             });
             console.log('admin权限已设置为:', window.admin);
             
             // 隐藏调试面板和调试按钮
             const debugPanel = document.getElementById('debugPanel');
             const debugToggle = document.getElementById('debugToggle');
-            if (debugPanel) debugPanel.style.display = 'none';
-            if (debugToggle) debugToggle.style.display = 'none';
+            
+            // 关闭调试面板（如果打开）
+            if (debugPanel) {
+                debugPanel.classList.remove('open');
+            }
+            
+            // 隐藏调试按钮
+            if (debugToggle) {
+                debugToggle.style.display = 'none';
+            }
+            
+            // 清理DebugPanelInstance
+            if (window.DebugPanelInstance) {
+                window.DebugPanelInstance = undefined;
+            }
             
             // 重新加载成就数据，更新UI
             loadAchievementsData();

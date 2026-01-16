@@ -364,9 +364,9 @@ class DebugPanel {
     }
 }
 
-// 初始化调试面板 - 由页面自己控制初始化时机，不再自动初始化
-// window.addEventListener('load', () => {
-//     if (typeof admin !== 'undefined' && admin) {
-//         window.DebugPanelInstance = new DebugPanel();
-//     }
-// });
+// 初始化调试面板
+window.addEventListener('load', () => {
+    if (typeof admin !== 'undefined' && admin) {
+        window.DebugPanelInstance = new DebugPanel();
+    }
+});
