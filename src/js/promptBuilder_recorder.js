@@ -104,6 +104,23 @@ class PromptBuilder_Recorder {
                 });
             }
             
+            // 添加用户输入
+            if (uncompressedStory && uncompressedStory.length > 0) {
+                // 查找最新的用户输入
+                const latestUserMessage = uncompressedStory.filter(msg => msg.role === 'user').pop();
+                if (latestUserMessage && latestUserMessage.content) {
+                    messages.push({
+                        role: 'system',
+                        content: '===用户输入开始==='
+                    });
+                    messages.push({ role: 'user', content: latestUserMessage.content.trim() });
+                    messages.push({
+                        role: 'system',
+                        content: '===用户输入结束==='
+                    });
+                }
+            }
+            
             // 添加秘密信息
             if (secretInfo && typeof secretInfo === 'string' && secretInfo.trim()) {
                 messages.push({

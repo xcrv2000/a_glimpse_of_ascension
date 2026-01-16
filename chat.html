@@ -355,8 +355,8 @@
             position: fixed;
             top: 33.33%;
             right: 0;
-            width: 40px;
-            height: 80px;
+            width: 30px;
+            height: 60px;
             background-color: var(--accent-color);
             color: var(--neutral1-color);
             border: none;
@@ -376,7 +376,19 @@
         .debug-toggle:hover {
             background-color: var(--accent-color);
             opacity: 0.8;
-            width: 50px;
+            width: 40px;
+        }
+        
+        /* 调试面板展开时，调试按钮左移 */
+        .debug-panel[style*="display: block"] ~ .debug-toggle {
+            right: 320px;
+        }
+        
+        /* 移动端调试面板展开时，隐藏调试按钮 */
+        @media (max-width: 768px) {
+            .debug-panel[style*="display: block"] ~ .debug-toggle {
+                display: none;
+            }
         }
         
         .debug-panel {
@@ -415,7 +427,7 @@
         .debug-close-btn {
             background: none;
             border: none;
-            color: var(--neutral1-color);
+            color: var(--accent-color);
             font-size: 18px;
             cursor: pointer;
             padding: 0;
@@ -515,7 +527,9 @@
             cursor: pointer;
             font-size: 11px;
             z-index: 1001;
-            min-width: 50px;
+            min-width: 30px;
+            width: 30px;
+            height: auto;
         }
         
         /* 游戏数据显示样式 */
@@ -582,7 +596,8 @@
         }
         
         .debug-toggle:hover {
-            background-color: #2a3f4c;
+            background-color: var(--accent-color);
+            opacity: 0.8;
         }
         
         /* 成就悬浮窗样式 */
@@ -830,22 +845,22 @@
                     <h5>两阶段模式 - 阶段一 (故事讲述者)</h5>
                     <div class="debug-section">
                         <h6>输入</h6>
-                        <div class="debug-content" id="phase1Input">无数据</div>
+                        <div class="debug-content" id="phase1Input-ai">无数据</div>
                     </div>
                     <div class="debug-section">
                         <h6>输出</h6>
-                        <div class="debug-content" id="phase1Output">无数据</div>
+                        <div class="debug-content" id="phase1Output-ai">无数据</div>
                     </div>
                 </div>
                 <div class="debug-section">
                     <h5>两阶段模式 - 阶段二 (故事记录者)</h5>
                     <div class="debug-section">
                         <h6>输入</h6>
-                        <div class="debug-content" id="phase2Input">无数据</div>
+                        <div class="debug-content" id="phase2Input-ai">无数据</div>
                     </div>
                     <div class="debug-section">
                         <h6>输出</h6>
-                        <div class="debug-content" id="phase2Output">无数据</div>
+                        <div class="debug-content" id="phase2Output-ai">无数据</div>
                     </div>
                 </div>
             </div>
@@ -2553,6 +2568,12 @@
             // 更新AI输入/输出标签页
             document.getElementById('aiInput').textContent = debugData.lastApiRequest || '无数据';
             document.getElementById('aiOutput').textContent = debugData.lastAiResponse || '无数据';
+            
+            // 更新AI数据标签页中的两阶段数据
+            document.getElementById('phase1Input-ai').textContent = debugData.phase1.input || '无数据';
+            document.getElementById('phase1Output-ai').textContent = debugData.phase1.output || '无数据';
+            document.getElementById('phase2Input-ai').textContent = debugData.phase2.input || '无数据';
+            document.getElementById('phase2Output-ai').textContent = debugData.phase2.output || '无数据';
             
             // 更新阶段一标签页
             document.getElementById('phase1Input').textContent = debugData.phase1.input || '无数据';
