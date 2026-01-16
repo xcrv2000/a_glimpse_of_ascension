@@ -1,45 +1,8 @@
 // 工具函数模块
 class Utils {
-    // 获取默认API密钥（DeepSeek）
+    // 获取默认API密钥
     static getDefaultApiKey() {
-        // 使用字符编码和拼接的方式隐藏API密钥
-        // 这样在GitHub上查看源代码时不会直接看到完整的密钥
-        const parts = [
-            'sk-',
-            'db', 'b1',
-            'ec', 'c6',
-            '7a', '70',
-            '4d', '93',
-            'b8', '03',
-            'f3', 'c1',
-            'd7', '46',
-            '26', 'b9'
-        ];
-        
-        // 使用更复杂的混淆方法
-        let result = '';
-        for (let i = 0; i < parts.length; i++) {
-            if (i % 2 === 0) {
-                result += parts[i];
-            } else {
-                // 反转字符串
-                result += parts[i].split('').reverse().join('');
-            }
-        }
-        
-        // 进一步混淆
-        result = result.split('').reverse().join('');
-        result = result.split('').reverse().join('');
-        result = result.split('').reverse().join('');
-        result = result.split('').reverse().join('');
-        
-        // 使用字符编码
-        let finalResult = '';
-        for (let i = 0; i < result.length; i++) {
-            finalResult += String.fromCharCode(result.charCodeAt(i));
-        }
-        
-        return finalResult;
+        return 'sk-4a622bdb6569416b9d11802ae92ddca1';
     }
     
     // 从本地存储获取API密钥
