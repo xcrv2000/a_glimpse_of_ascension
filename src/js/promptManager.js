@@ -4,12 +4,18 @@ class PromptManager {
     static getCurrentMode() {
         try {
             const settings = localStorage.getItem('gameSettings');
+            console.log('getCurrentMode - 原始设置:', settings);
             if (settings) {
                 const parsedSettings = JSON.parse(settings);
+                console.log('getCurrentMode - 解析后的设置:', parsedSettings);
                 const mode = parsedSettings.promptMode;
+                console.log('getCurrentMode - 提取的mode:', mode);
                 // 只有当明确设置为'simplified'时才使用简略模式，否则默认使用两阶段模式
-                return mode === 'simplified' ? 'simplified' : 'twoPhase';
+                const result = mode === 'simplified' ? 'simplified' : 'twoPhase';
+                console.log('getCurrentMode - 返回结果:', result);
+                return result;
             }
+            console.log('getCurrentMode - 没有设置，返回默认值: twoPhase');
             return 'twoPhase';
         } catch (error) {
             console.error('获取提示词模式失败，使用默认的两阶段模式:', error);
