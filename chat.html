@@ -1260,10 +1260,20 @@
             if (!settings) {
                 console.log('initializeDefaultSettings - 使用默认设置');
                 // 没有保存的设置或设置无效，创建默认设置
+                let defaultApiKey = '';
+                // 检查是否存在Utils.getDefaultApiKey()函数，如果存在，就使用它来获取默认的API密钥
+                if (typeof Utils !== 'undefined' && Utils.getDefaultApiKey) {
+                    try {
+                        defaultApiKey = Utils.getDefaultApiKey();
+                        console.log('initializeDefaultSettings - 获取到默认API密钥:', defaultApiKey);
+                    } catch (error) {
+                        console.error('initializeDefaultSettings - 获取默认API密钥失败:', error);
+                    }
+                }
                 const defaultSettings = {
                     aiProvider: 'deepseek',
                     aiModel: 'deepseek-chat',
-                    apiKey: '',
+                    apiKey: defaultApiKey,
                     promptMode: 'twoPhase' // 默认使用两阶段模式
                 };
                 localStorage.setItem('gameSettings', JSON.stringify(defaultSettings));
@@ -1317,10 +1327,20 @@
                 console.log('checkForNewGame - 已清空所有故事数据');
                 
                 // 重置游戏设置，使用默认的两阶段模式
+                let defaultApiKey = '';
+                // 检查是否存在Utils.getDefaultApiKey()函数，如果存在，就使用它来获取默认的API密钥
+                if (typeof Utils !== 'undefined' && Utils.getDefaultApiKey) {
+                    try {
+                        defaultApiKey = Utils.getDefaultApiKey();
+                        console.log('checkForNewGame - 获取到默认API密钥:', defaultApiKey);
+                    } catch (error) {
+                        console.error('checkForNewGame - 获取默认API密钥失败:', error);
+                    }
+                }
                 const defaultSettings = {
                     aiProvider: 'deepseek',
                     aiModel: 'deepseek-chat',
-                    apiKey: '',
+                    apiKey: defaultApiKey,
                     promptMode: 'twoPhase' // 默认使用两阶段模式
                 };
                 console.log('checkForNewGame - 准备保存默认设置:', defaultSettings);
