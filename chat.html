@@ -1001,8 +1001,8 @@
             }
         }
         
-        // 调试数据存储
-        let debugData = {
+        // 调试数据存储 - 定义为全局变量，方便debugPanel访问
+        window.debugData = {
             phase1: {
                 input: null,
                 output: null
@@ -1019,14 +1019,26 @@
         // 页面加载时检查admin权限
         // 注意：此代码已移至上面的initConfig函数中
         
-        // 加载data.json内容
-        async function loadDataJson() {
+        // 加载data.json内容 - 定义为全局函数
+        window.loadDataJson = async function() {
             try {
-                // 首先尝试从localStorage加载数据（游戏引擎实际存储的位置）
+                // 首先尝试从游戏引擎获取实时数据
+                if (window.GameEngineInstance) {
+                    const gameData = window.GameEngineInstance.getGameData();
+                    if (gameData) {
+                        window.debugData.dataJson = JSON.stringify(gameData, null, 2);
+                        if (window.DebugPanelInstance) {
+                            window.DebugPanelInstance.updateContent();
+                        }
+                        return;
+                    }
+                }
+                
+                // 尝试从localStorage加载数据（游戏引擎实际存储的位置）
                 const localStorageData = localStorage.getItem('gameData');
                 if (localStorageData) {
                     const data = JSON.parse(localStorageData);
-                    debugData.dataJson = JSON.stringify(data, null, 2);
+                    window.debugData.dataJson = JSON.stringify(data, null, 2);
                     if (window.DebugPanelInstance) {
                         window.DebugPanelInstance.updateContent();
                     }
@@ -1037,16 +1049,16 @@
                 const response = await fetch('src/data/data.json');
                 if (response.ok) {
                     const data = await response.json();
-                    debugData.dataJson = JSON.stringify(data, null, 2);
+                    window.debugData.dataJson = JSON.stringify(data, null, 2);
                     if (window.DebugPanelInstance) {
                         window.DebugPanelInstance.updateContent();
                     }
                 } else {
-                    throw new Error('加载失败');
+                    throw new Error('加载失败: ' + response.status);
                 }
             } catch (error) {
                 console.error('加载游戏数据失败:', error);
-                debugData.dataJson = '加载失败: ' + error.message;
+                window.debugData.dataJson = '加载失败: ' + error.message;
                 if (window.DebugPanelInstance) {
                     window.DebugPanelInstance.updateContent();
                 }
@@ -1328,6 +1340,10 @@
                 // 清空所有故事数据
                 StoryStorage.clearAll();
                 console.log('checkForNewGame - 已清空所有故事数据');
+                
+                // 清空localStorage中的游戏数据，确保使用默认数据
+                localStorage.removeItem('gameData');
+                console.log('checkForNewGame - 已清空localStorage中的gameData');
                 
                 // 重置游戏设置，使用默认的两阶段模式
                 let defaultApiKey = '';
@@ -2462,6 +2478,8 @@
             const messageDiv = document.createElement('div');
             messageDiv.className = 'message system';
             messageDiv.textContent = content;
+            // 设置系统消息为橙色（使用accent-color变量）
+            messageDiv.style.color = 'var(--accent-color)';
             
             // 添加消息到容器
             messagesContainer.appendChild(messageDiv);

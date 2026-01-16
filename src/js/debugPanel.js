@@ -335,6 +335,9 @@ class DebugPanel {
 
     // 更新调试面板内容
     updateContent() {
+        // 确保debugData是全局变量
+        const debugData = window.debugData || {};
+        
         if (document.getElementById('lastAiResponse')) {
             if (debugData.lastAiResponse) {
                 document.getElementById('lastAiResponse').textContent = debugData.lastAiResponse;
@@ -356,6 +359,10 @@ class DebugPanel {
                 document.getElementById('dataJsonContent').textContent = debugData.dataJson;
             } else {
                 document.getElementById('dataJsonContent').textContent = '加载中...';
+                // 如果数据为空，尝试重新加载
+                if (window.loadDataJson) {
+                    window.loadDataJson();
+                }
             }
         }
         

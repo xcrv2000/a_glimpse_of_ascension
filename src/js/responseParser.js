@@ -84,10 +84,10 @@ class ResponseParser {
                     return;
                 }
                 
-                // 匹配景深等级格式: 当前景深等级：2
-                const depthMatch = trimmedLine.match(/^当前景深等级：(.+)$/);
+                // 匹配景深等级格式: 当前景深等级：2 或 景深等级：2
+                const depthMatch = trimmedLine.match(/^(当前)?景深等级：(.+)$/);
                 if (depthMatch) {
-                    const [, value] = depthMatch;
+                    const [, , value] = depthMatch;
                     requests.push({
                         action: 'update',
                         path: 'narrative.depthLevel',
