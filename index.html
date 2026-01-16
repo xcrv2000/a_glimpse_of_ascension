@@ -213,7 +213,8 @@
         // 加载配置
         async function initConfig() {
             const config = await configLoader.load();
-            admin = config.admin || true;
+            // 使用更严格的检查方式，确保false值被正确处理
+            admin = config.admin !== undefined ? config.admin : true;
             
             // 定义全局admin属性
             Object.defineProperty(window, 'admin', {
@@ -223,6 +224,7 @@
             });
             
             console.log('配置加载完成:', config);
+            console.log('admin状态:', admin);
         }
         
         // 页面加载完成后初始化
