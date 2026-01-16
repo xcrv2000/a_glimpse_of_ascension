@@ -1,6 +1,6 @@
 {
   "name": "a_glimpse_of_ascension",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "AI驱动的聊天冒险游戏",
   "main": "index.html",
   "scripts": {
