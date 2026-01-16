@@ -515,23 +515,6 @@
             cursor: not-allowed;
         }
         
-        .debug-toggle {
-            position: fixed;
-            top: 90px;
-            right: 0;
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            border-radius: 5px 0 0 5px;
-            padding: 6px 8px;
-            cursor: pointer;
-            font-size: 11px;
-            z-index: 1001;
-            min-width: 30px;
-            width: 30px;
-            height: auto;
-        }
-        
         /* 游戏数据显示样式 */
         .game-data-display {
             font-size: 11px;
@@ -728,7 +711,6 @@
     </div>
     
     <!-- 调试抽屉 -->
-    <button class="debug-toggle" id="debugToggle" onclick="toggleDebugPanel()">调试</button>
     <div class="debug-panel" id="debugPanel">
         <div class="debug-panel-header">
             <h3>调试信息</h3>
@@ -906,6 +888,7 @@
             </div>
         </div>
     </div>
+    <button class="debug-toggle" id="debugToggle" onclick="toggleDebugPanel()">调试</button>
     
     <!-- 成就悬浮窗 -->
     <div class="achievements-panel" id="achievementsPanel">
