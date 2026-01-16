@@ -1,13 +1,10 @@
 todos
 
-在设置旁边加一个成就列表折叠框
 
+成就相关的文字说明需要更改。共有两处：prompt.json内的描述，achievements.json内的描述。
 
-成就相关的文字说明需要更改。共有三处：prompt.json内的描述，achievements.json内的描述，dataManager.js内的描述。
+把那三个隐藏成就做成按钮
 
-为了方便调试，ContextCompressor压缩临界值设为9。调试结束后应改为24。
-
-用prompt分割数据部分内各个数据和故事部分
 prompt需要调整顺序
 删除管理员功能
 
