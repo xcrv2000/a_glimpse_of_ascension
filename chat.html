@@ -945,6 +945,17 @@
                 configurable: true
             });
             
+            // 根据admin状态控制调试面板和调试按钮的显示/隐藏
+            const debugPanel = document.getElementById('debugPanel');
+            const debugToggle = document.getElementById('debugToggle');
+            if (admin) {
+                if (debugPanel) debugPanel.style.display = 'block';
+                if (debugToggle) debugToggle.style.display = 'block';
+            } else {
+                if (debugPanel) debugPanel.style.display = 'none';
+                if (debugToggle) debugToggle.style.display = 'none';
+            }
+            
             console.log('配置加载完成:', config);
         }
         
@@ -2435,6 +2446,13 @@
                 configurable: false
             });
             console.log('admin权限已设置为:', window.admin);
+            
+            // 显示调试面板和调试按钮
+            const debugPanel = document.getElementById('debugPanel');
+            const debugToggle = document.getElementById('debugToggle');
+            if (debugPanel) debugPanel.style.display = 'block';
+            if (debugToggle) debugToggle.style.display = 'block';
+            
             // 重新加载成就数据，更新UI
             loadAchievementsData();
             // 显示成功消息
@@ -2454,13 +2472,15 @@
                 configurable: false
             });
             console.log('admin权限已设置为:', window.admin);
+            
+            // 隐藏调试面板和调试按钮
+            const debugPanel = document.getElementById('debugPanel');
+            const debugToggle = document.getElementById('debugToggle');
+            if (debugPanel) debugPanel.style.display = 'none';
+            if (debugToggle) debugToggle.style.display = 'none';
+            
             // 重新加载成就数据，更新UI
             loadAchievementsData();
-            // 隐藏调试面板
-            const debugPanel = document.getElementById('debugPanel');
-            if (debugPanel) {
-                debugPanel.style.display = 'none';
-            }
             // 显示成功消息
             addMessage('你失去了管理员权限。', false);
         }
