@@ -17,9 +17,18 @@ class DataManager {
         }
     }
 
-    // 读取achievements.json文件
+    // 读取成就数据
     static async readAchievements() {
         try {
+            // 优先从localStorage读取成就数据（如果存在）
+            const localStorageData = localStorage.getItem('achievementsData');
+            if (localStorageData) {
+                const data = JSON.parse(localStorageData);
+                console.log('成功从localStorage读取成就数据:', data);
+                return data;
+            }
+            
+            // 如果localStorage中没有数据，再从achievements.json文件读取
             const response = await fetch('src/data/achievements.json');
             if (!response.ok) {
                 throw new Error(`读取achievements.json失败: ${response.status}`);
@@ -28,7 +37,7 @@ class DataManager {
             console.log('成功读取achievements.json:', data);
             return data;
         } catch (error) {
-            console.error('读取achievements.json错误:', error);
+            console.error('读取成就数据错误:', error);
             // 如果文件不存在或解析失败，返回默认成就数据
             return this.getDefaultAchievementsData();
         }
