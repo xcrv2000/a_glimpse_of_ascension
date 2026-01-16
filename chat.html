@@ -1214,9 +1214,28 @@
         
         // 初始化默认设置
         function initializeDefaultSettings() {
-            const savedSettings = localStorage.getItem('gameSettings');
-            if (!savedSettings) {
-                // 没有保存的设置，创建默认设置
+            let savedSettings = localStorage.getItem('gameSettings');
+            let settings;
+            
+            // 检查是否存在保存的设置，并且是否为有效的JSON
+            if (savedSettings) {
+                try {
+                    settings = JSON.parse(savedSettings);
+                    // 检查是否包含promptMode字段
+                    if (!settings.promptMode) {
+                        // 如果没有promptMode字段，添加默认值
+                        settings.promptMode = 'twoPhase';
+                        localStorage.setItem('gameSettings', JSON.stringify(settings));
+                        console.log('已更新设置，添加默认promptMode为两阶段模式');
+                    }
+                } catch (error) {
+                    console.error('解析保存的设置失败，使用默认设置:', error);
+                    settings = null;
+                }
+            }
+            
+            if (!settings) {
+                // 没有保存的设置或设置无效，创建默认设置
                 const defaultSettings = {
                     aiProvider: 'deepseek',
                     aiModel: 'deepseek-chat',

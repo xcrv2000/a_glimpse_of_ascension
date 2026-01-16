@@ -12,7 +12,7 @@ class PromptManager {
             }
             return 'twoPhase';
         } catch (error) {
-            console.error('获取提示词模式失败:', error);
+            console.error('获取提示词模式失败，使用默认的两阶段模式:', error);
             return 'twoPhase';
         }
     }
