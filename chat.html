@@ -2428,14 +2428,20 @@
         // 切换调试面板显示/隐藏
         function toggleDebugPanel() {
             const debugPanel = document.getElementById('debugPanel');
+            const debugToggle = document.getElementById('debugToggle');
+            
             if (debugPanel.style.display === 'none' || debugPanel.style.display === '') {
                 debugPanel.style.display = 'block';
+                // 移动调试按钮到面板左侧
+                debugToggle.style.right = '320px';
                 // 每次显示时更新调试面板内容
                 updateDebugPanel();
                 // 更新选项卡显示状态
                 updateDebugTabsVisibility();
             } else {
                 debugPanel.style.display = 'none';
+                // 恢复调试按钮到右侧
+                debugToggle.style.right = '0';
             }
         }
         
