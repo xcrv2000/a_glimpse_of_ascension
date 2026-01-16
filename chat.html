@@ -2432,8 +2432,8 @@
             
             if (debugPanel.style.display === 'none' || debugPanel.style.display === '') {
                 debugPanel.style.display = 'block';
-                // 移动调试按钮到面板左侧
-                debugToggle.style.right = '320px';
+                // 使用transform移动调试按钮到面板左侧
+                debugToggle.style.transform = 'translateX(-320px)';
                 // 每次显示时更新调试面板内容
                 updateDebugPanel();
                 // 更新选项卡显示状态
@@ -2441,7 +2441,7 @@
             } else {
                 debugPanel.style.display = 'none';
                 // 恢复调试按钮到右侧
-                debugToggle.style.right = '0';
+                debugToggle.style.transform = 'translateX(0)';
             }
         }
         
