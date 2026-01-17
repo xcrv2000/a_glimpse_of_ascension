@@ -5,9 +5,7 @@ const { GameEngine } = require('./src/js/engine');
 class MockDataManager {
     readData() {
         return {
-            metadata: {
-                currentTime: '1925-12-26 00:00:00'
-            },
+            currentTime: '1925-12-26 00:00:00',
             narrative: {
                 storyBeat: '合',
                 depthLevel: '3',
@@ -42,9 +40,7 @@ class MockDataManager {
 
     getDefaultData() {
         return {
-            metadata: {
-                currentTime: '1925-12-26 00:00:00'
-            },
+            currentTime: '1925-12-26 00:00:00',
             narrative: {
                 storyBeat: '起',
                 depthLevel: '3',
@@ -105,7 +101,7 @@ async function testGreatnessAchievement() {
     const result1 = engine.processStoryBeatOperation('推进');
     console.log('推进操作结果:', result1);
     console.log('更新后节拍:', engine.gameData.narrative.storyBeat);
-    console.log('更新后时间:', engine.gameData.metadata.currentTime);
+    console.log('更新后时间:', engine.gameData.currentTime);
     
     // 测试2: 未达成伟业时，推进节拍进入新的起节拍
     console.log('\n测试2: 未达成伟业时，推进节拍进入新的起节拍');

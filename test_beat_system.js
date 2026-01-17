@@ -5,9 +5,7 @@ const { GameEngine } = require('./src/js/engine');
 class MockDataManager {
     readData() {
         return {
-            metadata: {
-                currentTime: '1925-12-26 00:00:00'
-            },
+            currentTime: '1925-12-26 00:00:00',
             narrative: {
                 storyBeat: '起',
                 depthLevel: '3',
@@ -38,9 +36,7 @@ class MockDataManager {
 
     getDefaultData() {
         return {
-            metadata: {
-                currentTime: '1925-12-26 00:00:00'
-            },
+            currentTime: '1925-12-26 00:00:00',
             narrative: {
                 storyBeat: '起',
                 depthLevel: '3',
@@ -75,7 +71,7 @@ function testBeatSystem() {
     const result1 = engine.processStoryBeatOperation('完结');
     console.log('操作结果:', result1);
     console.log('更新后节拍:', engine.gameData.narrative.storyBeat);
-    console.log('更新后时间:', engine.gameData.metadata.currentTime);
+    console.log('更新后时间:', engine.gameData.currentTime);
     
     // 测试2: 在承节拍使用【节拍操作：完结】
     console.log('\n测试2: 在承节拍使用【节拍操作：完结】');
@@ -85,7 +81,7 @@ function testBeatSystem() {
     const result2 = engine.processStoryBeatOperation('完结');
     console.log('操作结果:', result2);
     console.log('更新后节拍:', engine.gameData.narrative.storyBeat);
-    console.log('更新后时间:', engine.gameData.metadata.currentTime);
+    console.log('更新后时间:', engine.gameData.currentTime);
     
     // 测试3: 在转节拍使用【节拍操作：完结】
     console.log('\n测试3: 在转节拍使用【节拍操作：完结】');
@@ -95,7 +91,7 @@ function testBeatSystem() {
     const result3 = engine.processStoryBeatOperation('完结');
     console.log('操作结果:', result3);
     console.log('更新后节拍:', engine.gameData.narrative.storyBeat);
-    console.log('更新后时间:', engine.gameData.metadata.currentTime);
+    console.log('更新后时间:', engine.gameData.currentTime);
     
     // 测试4: 在合节拍使用【节拍操作：完结】
     console.log('\n测试4: 在合节拍使用【节拍操作：完结】');
@@ -105,7 +101,7 @@ function testBeatSystem() {
     const result4 = engine.processStoryBeatOperation('完结');
     console.log('操作结果:', result4);
     console.log('更新后节拍:', engine.gameData.narrative.storyBeat);
-    console.log('更新后时间:', engine.gameData.metadata.currentTime);
+    console.log('更新后时间:', engine.gameData.currentTime);
     
     // 测试5: 在终幕使用【节拍操作：完结】
     console.log('\n测试5: 在终幕使用【节拍操作：完结】');
@@ -115,7 +111,7 @@ function testBeatSystem() {
     const result5 = engine.processStoryBeatOperation('完结');
     console.log('操作结果:', result5);
     console.log('更新后节拍:', engine.gameData.narrative.storyBeat);
-    console.log('更新后时间:', engine.gameData.metadata.currentTime);
+    console.log('更新后时间:', engine.gameData.currentTime);
     
     // 测试6: 在后日谈使用节拍操作
     console.log('\n测试6: 在后日谈使用节拍操作');

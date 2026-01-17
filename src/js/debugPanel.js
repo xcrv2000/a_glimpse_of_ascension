@@ -134,7 +134,7 @@ class DebugPanel {
             const formattedTime = date.toISOString().slice(0, 19).replace('T', ' ');
             
             // 执行操作
-            this.executeTool('update', 'metadata.currentTime', formattedTime);
+            this.executeTool('update', 'currentTime', formattedTime);
         } catch (error) {
             console.error('执行时间工具错误:', error);
             alert('执行操作时出错: ' + error.message);
@@ -149,7 +149,7 @@ class DebugPanel {
             // 设置默认时间为游戏当前时间
             try {
                 const gameData = GameEngineInstance.getGameData();
-                const currentTime = gameData.metadata?.currentTime;
+                const currentTime = gameData.currentTime;
                 
                 if (currentTime) {
                     // 转换游戏时间格式为 datetime-local 格式
@@ -225,7 +225,7 @@ class DebugPanel {
             // 设置默认时间为游戏当前时间
             try {
                 const gameData = GameEngineInstance.getGameData();
-                const currentTime = gameData.metadata?.currentTime;
+                const currentTime = gameData.currentTime;
                 
                 if (currentTime) {
                     // 转换游戏时间格式为 datetime-local 格式
@@ -295,8 +295,8 @@ class DebugPanel {
             }
             
             // 更新时间数据
-            if (gameData.metadata) {
-                document.getElementById('current-time').textContent = gameData.metadata.currentTime || '未知';
+            if (gameData.currentTime) {
+                document.getElementById('current-time').textContent = gameData.currentTime || '未知';
             }
         } catch (error) {
             console.error('更新游戏数据显示错误:', error);

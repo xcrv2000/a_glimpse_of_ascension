@@ -201,7 +201,7 @@ class GameEngine {
             let hasTimeSet = false;
             if (parseResult.dataRequests && parseResult.dataRequests.length > 0) {
                 hasTimeSet = parseResult.dataRequests.some(request => 
-                    request.action === 'update' && request.path === 'metadata.currentTime'
+                    request.action === 'update' && request.path === 'currentTime'
                 );
             }
             
@@ -220,7 +220,7 @@ class GameEngine {
                 const newTime = this.calculateDefaultTime(depthLevel);
                 this.gameData = this.dataManager.updateDataByPath(
                     this.gameData,
-                    'metadata.currentTime',
+                    'currentTime',
                     newTime
                 );
                 await this.saveGameData();
@@ -341,20 +341,20 @@ class GameEngine {
                 await this.addCharacterThingDone(request.value);
             } else if (request.action === 'addItem') {
                 await this.addItem(request.value);
-            } else if (request.action === 'addAsset') {
-                await this.addAsset(request.value);
+            } else if (request.action === 'addProperty') {
+                await this.addProperty(request.value);
             } else if (request.action === 'addKnowledge') {
                 await this.addKnowledge(request.value);
             } else if (request.action === 'removeItem') {
                 await this.removeItem(request.value);
-            } else if (request.action === 'removeAsset') {
-                await this.removeAsset(request.value);
+            } else if (request.action === 'removeProperty') {
+                await this.removeProperty(request.value);
             } else if (request.action === 'removeKnowledge') {
                 await this.removeKnowledge(request.value);
             } else if (request.action === 'updateItem') {
                 await this.updateItem(request.value);
-            } else if (request.action === 'updateAsset') {
-                await this.updateAsset(request.value);
+            } else if (request.action === 'updateProperty') {
+                await this.updateProperty(request.value);
             } else if (request.action === 'updateKnowledge') {
                 await this.updateKnowledge(request.value);
             } else if (request.action === 'addLocation') {
@@ -422,14 +422,14 @@ class GameEngine {
                 this.gameData.events[existingEventIndex] = {
                     ...this.gameData.events[existingEventIndex],
                     ...eventData,
-                    currentTime: this.gameData.metadata?.currentTime || new Date().toISOString().slice(0, 19).replace('T', ' ')
+                    currentTime: this.gameData.currentTime || new Date().toISOString().slice(0, 19).replace('T', ' ')
                 };
             } else {
                 // 不存在同名事件，添加新事件
                 console.log('添加新事件:', eventData.name);
                 const newEvent = {
                     ...eventData,
-                    currentTime: this.gameData.metadata?.currentTime || new Date().toISOString().slice(0, 19).replace('T', ' ')
+                    currentTime: this.gameData.currentTime || new Date().toISOString().slice(0, 19).replace('T', ' ')
                 };
                 this.gameData.events.push(newEvent);
             }
@@ -461,7 +461,7 @@ class GameEngine {
                 this.gameData.events[existingEventIndex] = {
                     ...this.gameData.events[existingEventIndex],
                     ...eventData,
-                    currentTime: this.gameData.metadata?.currentTime || new Date().toISOString().slice(0, 19).replace('T', ' ')
+                    currentTime: this.gameData.currentTime || new Date().toISOString().slice(0, 19).replace('T', ' ')
                 };
                 console.log('事件更新成功:', eventData.name);
                 return { success: true };
@@ -638,7 +638,7 @@ class GameEngine {
                 return;
             }
             
-            const currentTime = this.gameData.metadata?.currentTime;
+            const currentTime = this.gameData.currentTime;
             if (!currentTime) {
                 console.warn('当前时间未设置');
                 return;
@@ -691,7 +691,7 @@ class GameEngine {
             
             // 检查是否已经在后日谈（通过节拍或时间判断）
             const currentBeat = this.gameData.narrative?.storyBeat || '起';
-            const currentTime = this.gameData.metadata?.currentTime;
+            const currentTime = this.gameData.currentTime;
             
             // 如果当前节拍是后日谈，或者当前时间是后日谈，忽略所有节拍操作
             if (currentBeat === '后日谈' || currentTime === '后日谈') {
@@ -711,7 +711,7 @@ class GameEngine {
                 // 在后日谈中，当前时间变为"后日谈"
                 this.gameData = this.dataManager.updateDataByPath(
                     this.gameData,
-                    'metadata.currentTime',
+                    'currentTime',
                     '后日谈'
                 );
                 console.log(`故事节拍已完结: ${currentBeat} → ${newBeat}`);
@@ -743,7 +743,7 @@ class GameEngine {
                         // 在后日谈中，当前时间变为"后日谈"
                         this.gameData = this.dataManager.updateDataByPath(
                             this.gameData,
-                            'metadata.currentTime',
+                            'currentTime',
                             '后日谈'
                         );
                     } else {
@@ -788,7 +788,7 @@ class GameEngine {
         }
         
         // 检查时间线是否到1929年
-        const currentTime = this.gameData.metadata?.currentTime;
+        const currentTime = this.gameData.currentTime;
         if (currentTime && typeof currentTime === 'string' && currentTime !== '后日谈') {
             const yearMatch = currentTime.match(/^(\d{4})-/);
             if (yearMatch) {
@@ -969,7 +969,7 @@ class GameEngine {
             console.log('开始处理默认数据请求');
             
             // 检查是否已经设置了时间
-            const hasTimeSet = this.gameData.metadata?.currentTime;
+            const hasTimeSet = this.gameData.currentTime;
             
             // 使用默认值：维持节拍，使用上一轮的景深等级，推进时间（如果未设置）
             const defaultRequests = [
@@ -991,7 +991,7 @@ class GameEngine {
                 const newTime = this.calculateDefaultTime(depthLevel);
                 defaultRequests.push({
                     action: 'update',
-                    path: 'metadata.currentTime',
+                    path: 'currentTime',
                     value: newTime
                 });
             }
@@ -1013,7 +1013,7 @@ class GameEngine {
             console.log('计算默认时间推进，景深等级:', depthLevel);
             
             // 获取当前时间
-            const currentTimeStr = this.gameData.metadata?.currentTime || '1925-12-26 00:00:00';
+            const currentTimeStr = this.gameData.currentTime || '1925-12-26 00:00:00';
             const currentTime = new Date(currentTimeStr.replace(' ', 'T') + 'Z');
             
             // 根据景深等级计算推进时间（毫秒）
@@ -1057,19 +1057,13 @@ class GameEngine {
         } catch (error) {
             console.error('计算默认时间错误:', error);
             // 出错时返回当前时间或默认时间
-            return this.gameData.metadata?.currentTime || '1925-12-26 00:00:00';
+            return this.gameData.currentTime || '1925-12-26 00:00:00';
         }
     }
     
     // 保存游戏数据
     async saveGameData() {
         try {
-            // 更新元数据
-            this.gameData.metadata = {
-                ...this.gameData.metadata,
-                lastUpdated: new Date().toISOString()
-            };
-            
             // 保存数据
             const result = await this.dataManager.writeData(this.gameData);
             
@@ -1438,10 +1432,10 @@ class GameEngine {
         }
     }
 
-    // 添加资产
-    async addAsset(assetData) {
+    // 添加财产
+    async addProperty(propertyData) {
         try {
-            console.log('开始添加资产:', assetData);
+            console.log('开始添加财产:', propertyData);
             
             // 确保assets对象存在
             if (!this.gameData.assets) {
@@ -1458,11 +1452,11 @@ class GameEngine {
             }
             
             // 添加财产
-            this.gameData.assets.property.push(assetData);
-            console.log('添加资产成功:', assetData.name);
+            this.gameData.assets.property.push(propertyData);
+            console.log('添加财产成功:', propertyData.name);
             return { success: true };
         } catch (error) {
-            console.error('添加资产错误:', error);
+            console.error('添加财产错误:', error);
             return { success: false, error: error.message };
         }
     }
@@ -1523,29 +1517,29 @@ class GameEngine {
         }
     }
 
-    // 移除资产
-    async removeAsset(assetName) {
+    // 移除财产
+    async removeProperty(propertyName) {
         try {
-            console.log('开始移除资产:', assetName);
+            console.log('开始移除财产:', propertyName);
             
             // 确保assets对象存在
             if (!this.gameData.assets || !this.gameData.assets.property) {
-                return { success: false, error: '资产不存在' };
+                return { success: false, error: '财产不存在' };
             }
             
-            // 查找并移除资产
+            // 查找并移除财产
             const initialLength = this.gameData.assets.property.length;
-            this.gameData.assets.property = this.gameData.assets.property.filter(asset => asset.name !== assetName);
+            this.gameData.assets.property = this.gameData.assets.property.filter(property => property.name !== propertyName);
             
             if (this.gameData.assets.property.length < initialLength) {
-                console.log('移除资产成功:', assetName);
+                console.log('移除财产成功:', propertyName);
                 return { success: true };
             } else {
-                console.warn('资产不存在:', assetName);
-                return { success: false, error: '资产不存在' };
+                console.warn('财产不存在:', propertyName);
+                return { success: false, error: '财产不存在' };
             }
         } catch (error) {
-            console.error('移除资产错误:', error);
+            console.error('移除财产错误:', error);
             return { success: false, error: error.message };
         }
     }
@@ -1696,33 +1690,33 @@ class GameEngine {
         }
     }
 
-    // 更新资产
-    async updateAsset(assetData) {
+    // 更新财产
+    async updateProperty(propertyData) {
         try {
-            console.log('开始更新资产:', assetData);
+            console.log('开始更新财产:', propertyData);
             
             // 确保assets对象存在
             if (!this.gameData.assets || !this.gameData.assets.property) {
-                return { success: false, error: '资产不存在' };
+                return { success: false, error: '财产不存在' };
             }
             
-            // 查找资产
-            const assetIndex = this.gameData.assets.property.findIndex(asset => asset.name === assetData.name);
+            // 查找财产
+            const propertyIndex = this.gameData.assets.property.findIndex(property => property.name === propertyData.name);
             
-            if (assetIndex >= 0) {
-                // 更新资产
-                this.gameData.assets.property[assetIndex] = {
-                    ...this.gameData.assets.property[assetIndex],
-                    ...assetData
+            if (propertyIndex >= 0) {
+                // 更新财产
+                this.gameData.assets.property[propertyIndex] = {
+                    ...this.gameData.assets.property[propertyIndex],
+                    ...propertyData
                 };
-                console.log('更新资产成功:', assetData.name);
+                console.log('更新财产成功:', propertyData.name);
                 return { success: true };
             } else {
-                console.warn('资产不存在:', assetData.name);
-                return { success: false, error: '资产不存在' };
+                console.warn('财产不存在:', propertyData.name);
+                return { success: false, error: '财产不存在' };
             }
         } catch (error) {
-            console.error('更新资产错误:', error);
+            console.error('更新财产错误:', error);
             return { success: false, error: error.message };
         }
     }

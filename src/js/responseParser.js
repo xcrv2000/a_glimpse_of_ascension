@@ -95,11 +95,11 @@ class ResponseParser {
                                 '注册角色': 'registerCharacter',
                                 '更新角色': 'updateCharacter',
                                 '添加物品': 'addItem',
-                                '添加资产': 'addAsset',
+                                '添加资产': 'addProperty',
                                 '添加知识': 'addKnowledge',
                                 '添加地点': 'addLocation',
                                 '更新物品': 'updateItem',
-                                '更新资产': 'updateAsset',
+                                '更新资产': 'updateProperty',
                                 '更新知识': 'updateKnowledge',
                                 '更新地点': 'updateLocation'
                             };
@@ -159,7 +159,7 @@ class ResponseParser {
                     const [, value] = timeMatch;
                     requests.push({
                         action: 'update',
-                        path: 'metadata.currentTime',
+                        path: 'currentTime',
                         value: value.trim()
                     });
                     return;
@@ -247,21 +247,21 @@ class ResponseParser {
                 }
                 
                 // 匹配移除物品/资产/知识/地点格式: 移除物品：物品名称
-                const removeMatch = trimmedLine.match(/^移除(物品|资产|知识|地点)：(.+)$/);
-                if (removeMatch) {
-                    const [, type, name] = removeMatch;
-                    const actionMap = {
-                        '物品': 'removeItem',
-                        '资产': 'removeAsset',
-                        '知识': 'removeKnowledge',
-                        '地点': 'removeLocation'
-                    };
-                    requests.push({
-                        action: actionMap[type],
-                        value: name.trim()
-                    });
-                    return;
-                }
+            const removeMatch = trimmedLine.match(/^移除(物品|资产|知识|地点)：(.+)$/);
+            if (removeMatch) {
+                const [, type, name] = removeMatch;
+                const actionMap = {
+                    '物品': 'removeItem',
+                    '资产': 'removeProperty',
+                    '知识': 'removeKnowledge',
+                    '地点': 'removeLocation'
+                };
+                requests.push({
+                    action: actionMap[type],
+                    value: name.trim()
+                });
+                return;
+            }
                 
                 // 匹配JSON块起始的请求类型
                 const jsonRequestMatch = trimmedLine.match(/^(注册事件|更新事件|添加伏笔|更新伏笔|注册角色|更新角色|添加物品|添加资产|添加知识|添加地点|更新物品|更新资产|更新知识|更新地点)：\{/);
@@ -317,18 +317,18 @@ class ResponseParser {
             return this.validateDeleteCharacterRequest(request);
         } else if (request.action === 'addCharacterThingDone') {
             return this.validateAddCharacterThingDoneRequest(request);
-        } else if (request.action === 'addItem' || request.action === 'addAsset' || request.action === 'addKnowledge' || request.action === 'addLocation') {
-            return this.validateInventoryAddRequest(request);
-        } else if (request.action === 'removeItem' || request.action === 'removeAsset' || request.action === 'removeKnowledge' || request.action === 'removeLocation') {
-            return this.validateInventoryRemoveRequest(request);
-        } else if (request.action === 'updateItem' || request.action === 'updateAsset' || request.action === 'updateKnowledge' || request.action === 'updateLocation') {
-            return this.validateInventoryAddRequest(request);
+        } else if (request.action === 'addItem' || request.action === 'addProperty' || request.action === 'addKnowledge' || request.action === 'addLocation') {
+            return this.validateAssetAddRequest(request);
+        } else if (request.action === 'removeItem' || request.action === 'removeProperty' || request.action === 'removeKnowledge' || request.action === 'removeLocation') {
+            return this.validateAssetRemoveRequest(request);
+        } else if (request.action === 'updateItem' || request.action === 'updateProperty' || request.action === 'updateKnowledge' || request.action === 'updateLocation') {
+            return this.validateAssetAddRequest(request);
         } else if (request.action === 'update') {
             // 只允许特定的路径
             const allowedPaths = [
                 'narrative.storyBeatOperation',
                 'narrative.depthLevel',
-                'metadata.currentTime'
+                'currentTime'
             ];
             
             if (!allowedPaths.includes(request.path)) {
@@ -493,8 +493,8 @@ class ResponseParser {
         return { valid: true };
     }
 
-    // 验证添加物品/资产/知识请求
-    static validateInventoryAddRequest(request) {
+    // 验证添加物品/财产/知识/地点请求
+    static validateAssetAddRequest(request) {
         const itemData = request.value;
         
         if (!itemData || typeof itemData !== 'object') {
@@ -512,8 +512,8 @@ class ResponseParser {
         return { valid: true };
     }
 
-    // 验证删除物品/资产/知识请求
-    static validateInventoryRemoveRequest(request) {
+    // 验证删除物品/财产/知识/地点请求
+    static validateAssetRemoveRequest(request) {
         if (!request.value || typeof request.value !== 'string') {
             return { valid: false, error: '必须指定名称' };
         }

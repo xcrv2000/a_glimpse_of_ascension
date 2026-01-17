@@ -59,8 +59,8 @@ class PromptBuilder_Storyteller {
         // 尝试解析数据内容，提取当前时间
         try {
             const data = JSON.parse(dataContent);
-            if (data.metadata && data.metadata.currentTime) {
-                fullSystemPrompt += "\n\n上次回复的剧情时间: " + data.metadata.currentTime;
+            if (data.currentTime) {
+                fullSystemPrompt += "\n\n上次回复的剧情时间: " + data.currentTime;
             }
         } catch (error) {
             console.warn('解析数据内容错误，无法提取当前时间:', error);
@@ -96,7 +96,7 @@ class PromptBuilder_Storyteller {
                     if (compressedMsg && compressedMsg.content && typeof compressedMsg.content === 'string') {
                         messages.push({
                             role: compressedMsg.role || 'assistant',
-                            content: compressedMsg.content.trim()
+                            content: compressedMsg.content.trim() + '\n'
                         });
                     }
                 });

@@ -212,6 +212,7 @@ class DataManager {
     // 初始化默认数据
     static getDefaultData() {
         return {
+            currentTime: "1925-12-26 00:00:00",
             narrative: {
                 depthLevel: "1",
                 storyBeat: "起",
@@ -232,11 +233,6 @@ class DataManager {
                 currentBeatCycle: 1,
                 totalWords: 0,
                 currentCycleWords: 0
-            },
-            metadata: {
-                lastUpdated: new Date().toISOString(),
-                version: "1.0.0",
-                currentTime: "1925-12-26 00:00:00"
             }
         };
     }

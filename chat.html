@@ -1127,7 +1127,7 @@
                 // 从游戏引擎获取故事时间
                 if (GameEngineInstance) {
                     const gameData = GameEngineInstance.getGameData();
-                    const storyTime = gameData.gameState?.currentTime || gameData.metadata?.currentTime;
+                    const storyTime = gameData.gameState?.currentTime || gameData.currentTime;
                     
                     if (storyTime) {
                         document.getElementById('current-time-display').textContent = storyTime;
