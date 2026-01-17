@@ -143,7 +143,7 @@
             align-self: flex-end;
             margin-left: auto;
             width: fit-content;
-            text-align: right;
+            text-align: left;
             max-width: 80%;
         }
         
@@ -384,10 +384,17 @@
             right: 320px;
         }
         
-        /* 移动端调试面板展开时，隐藏调试按钮 */
+        /* 平板调试面板展开时，调试按钮左移 */
         @media (max-width: 768px) {
             .debug-panel.open ~ .debug-toggle {
-                display: none;
+                right: 280px;
+            }
+        }
+        
+        /* 手机调试面板展开时，调试按钮左移 */
+        @media (max-width: 480px) {
+            .debug-panel.open ~ .debug-toggle {
+                right: 260px;
             }
         }
         
@@ -1773,12 +1780,8 @@
             
             // 存储完整请求数据到调试数据
             debugData.phase1.input = JSON.stringify(requestData, null, 2);
-            // 保存完整的AI回复，包括秘密信息
-            let fullResponse = storytellerResult.story;
-            if (storytellerResult.secretInfo) {
-                fullResponse += '\n\n**秘密信息**：' + storytellerResult.secretInfo;
-            }
-            debugData.phase1.output = fullResponse;
+            // 使用完整的AI回复（包括秘密信息）更新调试数据
+            debugData.phase1.output = storytellerResult.fullResponse;
             debugData.lastApiRequest = debugData.phase1.input;
             debugData.lastAiResponse = debugData.phase1.output;
             if (window.DebugPanelInstance) {

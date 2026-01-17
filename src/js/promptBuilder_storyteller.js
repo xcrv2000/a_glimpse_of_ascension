@@ -247,7 +247,13 @@ class PromptBuilder_Storyteller {
         const content = ProviderConfig.processApiResponse(aiProvider, responseData);
         
         // 解析响应，提取故事和秘密信息
-        return this.parseResponse(content);
+        const parsedResult = this.parseResponse(content);
+        
+        // 返回完整的响应数据，包括原始内容、解析后的故事和秘密信息
+        return {
+            ...parsedResult,
+            fullResponse: content
+        };
     }
     
     // 解析API响应，提取故事和秘密信息

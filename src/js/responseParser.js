@@ -261,21 +261,21 @@ class ResponseParser {
                 }
                 
                 // 匹配移除物品/资产/知识/地点格式: 移除物品：物品名称
-            const removeMatch = trimmedLine.match(/^移除(物品|资产|知识|地点)：(.+)$/);
-            if (removeMatch) {
-                const [, type, name] = removeMatch;
-                const actionMap = {
-                    '物品': 'removeItem',
-                    '资产': 'removeProperty',
-                    '知识': 'removeKnowledge',
-                    '地点': 'removeLocation'
-                };
-                requests.push({
-                    action: actionMap[type],
-                    value: name.trim()
-                });
-                return;
-            }
+                const removeMatch = trimmedLine.match(/^移除(物品|资产|知识|地点)：(.+)$/);
+                if (removeMatch) {
+                    const [, type, name] = removeMatch;
+                    const actionMap = {
+                        '物品': 'removeItem',
+                        '资产': 'removeProperty',
+                        '知识': 'removeKnowledge',
+                        '地点': 'removeLocation'
+                    };
+                    requests.push({
+                        action: actionMap[type],
+                        value: name.trim()
+                    });
+                    return;
+                }
                 
                 // 匹配JSON块起始的请求类型
                 const jsonRequestMatch = trimmedLine.match(/^(注册事件|更新事件|添加伏笔|更新伏笔|注册角色|更新角色|添加物品|添加资产|添加知识|添加地点|更新物品|更新资产|更新知识|更新地点)：\{/);
