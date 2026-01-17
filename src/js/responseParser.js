@@ -165,6 +165,20 @@ class ResponseParser {
                     return;
                 }
                 
+                // 匹配推进时间格式: 推进时间：1小时零5分钟
+                const advanceTimeMatch = trimmedLine.match(/^推进时间：(.+)$/);
+                if (advanceTimeMatch) {
+                    const timeDescription = advanceTimeMatch[1];
+                    const advanceMs = this.parseTimeDescription(timeDescription);
+                    if (advanceMs > 0) {
+                        requests.push({
+                            action: 'advanceTime',
+                            value: advanceMs
+                        });
+                    }
+                    return;
+                }
+                
                 // 匹配单行请求格式
                 
                 // 匹配删除事件格式: 删除事件：事件名称
@@ -519,5 +533,36 @@ class ResponseParser {
         }
         
         return { valid: true };
+    }
+    
+    // 解析时间描述，转换为毫秒
+    static parseTimeDescription(description) {
+        let totalMs = 0;
+        
+        // 匹配天/日
+        const dayMatch = description.match(/(\d+)\s*(天|日)/);
+        if (dayMatch) {
+            totalMs += parseInt(dayMatch[1]) * 24 * 60 * 60 * 1000;
+        }
+        
+        // 匹配小时/时
+        const hourMatch = description.match(/(\d+)\s*(小时|时)/);
+        if (hourMatch) {
+            totalMs += parseInt(hourMatch[1]) * 60 * 60 * 1000;
+        }
+        
+        // 匹配分钟/分
+        const minuteMatch = description.match(/(\d+)\s*(分钟|分)/);
+        if (minuteMatch) {
+            totalMs += parseInt(minuteMatch[1]) * 60 * 1000;
+        }
+        
+        // 匹配秒
+        const secondMatch = description.match(/(\d+)\s*(秒)/);
+        if (secondMatch) {
+            totalMs += parseInt(secondMatch[1]) * 1000;
+        }
+        
+        return totalMs;
     }
 }

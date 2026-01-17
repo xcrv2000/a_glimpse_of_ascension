@@ -363,6 +363,8 @@ class GameEngine {
                 await this.updateLocation(request.value);
             } else if (request.action === 'removeLocation') {
                 await this.removeLocation(request.value);
+            } else if (request.action === 'advanceTime') {
+                await this.advanceTime(request.value);
             } else if (request.action === 'addForeshadowing') {
                 await this.addForeshadowing(request.value);
             } else if (request.action === 'updateForeshadowing') {
@@ -1058,6 +1060,39 @@ class GameEngine {
             console.error('计算默认时间错误:', error);
             // 出错时返回当前时间或默认时间
             return this.gameData.currentTime || '1925-12-26 00:00:00';
+        }
+    }
+    
+    // 推进时间
+    async advanceTime(advanceMs) {
+        try {
+            console.log('开始推进时间:', advanceMs);
+            
+            // 获取当前时间
+            const currentTimeStr = this.gameData.currentTime || '1925-12-26 00:00:00';
+            const currentTime = new Date(currentTimeStr.replace(' ', 'T') + 'Z');
+            
+            // 计算新时间
+            const newTime = new Date(currentTime.getTime() + advanceMs);
+            
+            // 格式化时间为 YYYY-MM-DD HH:mm:ss
+            const year = newTime.getUTCFullYear();
+            const month = String(newTime.getUTCMonth() + 1).padStart(2, '0');
+            const day = String(newTime.getUTCDate()).padStart(2, '0');
+            const hours = String(newTime.getUTCHours()).padStart(2, '0');
+            const minutes = String(newTime.getUTCMinutes()).padStart(2, '0');
+            const seconds = String(newTime.getUTCSeconds()).padStart(2, '0');
+            
+            const formattedTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+            
+            // 更新当前时间
+            this.gameData.currentTime = formattedTime;
+            
+            console.log(`时间推进完成: ${currentTimeStr} → ${formattedTime}`);
+            return { success: true };
+        } catch (error) {
+            console.error('推进时间错误:', error);
+            return { success: false, error: error.message };
         }
     }
     

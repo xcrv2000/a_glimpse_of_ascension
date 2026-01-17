@@ -56,21 +56,22 @@ class PromptBuilder_Recorder {
 
 
     // 拼装完整的系统提示词
+    // 注意：此方法已不再被本类的prepareRequestData使用，仅为保持兼容性保留
     static buildSystemPrompt(recorderPrompt, loreContent, dataContent) {
         // 按照顺序拼装提示词：recorderPrompt + lore.json + data.json
         let fullSystemPrompt = recorderPrompt.trim();
-        fullSystemPrompt += "\n\n===游戏规则部分结束===";
+        fullSystemPrompt += "\n\n===系统设定结束===";
         
         // 添加世界设定部分
         if (loreContent && typeof loreContent === 'string' && loreContent.trim()) {
-            fullSystemPrompt += "\n\n===世界设定部分开始===\n\nlore.json\n\n" + loreContent.trim();
-            fullSystemPrompt += "\n\n===世界设定部分结束===";
+            fullSystemPrompt += "\n\n===世界设定开始===\n\nlore.json\n\n" + loreContent.trim();
+            fullSystemPrompt += "\n\n===世界设定结束===";
         }
         
         // 添加数据部分
         if (dataContent && typeof dataContent === 'string' && dataContent.trim()) {
-            fullSystemPrompt += "\n\n===数据部分开始===\n\ndata.json\n\n" + dataContent.trim();
-            fullSystemPrompt += "\n\n===数据部分结束===";
+            fullSystemPrompt += "\n\n===数据开始===\n\ndata.json\n\n" + dataContent.trim();
+            fullSystemPrompt += "\n\n===数据结束===";
         }
         
         return fullSystemPrompt;
@@ -80,61 +81,49 @@ class PromptBuilder_Recorder {
     static prepareRequestData(apiKey, story, secretInfo, compressedStory, uncompressedStory, aiProvider = 'deepseek', aiModel = null, customSettings = null) {
         // 加载提示词
         return this.loadPrompts().then(prompts => {
-            // 拼装系统提示词
-            const fullSystemPrompt = this.buildSystemPrompt(prompts.recorderPrompt, prompts.loreContent, prompts.dataContent);
-            
             // 准备请求数据，确保格式正确
             const messages = [];
             
-            // 添加系统提示，确保不为空
-            if (fullSystemPrompt && typeof fullSystemPrompt === 'string' && fullSystemPrompt.trim()) {
-                messages.push({ role: 'system', content: fullSystemPrompt });
-            }
-            
-            // 添加故事内容
-            if (story && typeof story === 'string' && story.trim()) {
+            // 1. 添加系统设定
+            if (prompts.recorderPrompt && typeof prompts.recorderPrompt === 'string' && prompts.recorderPrompt.trim()) {
                 messages.push({
                     role: 'system',
-                    content: '===故事内容开始==='
+                    content: '===系统设定开始==='
                 });
-                messages.push({ role: 'assistant', content: story });
+                messages.push({ role: 'system', content: prompts.recorderPrompt.trim() });
                 messages.push({
                     role: 'system',
-                    content: '===故事内容结束==='
+                    content: '===系统设定结束==='
                 });
             }
             
-            // 添加用户输入
-            if (uncompressedStory && uncompressedStory.length > 0) {
-                // 查找最新的用户输入
-                const latestUserMessage = uncompressedStory.filter(msg => msg.role === 'user').pop();
-                if (latestUserMessage && latestUserMessage.content) {
-                    messages.push({
-                        role: 'system',
-                        content: '===用户输入开始==='
-                    });
-                    messages.push({ role: 'user', content: latestUserMessage.content.trim() });
-                    messages.push({
-                        role: 'system',
-                        content: '===用户输入结束==='
-                    });
-                }
-            }
-            
-            // 添加秘密信息
-            if (secretInfo && typeof secretInfo === 'string' && secretInfo.trim()) {
+            // 2. 添加世界设定
+            if (prompts.loreContent && typeof prompts.loreContent === 'string' && prompts.loreContent.trim()) {
                 messages.push({
                     role: 'system',
-                    content: '===秘密信息开始==='
+                    content: '===世界设定开始==='
                 });
-                messages.push({ role: 'assistant', content: secretInfo });
+                messages.push({ role: 'system', content: prompts.loreContent.trim() });
                 messages.push({
                     role: 'system',
-                    content: '===秘密信息结束==='
+                    content: '===世界设定结束==='
                 });
             }
             
-            // 添加上下文信息
+            // 3. 添加数据
+            if (prompts.dataContent && typeof prompts.dataContent === 'string' && prompts.dataContent.trim()) {
+                messages.push({
+                    role: 'system',
+                    content: '===数据开始==='
+                });
+                messages.push({ role: 'system', content: prompts.dataContent.trim() });
+                messages.push({
+                    role: 'system',
+                    content: '===数据结束==='
+                });
+            }
+            
+            // 4. 添加压缩上下文
             if (compressedStory && compressedStory.length > 0) {
                 messages.push({
                     role: 'system',
@@ -151,6 +140,49 @@ class PromptBuilder_Recorder {
                 messages.push({
                     role: 'system',
                     content: '===压缩上下文结束==='
+                });
+            }
+            
+            // 5. 添加故事内容
+            if (story && typeof story === 'string' && story.trim()) {
+                messages.push({
+                    role: 'system',
+                    content: '===故事内容开始==='
+                });
+                messages.push({ role: 'assistant', content: story });
+                messages.push({
+                    role: 'system',
+                    content: '===故事内容结束==='
+                });
+            }
+            
+            // 6. 添加用户输入
+            if (uncompressedStory && uncompressedStory.length > 0) {
+                // 查找最新的用户输入
+                const latestUserMessage = uncompressedStory.filter(msg => msg.role === 'user').pop();
+                if (latestUserMessage && latestUserMessage.content) {
+                    messages.push({
+                        role: 'system',
+                        content: '===用户本轮输入开始==='
+                    });
+                    messages.push({ role: 'user', content: latestUserMessage.content.trim() });
+                    messages.push({
+                        role: 'system',
+                        content: '===用户本轮输入结束==='
+                    });
+                }
+            }
+            
+            // 7. 添加秘密信息
+            if (secretInfo && typeof secretInfo === 'string' && secretInfo.trim()) {
+                messages.push({
+                    role: 'system',
+                    content: '===秘密信息开始==='
+                });
+                messages.push({ role: 'assistant', content: secretInfo });
+                messages.push({
+                    role: 'system',
+                    content: '===秘密信息结束==='
                 });
             }
             
@@ -175,7 +207,13 @@ class PromptBuilder_Recorder {
             
             // 调试日志：输出发送给AI的完整请求数据
             console.log(`发送给${aiProvider} API的数据（故事记录者）:`, JSON.stringify(requestConfig.body, null, 2));
-            console.log('API调用上下文：系统提示词长度:', (fullSystemPrompt || '').length);
+            // 计算系统提示相关内容的总长度
+            const systemContentLength = (
+                (prompts.recorderPrompt || '').length + 
+                (prompts.loreContent || '').length + 
+                (prompts.dataContent || '').length
+            );
+            console.log('API调用上下文：系统相关内容总长度:', systemContentLength);
             
             return {
                 requestData: JSON.parse(requestConfig.body),

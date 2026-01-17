@@ -722,7 +722,7 @@
             <div class="debug-tab" onclick="switchDebugTab('phase1')">阶段一 (故事讲述者)</div>
             <div class="debug-tab" onclick="switchDebugTab('phase2')">阶段二 (故事记录者)</div>
             <div class="debug-tab" onclick="switchDebugTab('compressed-story')">压缩故事</div>
-            <div class="debug-tab" onclick="switchDebugTab('game-data')">游戏数据</div>
+            <div class="debug-tab" onclick="switchDebugTab('game-data')">实时数据</div>
         </div>
         <div class="debug-tab-content" id="engine-tools-tab" style="display: none;">
             <div class="debug-section">
@@ -883,7 +883,7 @@
         </div>
         <div class="debug-tab-content" id="game-data-tab" style="display: none;">
             <div class="debug-section">
-                <h4>data.json内容</h4>
+                <h4>LocalStorage游戏数据</h4>
                 <div class="debug-content" id="dataJsonContent">加载中...</div>
             </div>
         </div>
@@ -1019,7 +1019,7 @@
         // 页面加载时检查admin权限
         // 注意：此代码已移至上面的initConfig函数中
         
-        // 加载data.json内容 - 定义为全局函数
+        // 加载游戏数据内容 - 定义为全局函数
         window.loadDataJson = async function() {
             try {
                 // 首先尝试从游戏引擎获取实时数据
@@ -1045,16 +1045,10 @@
                     return;
                 }
                 
-                // 如果localStorage中没有数据，尝试从文件加载（备用方案）
-                const response = await fetch('src/data/data.json');
-                if (response.ok) {
-                    const data = await response.json();
-                    window.debugData.dataJson = JSON.stringify(data, null, 2);
-                    if (window.DebugPanelInstance) {
-                        window.DebugPanelInstance.updateContent();
-                    }
-                } else {
-                    throw new Error('加载失败: ' + response.status);
+                // 如果没有数据，显示提示
+                window.debugData.dataJson = '暂无游戏数据，开始游戏后将显示实时数据';
+                if (window.DebugPanelInstance) {
+                    window.DebugPanelInstance.updateContent();
                 }
             } catch (error) {
                 console.error('加载游戏数据失败:', error);
@@ -1779,7 +1773,12 @@
             
             // 存储完整请求数据到调试数据
             debugData.phase1.input = JSON.stringify(requestData, null, 2);
-            debugData.phase1.output = storytellerResult.story;
+            // 保存完整的AI回复，包括秘密信息
+            let fullResponse = storytellerResult.story;
+            if (storytellerResult.secretInfo) {
+                fullResponse += '\n\n**秘密信息**：' + storytellerResult.secretInfo;
+            }
+            debugData.phase1.output = fullResponse;
             debugData.lastApiRequest = debugData.phase1.input;
             debugData.lastAiResponse = debugData.phase1.output;
             if (window.DebugPanelInstance) {
