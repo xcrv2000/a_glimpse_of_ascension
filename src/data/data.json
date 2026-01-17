@@ -27,7 +27,7 @@
     {
       "name": "特雷",
       "memoryPoints": "头顶插着一个巨大的齿轮",
-      "description": "开朗的新手向导和任务发布员",
+      "description": "对所有人都很友好的新手向导。不喜欢向玩家提问，而是向玩家展示岩城。如果玩家不需要他，他也很愿意让玩家自己探索。",
       "template": "蝶",
       "relationship": "新手引导员",
       "thingsDone": []
