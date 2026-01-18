@@ -9,8 +9,10 @@
     <script src="src/js/utils.js"></script>
     <script src="src/js/dataManager.js"></script>
     <script src="src/js/responseParser.js"></script>
+    <script src="src/js/narrativeRhythmController.js"></script>
     <script src="src/js/engine.js"></script>
     <script src="src/js/storyStorage.js"></script>
+    <script src="src/js/semanticInterpreter.js"></script>
     <script src="src/js/promptManager.js"></script>
     <script src="src/js/providerConfig.js"></script>
     <script src="src/js/promptBuilder_storyteller.js"></script>
@@ -893,6 +895,10 @@
                 <h4>LocalStorage游戏数据</h4>
                 <div class="debug-content" id="dataJsonContent">加载中...</div>
             </div>
+            <div class="debug-section">
+                <h4>转义后的游戏数据 (Escaped)</h4>
+                <div class="debug-content" id="escapedDataJsonContent">加载中...</div>
+            </div>
         </div>
     </div>
     <button class="debug-toggle" id="debugToggle" onclick="toggleDebugPanel()" style="display: none;">调试</button>
@@ -1029,37 +1035,40 @@
         // 加载游戏数据内容 - 定义为全局函数
         window.loadDataJson = async function() {
             try {
+                let gameData = null;
+                
                 // 首先尝试从游戏引擎获取实时数据
                 if (window.GameEngineInstance) {
-                    const gameData = window.GameEngineInstance.getGameData();
-                    if (gameData) {
-                        window.debugData.dataJson = JSON.stringify(gameData, null, 2);
-                        if (window.DebugPanelInstance) {
-                            window.DebugPanelInstance.updateContent();
-                        }
-                        return;
+                    gameData = window.GameEngineInstance.getGameData();
+                }
+                
+                // 如果没有从游戏引擎获取到数据，尝试从localStorage加载
+                if (!gameData) {
+                    const localStorageData = localStorage.getItem('gameData');
+                    if (localStorageData) {
+                        gameData = JSON.parse(localStorageData);
                     }
                 }
                 
-                // 尝试从localStorage加载数据（游戏引擎实际存储的位置）
-                const localStorageData = localStorage.getItem('gameData');
-                if (localStorageData) {
-                    const data = JSON.parse(localStorageData);
-                    window.debugData.dataJson = JSON.stringify(data, null, 2);
-                    if (window.DebugPanelInstance) {
-                        window.DebugPanelInstance.updateContent();
-                    }
-                    return;
+                if (gameData) {
+                    // 普通格式化的JSON
+                    window.debugData.dataJson = JSON.stringify(gameData, null, 2);
+                    // 转义后的JSON
+                    window.debugData.escapedDataJson = JSON.stringify(JSON.stringify(gameData, null, 2));
+                } else {
+                    // 如果没有数据，显示提示
+                    window.debugData.dataJson = '暂无游戏数据，开始游戏后将显示实时数据';
+                    window.debugData.escapedDataJson = JSON.stringify('暂无游戏数据，开始游戏后将显示实时数据');
                 }
                 
-                // 如果没有数据，显示提示
-                window.debugData.dataJson = '暂无游戏数据，开始游戏后将显示实时数据';
                 if (window.DebugPanelInstance) {
                     window.DebugPanelInstance.updateContent();
                 }
             } catch (error) {
                 console.error('加载游戏数据失败:', error);
-                window.debugData.dataJson = '加载失败: ' + error.message;
+                const errorMsg = '加载失败: ' + error.message;
+                window.debugData.dataJson = errorMsg;
+                window.debugData.escapedDataJson = JSON.stringify(errorMsg);
                 if (window.DebugPanelInstance) {
                     window.DebugPanelInstance.updateContent();
                 }

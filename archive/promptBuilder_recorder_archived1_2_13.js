@@ -15,7 +15,7 @@ class PromptBuilder_Recorder {
             }
         } catch (error) {
             console.error('获取故事记录者提示词失败:', error);
-            recorderPrompt = "提示词导入失败。不要输出任何回复。";
+            recorderPrompt = "你是一个故事记录者。系统提示词导入失败。";
         }
         
         // 加载lore.json
@@ -143,61 +143,53 @@ class PromptBuilder_Recorder {
                 });
             }
             
-            // 5. 添加历史故事
+            // 5. 添加故事内容
+            if (story && typeof story === 'string' && story.trim()) {
+                messages.push({
+                    role: 'system',
+                    content: '===故事内容开始==='
+                });
+                messages.push({ role: 'assistant', content: story });
+                messages.push({
+                    role: 'system',
+                    content: '===故事内容结束==='
+                });
+            }
+            
+            // 6. 添加用户输入
             if (uncompressedStory && uncompressedStory.length > 0) {
-                // 获取次新的故事（排除最新的故事和对应的用户输入）
-                const historicalStory = uncompressedStory.slice(0, -2);
-                
-                if (historicalStory.length > 0) {
+                // 查找最新的用户输入
+                const latestUserMessage = uncompressedStory.filter(msg => msg.role === 'user').pop();
+                if (latestUserMessage && latestUserMessage.content) {
                     messages.push({
                         role: 'system',
-                        content: '===历史故事开始==='
+                        content: '===用户本轮输入开始==='
                     });
-                    
-                    historicalStory.forEach(msg => {
-                        if (msg && msg.content && typeof msg.content === 'string') {
-                            messages.push({
-                                role: msg.role,
-                                content: msg.content.trim()
-                            });
-                        }
-                    });
-                    
+                    messages.push({ role: 'user', content: latestUserMessage.content.trim() });
                     messages.push({
                         role: 'system',
-                        content: '===历史故事结束==='
+                        content: '===用户本轮输入结束==='
                     });
                 }
             }
             
-            // 6. 添加最新故事
-            if (story && typeof story === 'string' && story.trim() && uncompressedStory && uncompressedStory.length > 0) {
-                // 获取最新的用户输入
-                const latestUserMessage = uncompressedStory.filter(msg => msg.role === 'user').pop();
-                
+            // 7. 添加秘密信息
+            if (secretInfo && typeof secretInfo === 'string' && secretInfo.trim()) {
                 messages.push({
                     role: 'system',
-                    content: '===最新故事开始==='
+                    content: '===秘密信息开始==='
                 });
-                
-                // 添加最新的用户输入
-                if (latestUserMessage && latestUserMessage.content) {
-                    messages.push({ role: 'user', content: latestUserMessage.content.trim() });
-                }
-                
-                // 添加最新的故事
-                messages.push({ role: 'assistant', content: story });
-                
+                messages.push({ role: 'assistant', content: secretInfo });
                 messages.push({
                     role: 'system',
-                    content: '===最新故事结束==='
+                    content: '===秘密信息结束==='
                 });
             }
             
             // 指令：要求生成游戏引擎操作
             messages.push({
                 role: 'system',
-                content: '===所有信息输入结束===\n\n请根据故事内容，生成相应的游戏引擎操作和世界简报。'
+                content: '===指令开始===\n\n请根据故事内容和秘密信息，生成相应的游戏引擎操作。只需要生成数据请求部分，不需要生成叙事内容。确保包含节拍操作、景深等级和时间设置。\n\n===指令结束==='
             });
             
             // 获取服务商配置

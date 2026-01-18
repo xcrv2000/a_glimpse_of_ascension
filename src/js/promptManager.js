@@ -85,8 +85,32 @@ class PromptManager {
             const dataPath = `${basePath}/data/data.json`;
             const dataResponse = await fetch(dataPath);
             if (dataResponse.ok) {
-                dataContent = await dataResponse.text();
-                console.log('成功获取data.json（纯文本格式）');
+                let data = await dataResponse.json();
+                console.log('成功获取data.json（JSON格式）');
+                
+                // 加载成就数据 - 只从localStorage读取当前游戏中完成的成就
+                let achievementsData = null;
+                
+                // 仅从localStorage读取成就数据，不读取全局成就定义
+                const localStorageAchievements = localStorage.getItem('achievementsData');
+                if (localStorageAchievements) {
+                    achievementsData = JSON.parse(localStorageAchievements);
+                    console.log('成功从localStorage读取当前游戏的成就数据');
+                    
+                    // 将成就数据添加到data对象中
+                    data.achievements = achievementsData;
+                } else {
+                    console.log('localStorage中没有成就数据，不添加成就信息');
+                    // 不添加成就数据，语义中间层会处理这种情况
+                }
+                
+                // 使用语义中间层转换数据为自然语言
+                if (typeof SemanticInterpreter !== 'undefined') {
+                    dataContent = SemanticInterpreter.convertDataToNaturalLanguage(data);
+                    console.log('成功将data.json转换为自然语言');
+                } else {
+                    dataContent = JSON.stringify(data, null, 2);
+                }
             }
         } catch (error) {
             console.error('获取data.json失败:', error);
