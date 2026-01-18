@@ -75,29 +75,8 @@ class PromptBuilder_Storyteller {
     static prepareRequestData(apiKey, userMessage, compressedStory, uncompressedStory, latestUserMessage, aiProvider = 'deepseek', aiModel = null, customSettings = null) {
         // 加载提示词
         return this.loadPrompts().then(prompts => {
-            // 从localStorage获取游戏数据，提取世界状态简报
-            let worldStatusBrief = '';
-            try {
-                const localStorageData = localStorage.getItem('gameData');
-                if (localStorageData) {
-                    const gameData = JSON.parse(localStorageData);
-                    if (gameData.worldStatusBrief && typeof gameData.worldStatusBrief === 'string') {
-                        worldStatusBrief = gameData.worldStatusBrief;
-                    }
-                }
-            } catch (error) {
-                console.error('读取世界状态简报错误:', error);
-            }
-            
             // 拼装系统提示词
-            let fullSystemPrompt = this.buildSystemPrompt(prompts.systemPrompt, prompts.loreContent, prompts.dataContent);
-            
-            // 如果有世界状态简报，添加到系统提示词中
-            if (worldStatusBrief && worldStatusBrief.trim()) {
-                fullSystemPrompt += '\n\n===世界状态简报===';
-                fullSystemPrompt += '\n\n' + worldStatusBrief.trim();
-                fullSystemPrompt += '\n\n===世界状态简报结束===';
-            }
+            const fullSystemPrompt = this.buildSystemPrompt(prompts.systemPrompt, prompts.loreContent, prompts.dataContent);
             
             // 准备请求数据，确保格式正确
             const messages = [];
@@ -111,7 +90,7 @@ class PromptBuilder_Storyteller {
             if (compressedStory && compressedStory.length > 0) {
                 messages.push({
                     role: 'system',
-                    content: '===上文摘要部分开始===\n\ncompressed_context'
+                    content: '===摘要部分开始===\n\ncompressed_context'
                 });
                 compressedStory.forEach(compressedMsg => {
                     if (compressedMsg && compressedMsg.content && typeof compressedMsg.content === 'string') {
@@ -123,7 +102,7 @@ class PromptBuilder_Storyteller {
                 });
                 messages.push({
                     role: 'system',
-                    content: '===上文摘要部分结束==='
+                    content: '===摘要部分结束==='
                 });
             }
             
@@ -177,7 +156,7 @@ class PromptBuilder_Storyteller {
             
             // 调试日志：输出发送给AI的完整请求数据
             console.log(`发送给${aiProvider} API的数据（故事讲述者）:`, JSON.stringify(requestConfig.body, null, 2));
-            console.log('API调用上下文：系统提示词长度:', (fullSystemPrompt || '').length, '压缩故事数:', compressedStory.length, '未压缩故事数:', uncompressedStory.length, '世界状态简报长度:', (worldStatusBrief || '').length);
+            console.log('API调用上下文：系统提示词长度:', (fullSystemPrompt || '').length, '压缩故事数:', compressedStory.length, '未压缩故事数:', uncompressedStory.length);
             
             return {
                 requestData: JSON.parse(requestConfig.body),

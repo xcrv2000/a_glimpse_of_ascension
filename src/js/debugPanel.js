@@ -366,6 +366,15 @@ class DebugPanel {
             }
         }
         
+        // 更新转义后的JSON数据显示
+        if (document.getElementById('escapedDataJsonContent')) {
+            if (debugData.escapedDataJson) {
+                document.getElementById('escapedDataJsonContent').textContent = debugData.escapedDataJson;
+            } else {
+                document.getElementById('escapedDataJsonContent').textContent = '加载中...';
+            }
+        }
+        
         // 更新压缩故事
         this.updateCompressedStoryDisplay();
     }

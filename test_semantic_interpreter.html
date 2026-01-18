@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试语义中间层</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #555;
+        }
+        .input-area {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .output-area {
+            background-color: #f0f8ff;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>测试语义中间层</h1>
+        
+        <div class="test-section">
+            <div class="test-title">1. 测试默认 data.json</div>
+            <button onclick="testDefaultData()">开始测试</button>
+            <div class="status" id="status1"></div>
+            <div class="output-area" id="output1"></div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">2. 测试自定义数据</div>
+            <div class="input-area">
+                <textarea id="customData" rows="10" cols="80">
+{
+  "currentTime": "1925-12-26 04:00:00",
+  "narrative": {
+    "depthLevel": "3",
+    "storyBeat": "起",
+    "beatStats": {
+      "current": {
+        "起": 0,
+        "承": 0,
+        "转": 0,
+        "合": 0
+      },
+      "previous": {
+        "起": 0,
+        "承": 0,
+        "转": 0,
+        "合": 0
+      }
+    },
+    "currentBeatCycle": 1,
+    "totalWords": 0,
+    "currentCycleWords": 0
+  },
+  "characters": [
+    {
+      "name": "特雷",
+      "memoryPoints": "头顶插着一个巨大的齿轮。这是一种基于神秘学的自我显化，而非某种痛苦的人体改造。",
+      "description": "对所有人都很友好的向导。不喜欢强制玩家行动或将难题抛给玩家。",
+      "template": "蝶",
+      "relationship": "新手引导员"
+    }
+  ]
+}
+                </textarea>
+            </div>
+            <button onclick="testCustomData()">开始测试</button>
+            <div class="status" id="status2"></div>
+            <div class="output-area" id="output2"></div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">3. 测试不同景深级别</div>
+            <button onclick="testDepthLevels()">开始测试</button>
+            <div class="status" id="status3"></div>
+            <div class="output-area" id="output3"></div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">4. 测试不同故事节拍</div>
+            <button onclick="testStoryBeats()">开始测试</button>
+            <div class="status" id="status4"></div>
+            <div class="output-area" id="output4"></div>
+        </div>
+    </div>
+    
+    <!-- 引入语义中间层 -->
+    <script src="src/js/semanticInterpreter.js"></script>
+    
+    <script>
+        // 测试默认 data.json
+        async function testDefaultData() {
+            const status = document.getElementById('status1');
+            const output = document.getElementById('output1');
+            
+            status.textContent = '测试中...';
+            status.className = 'status';
+            output.textContent = '';
+            
+            try {
+                // 加载默认 data.json
+                const response = await fetch('src/data/data.json');
+                const dataContent = await response.text();
+                
+                // 使用语义中间层转换
+                const naturalLanguage = SemanticInterpreter.convertDataToNaturalLanguage(dataContent);
+                
+                status.textContent = '测试成功！';
+                status.className = 'status success';
+                output.textContent = naturalLanguage;
+            } catch (error) {
+                status.textContent = `测试失败：${error.message}`;
+                status.className = 'status error';
+                output.textContent = error.stack;
+            }
+        }
+        
+        // 测试自定义数据
+        function testCustomData() {
+            const status = document.getElementById('status2');
+            const output = document.getElementById('output2');
+            const customData = document.getElementById('customData').value;
+            
+            status.textContent = '测试中...';
+            status.className = 'status';
+            output.textContent = '';
+            
+            try {
+                // 使用语义中间层转换
+                const naturalLanguage = SemanticInterpreter.convertDataToNaturalLanguage(customData);
+                
+                status.textContent = '测试成功！';
+                status.className = 'status success';
+                output.textContent = naturalLanguage;
+            } catch (error) {
+                status.textContent = `测试失败：${error.message}`;
+                status.className = 'status error';
+                output.textContent = error.stack;
+            }
+        }
+        
+        // 测试不同景深级别
+        function testDepthLevels() {
+            const status = document.getElementById('status3');
+            const output = document.getElementById('output3');
+            
+            status.textContent = '测试中...';
+            status.className = 'status';
+            output.textContent = '';
+            
+            try {
+                // 测试不同景深级别
+                const baseData = {
+                    "currentTime": "1925-12-26 04:00:00",
+                    "narrative": {
+                        "storyBeat": "起",
+                        "currentBeatCycle": 1
+                    }
+                };
+                
+                let result = '';
+                
+                for (let depth = 1; depth <= 5; depth++) {
+                    const testData = {
+                        ...baseData,
+                        "narrative": {
+                            ...baseData.narrative,
+                            "depthLevel": depth.toString()
+                        }
+                    };
+                    
+                    const naturalLanguage = SemanticInterpreter.convertDataToNaturalLanguage(testData);
+                    result += `=== 测试景深 ${depth} ===\n${naturalLanguage}\n\n`;
+                }
+                
+                status.textContent = '测试成功！';
+                status.className = 'status success';
+                output.textContent = result;
+            } catch (error) {
+                status.textContent = `测试失败：${error.message}`;
+                status.className = 'status error';
+                output.textContent = error.stack;
+            }
+        }
+        
+        // 测试不同故事节拍
+        function testStoryBeats() {
+            const status = document.getElementById('status4');
+            const output = document.getElementById('output4');
+            
+            status.textContent = '测试中...';
+            status.className = 'status';
+            output.textContent = '';
+            
+            try {
+                // 测试不同故事节拍
+                const baseData = {
+                    "currentTime": "1925-12-26 04:00:00",
+                    "narrative": {
+                        "depthLevel": "3",
+                        "currentBeatCycle": 1
+                    }
+                };
+                
+                const beats = ['起', '承', '转', '合'];
+                let result = '';
+                
+                for (const beat of beats) {
+                    const testData = {
+                        ...baseData,
+                        "narrative": {
+                            ...baseData.narrative,
+                            "storyBeat": beat
+                        }
+                    };
+                    
+                    const naturalLanguage = SemanticInterpreter.convertDataToNaturalLanguage(testData);
+                    result += `=== 测试故事节拍 "${beat}" ===\n${naturalLanguage}\n\n`;
+                }
+                
+                status.textContent = '测试成功！';
+                status.className = 'status success';
+                output.textContent = result;
+            } catch (error) {
+                status.textContent = `测试失败：${error.message}`;
+                status.className = 'status error';
+                output.textContent = error.stack;
+            }
+        }
+    </script>
+</body>
+</html>

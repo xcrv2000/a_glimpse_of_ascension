@@ -9,15 +9,17 @@ class ResponseParser {
 
             console.log('开始解析AI响应');
             
-            // 提取故事部分和数据请求部分
-            const { story, dataRequests } = this.extractParts(response);
+            // 提取故事部分、数据请求部分和世界状态简报
+            const { story, dataRequests, worldStatusBrief } = this.extractParts(response);
             
             console.log('解析完成 - 故事部分:', story);
             console.log('解析完成 - 数据请求部分:', dataRequests);
+            console.log('解析完成 - 世界状态简报:', worldStatusBrief);
             
             return {
                 story,
                 dataRequests,
+                worldStatusBrief,
                 success: true
             };
         } catch (error) {
@@ -25,6 +27,7 @@ class ResponseParser {
             return {
                 story: response,
                 dataRequests: [],
+                worldStatusBrief: '',
                 success: false,
                 error: error.message
             };
@@ -36,20 +39,23 @@ class ResponseParser {
         // 直接解析整个响应内容
         let story = '';
         let dataRequests = [];
+        let worldStatusBrief = '';
         
         try {
             // 尝试解析数据请求
             const parseResult = this.parseDataRequests(response);
             dataRequests = parseResult.requests;
             story = parseResult.story;
+            worldStatusBrief = parseResult.worldStatusBrief;
         } catch (error) {
             console.error('解析数据请求错误:', error);
             // 如果解析失败，将整个内容视为故事
             story = response;
             dataRequests = [];
+            worldStatusBrief = '';
         }
         
-        return { story, dataRequests };
+        return { story, dataRequests, worldStatusBrief };
     }
 
     // 解析数据请求内容
@@ -64,12 +70,35 @@ class ResponseParser {
             let currentRequestType = null;
             let jsonOpenBraces = 0;
             
+            // 跟踪是否在世界状态简报中
+            let inWorldStatusBrief = false;
+            let worldStatusBrief = '';
+            
             lines.forEach(line => {
                 // 保留原始行（包括空格和换行）用于story
                 const originalLine = line;
                 
                 // 处理数据请求时使用trimmed版本
                 const trimmedLine = line.trim();
+                
+                // 检查世界状态简报的开始
+                if (trimmedLine.match(/^世界状态简报：/)) {
+                    inWorldStatusBrief = true;
+                    worldStatusBrief = trimmedLine.replace(/^世界状态简报：/, '').trim();
+                    return;
+                }
+                
+                // 检查世界状态简报的结束（下一个数据请求行或JSON块开始）
+                if (inWorldStatusBrief) {
+                    // 如果遇到新的数据请求行，结束世界状态简报
+                    if (trimmedLine.match(/^(节拍操作|(当前)?景深等级|当前时间|推进时间|删除事件|删除伏笔|完成成就|显示成就|删除角色|添加角色做过的事|移除(物品|资产|知识|地点)|注册事件|更新事件|添加伏笔|更新伏笔|注册角色|更新角色|添加物品|添加资产|添加知识|添加地点|更新物品|更新资产|更新知识|更新地点)/)) {
+                        inWorldStatusBrief = false;
+                    } else {
+                        // 累加世界状态简报内容
+                        worldStatusBrief += '\n' + line.trim();
+                        return;
+                    }
+                }
                 
                 // 检查是否在JSON块中
                 if (inJsonBlock) {
@@ -179,7 +208,27 @@ class ResponseParser {
                     return;
                 }
                 
-                // 匹配单行请求格式
+                // 匹配完成成就格式: 完成成就：成就名称
+                const achievementCompleteMatch = trimmedLine.match(/^完成成就：(.+)$/);
+                if (achievementCompleteMatch) {
+                    const [, achievementName] = achievementCompleteMatch;
+                    requests.push({
+                        action: 'completeAchievement',
+                        value: achievementName.trim()
+                    });
+                    return;
+                }
+                
+                // 匹配显示成就格式: 显示成就：成就名称
+                const achievementShowMatch = trimmedLine.match(/^显示成就：(.+)$/);
+                if (achievementShowMatch) {
+                    const [, achievementName] = achievementShowMatch;
+                    requests.push({
+                        action: 'showAchievement',
+                        value: achievementName.trim()
+                    });
+                    return;
+                }
                 
                 // 匹配删除事件格式: 删除事件：事件名称
                 const eventDeleteMatch = trimmedLine.match(/^删除事件：(.+)$/);
@@ -199,28 +248,6 @@ class ResponseParser {
                     requests.push({
                         action: 'removeForeshadowing',
                         value: foreshadowingName.trim()
-                    });
-                    return;
-                }
-                
-                // 匹配完成成就格式: 完成成就：成就名称
-                const achievementCompleteMatch = trimmedLine.match(/^完成成就：(.+)$/);
-                if (achievementCompleteMatch) {
-                    const [, achievementName] = achievementCompleteMatch;
-                    requests.push({
-                        action: 'completeAchievement',
-                        value: achievementName.trim()
-                    });
-                    return;
-                }
-                
-                // 匹配显示成就格式: 显示成就：成就名称
-                const achievementShowMatch = trimmedLine.match(/^显示成就：(.+)$/);
-                if (achievementShowMatch) {
-                    const [, achievementName] = achievementShowMatch;
-                    requests.push({
-                        action: 'showAchievement',
-                        value: achievementName.trim()
                     });
                     return;
                 }
@@ -290,17 +317,19 @@ class ResponseParser {
                     return;
                 }
                 
-                // 如果不是数据请求行，将其添加到story中
-                storyLines.push(originalLine);
+                // 如果不是数据请求行且不在世界状态简报中，将其添加到story中
+                if (!inWorldStatusBrief) {
+                    storyLines.push(originalLine);
+                }
             });
             
             // 将storyLines重新组合成完整的story字符串，保留原始换行
             const story = storyLines.join('\n');
             
-            return { requests, story };
+            return { requests, story, worldStatusBrief };
         } catch (error) {
             console.error('解析数据请求错误:', error);
-            return { requests: [], story: content };
+            return { requests: [], story: content, worldStatusBrief: '' };
         }
     }
 
