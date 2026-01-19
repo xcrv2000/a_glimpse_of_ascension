@@ -267,44 +267,29 @@ class PromptBuilder_Storyteller {
         // 提取响应内容，根据不同服务商的格式
         const content = ProviderConfig.processApiResponse(aiProvider, responseData);
         
-        // 解析响应，提取故事和秘密信息
+        // 解析响应，只返回故事内容
         const parsedResult = this.parseResponse(content);
         
-        // 返回完整的响应数据，包括原始内容、解析后的故事和秘密信息
+        // 返回完整的响应数据，包括原始内容和解析后的故事
         return {
             ...parsedResult,
             fullResponse: content
         };
     }
     
-    // 解析API响应，提取故事和秘密信息
+    // 解析API响应，只返回故事内容
     static parseResponse(content) {
         try {
-            // 寻找秘密信息标记
-            const secretInfoMatch = content.match(/\*\*秘密信息\*\*：([\s\S]*)$/);
-            
-            let story = content;
-            let secretInfo = '';
-            
-            if (secretInfoMatch) {
-                // 提取故事部分（去掉秘密信息）
-                story = content.substring(0, secretInfoMatch.index).trim();
-                // 提取秘密信息
-                secretInfo = secretInfoMatch[1].trim();
-            }
-            
+            const story = content.trim();
             console.log('解析后的故事:', story);
-            console.log('解析后的秘密信息:', secretInfo);
             
             return {
-                story,
-                secretInfo
+                story
             };
         } catch (error) {
             console.error('解析API响应失败:', error);
             return {
-                story: content,
-                secretInfo: ''
+                story: content
             };
         }
     }

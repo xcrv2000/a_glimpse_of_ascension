@@ -74,6 +74,9 @@ class ResponseParser {
             let inWorldStatusBrief = false;
             let worldStatusBrief = '';
             
+            // 跟踪是否在结构化引擎调用中
+            let inStructuredEngineCall = false;
+            
             lines.forEach(line => {
                 // 保留原始行（包括空格和换行）用于story
                 const originalLine = line;
@@ -81,11 +84,42 @@ class ResponseParser {
                 // 处理数据请求时使用trimmed版本
                 const trimmedLine = line.trim();
                 
+                // 检查结构化引擎调用的开始
+                if (trimmedLine.match(/^【结构化引擎调用】/)) {
+                    inStructuredEngineCall = true;
+                    return;
+                }
+                
                 // 检查世界状态简报的开始
+                if (trimmedLine.match(/^【世界状态简报】/)) {
+                    inStructuredEngineCall = false;
+                    inWorldStatusBrief = true;
+                    worldStatusBrief = '';
+                    return;
+                }
+                
+                // 检查世界状态简报的开始（旧格式）
                 if (trimmedLine.match(/^世界状态简报：/)) {
+                    inStructuredEngineCall = false;
                     inWorldStatusBrief = true;
                     worldStatusBrief = trimmedLine.replace(/^世界状态简报：/, '').trim();
                     return;
+                }
+                
+                // 处理结构化引擎调用内容
+                if (inStructuredEngineCall) {
+                    // 跳过结构化引擎调用标签本身
+                    if (trimmedLine === '【结构化引擎调用】') {
+                        return;
+                    }
+                    // 如果遇到世界状态简报标签，切换状态
+                    if (trimmedLine.match(/^【世界状态简报】/)) {
+                        inStructuredEngineCall = false;
+                        inWorldStatusBrief = true;
+                        worldStatusBrief = '';
+                        return;
+                    }
+                    // 否则继续处理数据请求
                 }
                 
                 // 检查世界状态简报的结束（下一个数据请求行或JSON块开始）

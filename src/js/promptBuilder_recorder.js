@@ -78,7 +78,7 @@ class PromptBuilder_Recorder {
     }
     
     // 准备API请求数据 - 第二阶段
-    static prepareRequestData(apiKey, story, secretInfo, compressedStory, uncompressedStory, aiProvider = 'deepseek', aiModel = null, customSettings = null) {
+    static prepareRequestData(apiKey, story, compressedStory, uncompressedStory, aiProvider = 'deepseek', aiModel = null, customSettings = null) {
         // 加载提示词
         return this.loadPrompts().then(prompts => {
             // 准备请求数据，确保格式正确

@@ -117,15 +117,39 @@ class ProviderConfig {
 
     // 处理API响应
     static processApiResponse(provider, responseData) {
-        if (provider === 'google') {
-            // Google Gemini 格式
-            return responseData.candidates[0].content.parts[0].text;
-        } else if (provider === 'anthropic') {
-            // Anthropic Claude 格式
-            return responseData.content[0].text;
-        } else {
-            // OpenAI、DeepSeek 和自定义格式
-            return responseData.choices[0].message.content;
+        // 检查responseData是否为null或undefined
+        if (!responseData) {
+            console.error('API响应数据为空');
+            return '';
+        }
+        
+        try {
+            if (provider === 'google') {
+                // Google Gemini 格式
+                if (responseData.candidates && responseData.candidates.length > 0 && 
+                    responseData.candidates[0].content && responseData.candidates[0].content.parts && 
+                    responseData.candidates[0].content.parts.length > 0) {
+                    return responseData.candidates[0].content.parts[0].text;
+                }
+            } else if (provider === 'anthropic') {
+                // Anthropic Claude 格式
+                if (responseData.content && responseData.content.length > 0) {
+                    return responseData.content[0].text;
+                }
+            } else {
+                // OpenAI、DeepSeek 和自定义格式
+                if (responseData.choices && responseData.choices.length > 0 && 
+                    responseData.choices[0].message) {
+                    return responseData.choices[0].message.content;
+                }
+            }
+            
+            // 如果没有匹配的格式或属性不存在，记录错误
+            console.error('API响应格式不符合预期', { provider, responseData });
+            return '';
+        } catch (error) {
+            console.error('处理API响应时发生错误', error, { provider, responseData });
+            return '';
         }
     }
 

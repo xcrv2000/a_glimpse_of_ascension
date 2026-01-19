@@ -49,25 +49,25 @@ class SemanticInterpreter {
                                 
                 
                 // 故事节拍
-                    if (storyBeat) {
-                        const beatExplanation = this.storyBeatExplanations[storyBeat] || 
-                            `当前处于故事节拍'${storyBeat}'，你应该根据当前故事需要调整叙事风格。`;
-                        naturalLanguage += `\n\n${beatExplanation}`;
-                    }
+                if (storyBeat) {
+                    const beatExplanation = this.storyBeatExplanations[storyBeat] || 
+                        `当前处于故事节拍'${storyBeat}'，你应该根据当前故事需要调整叙事风格。`;
+                    naturalLanguage += `\n\n${beatExplanation}`;
+                }
                 
-
+                
                 
                 naturalLanguage += '\n\n';
                 
                 // 2. 景深级别
-                    if (depthLevel) {
-                        naturalLanguage += '===景深级别===';
-                        const depthLevelNum = parseInt(depthLevel);
-                        const depthExplanation = this.depthLevelExplanations[depthLevelNum] || 
-                            `当前景深级别为${depthLevel}级，你应该根据当前场景需要调整描述详细程度。1为最宏观，5为最微观`;
-                        naturalLanguage += `\n\n${depthExplanation}`;
-                        naturalLanguage += '\n\n';
-                    }
+                if (depthLevel) {
+                    naturalLanguage += '===景深级别===';
+                    const depthLevelNum = parseInt(depthLevel);
+                    const depthExplanation = this.depthLevelExplanations[depthLevelNum] || 
+                        `当前景深级别为${depthLevel}级，你应该根据当前场景需要调整描述详细程度。1为最宏观，5为最微观`;
+                    naturalLanguage += `\n\n${depthExplanation}`;
+                    naturalLanguage += '\n\n';
+                }
                 
                 // 3. 世界观
                 naturalLanguage += '===游戏世界状态===';
@@ -130,7 +130,7 @@ class SemanticInterpreter {
                 naturalLanguage += '===事件记录===';
                 naturalLanguage += `\n当前正在发生的事件有：\n`;
                 data.events.forEach((event, index) => {
-                    naturalLanguage += `${index + 1}. ${event}\n`;
+                    naturalLanguage += `${index + 1}. ${JSON.stringify(event, null, 2)}\n`;
                 });
             }
             
@@ -139,7 +139,7 @@ class SemanticInterpreter {
                 naturalLanguage += '===伏笔记录===';
                 naturalLanguage += `\n故事中的伏笔有：\n`;
                 data.foreshadowings.forEach((foreshadowing, index) => {
-                    naturalLanguage += `${index + 1}. ${foreshadowing}\n`;
+                    naturalLanguage += `${index + 1}. ${JSON.stringify(foreshadowing, null, 2)}\n`;
                 });
             }
             
@@ -183,7 +183,7 @@ class SemanticInterpreter {
                 if (data.assets.items && data.assets.items.length > 0) {
                     naturalLanguage += `\n\n游戏中值得记录的物品有：`;
                     data.assets.items.forEach((item, index) => {
-                        naturalLanguage += `\n  ${index + 1}. ${item}`;
+                        naturalLanguage += `\n  ${index + 1}. ${JSON.stringify(item, null, 2)}`;
                     });
                 }
                 
@@ -191,7 +191,7 @@ class SemanticInterpreter {
                 if (data.assets.property && data.assets.property.length > 0) {
                     naturalLanguage += `\n\n游戏中值得记录的财产有：`;
                     data.assets.property.forEach((prop, index) => {
-                        naturalLanguage += `\n  ${index + 1}. ${prop}`;
+                        naturalLanguage += `\n  ${index + 1}. ${JSON.stringify(prop, null, 2)}`;
                     });
                 }
                 
@@ -199,7 +199,7 @@ class SemanticInterpreter {
                 if (data.assets.knowledge && data.assets.knowledge.length > 0) {
                     naturalLanguage += `\n\n游戏中值得记录的知识有：`;
                     data.assets.knowledge.forEach((knowledge, index) => {
-                        naturalLanguage += `\n  ${index + 1}. ${knowledge}`;
+                        naturalLanguage += `\n  ${index + 1}. ${JSON.stringify(knowledge, null, 2)}`;
                     });
                 }
                 
@@ -207,17 +207,18 @@ class SemanticInterpreter {
                 if (data.assets.locations && data.assets.locations.length > 0) {
                     naturalLanguage += `\n\n游戏中值得记录的地点有：`;
                     data.assets.locations.forEach((location, index) => {
-                        naturalLanguage += `\n  ${index + 1}. ${location}`;
+                        naturalLanguage += `\n  ${index + 1}. ${JSON.stringify(location, null, 2)}`;
                     });
                 }
                 
                 naturalLanguage += '\n\n';
             }
             
-            return naturalLanguage.trim();
+            // 确保返回非空字符串
+            return naturalLanguage.trim() || '游戏数据转换为自然语言时未生成内容';
         } catch (error) {
             console.error('将数据转换为自然语言失败:', error);
-            return '';
+            return `数据转换失败: ${error.message}`;
         }
     }
     
