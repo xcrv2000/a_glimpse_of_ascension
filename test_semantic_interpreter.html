@@ -142,6 +142,58 @@
             <div class="status" id="status4"></div>
             <div class="output-area" id="output4"></div>
         </div>
+        
+        <div class="test-section">
+            <div class="test-title">5. 测试成就系统</div>
+            <div class="input-area">
+                <textarea id="achievementsData" rows="15" cols="80">
+{
+  "currentTime": "1925-12-26 04:00:00",
+  "narrative": {
+    "depthLevel": "3",
+    "storyBeat": "起",
+    "currentBeatCycle": 1
+  },
+  "achievements": {
+    "achievements": [
+      {
+        "name": "初入迷雾",
+        "description": "开始你的第一次游戏体验",
+        "isCompleted": true,
+        "isHidden": false
+      },
+      {
+        "name": "雾上灯",
+        "description": "在游戏中发现隐藏的开发者信息",
+        "isCompleted": true,
+        "isHidden": true
+      },
+      {
+        "name": "叙事大师",
+        "description": "完成一个完整的起承转合循环",
+        "isCompleted": false,
+        "isHidden": false
+      },
+      {
+        "name": "伟业：迷雾散尽",
+        "description": "解开游戏世界的核心谜团",
+        "isCompleted": true,
+        "isHidden": false
+      }
+    ],
+    "completedAchievements": [
+      "初入迷雾",
+      "雾上灯",
+      "伟业：迷雾散尽"
+    ]
+  }
+}
+                </textarea>
+            </div>
+            <button onclick="testAchievements()">开始测试</button>
+            <div class="status" id="status5"></div>
+            <div class="output-area" id="output5"></div>
+        </div>
     </div>
     
     <!-- 引入语义中间层 -->
@@ -281,6 +333,30 @@
                 status.textContent = '测试成功！';
                 status.className = 'status success';
                 output.textContent = result;
+            } catch (error) {
+                status.textContent = `测试失败：${error.message}`;
+                status.className = 'status error';
+                output.textContent = error.stack;
+            }
+        }
+        
+        // 测试成就系统
+        function testAchievements() {
+            const status = document.getElementById('status5');
+            const output = document.getElementById('output5');
+            const achievementsData = document.getElementById('achievementsData').value;
+            
+            status.textContent = '测试中...';
+            status.className = 'status';
+            output.textContent = '';
+            
+            try {
+                // 使用语义中间层转换
+                const naturalLanguage = SemanticInterpreter.convertDataToNaturalLanguage(achievementsData);
+                
+                status.textContent = '测试成功！';
+                status.className = 'status success';
+                output.textContent = naturalLanguage;
             } catch (error) {
                 status.textContent = `测试失败：${error.message}`;
                 status.className = 'status error';

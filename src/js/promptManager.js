@@ -88,19 +88,34 @@ class PromptManager {
                 let data = await dataResponse.json();
                 console.log('成功获取data.json（JSON格式）');
                 
-                // 加载成就数据 - 只从localStorage读取当前游戏中完成的成就
+                // 加载成就数据 - 优先从localStorage读取，否则从achievements.json读取
                 let achievementsData = null;
                 
-                // 仅从localStorage读取成就数据，不读取全局成就定义
+                // 先从localStorage读取成就数据
                 const localStorageAchievements = localStorage.getItem('achievementsData');
                 if (localStorageAchievements) {
                     achievementsData = JSON.parse(localStorageAchievements);
                     console.log('成功从localStorage读取当前游戏的成就数据');
-                    
-                    // 将成就数据添加到data对象中
-                    data.achievements = achievementsData;
                 } else {
-                    console.log('localStorage中没有成就数据，不添加成就信息');
+                    // 如果localStorage中没有数据，尝试从achievements.json读取默认数据
+                    try {
+                        const achievementsPath = `${basePath}/data/achievements.json`;
+                        const achievementsResponse = await fetch(achievementsPath);
+                        if (achievementsResponse.ok) {
+                            achievementsData = await achievementsResponse.json();
+                            console.log('成功从achievements.json读取默认成就数据');
+                        }
+                    } catch (error) {
+                        console.error('读取成就默认数据失败:', error);
+                    }
+                }
+                
+                // 如果获取到成就数据，将其添加到data对象中
+                if (achievementsData) {
+                    data.achievements = achievementsData;
+                    console.log('成功将成就数据添加到游戏数据中');
+                } else {
+                    console.log('未获取到成就数据，不添加成就信息');
                     // 不添加成就数据，语义中间层会处理这种情况
                 }
                 

@@ -86,13 +86,14 @@ class SemanticInterpreter {
             let completed = [];
             
             if (data.achievements) {
-                const { achievements, completedAchievements } = data.achievements;
+                const achievements = data.achievements.achievements || [];
+                const completedAchievements = data.achievements.completedAchievements || [];
                 
                 // 计算已完成的成就
-                completed = (completedAchievements ? 
+                completed = (completedAchievements && completedAchievements.length > 0 ? 
                     // 确保completedAchievements中的元素都是字符串
                     completedAchievements.map(item => typeof item === 'string' ? item : (item.name || '')) : 
-                    (achievements ? achievements.filter(achievement => achievement.isCompleted).map(a => a.name) : []));
+                    (achievements && achievements.length > 0 ? achievements.filter(achievement => achievement.isCompleted).map(a => a.name) : []));
                 
                 // 过滤掉空字符串
                 completed = completed.filter(item => typeof item === 'string' && item.trim() !== '');
