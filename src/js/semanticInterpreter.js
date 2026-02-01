@@ -136,7 +136,17 @@ class SemanticInterpreter {
                 naturalLanguage += '===事件记录===';
                 naturalLanguage += `\n当前正在发生的事件有：\n`;
                 data.events.forEach((event, index) => {
-                    naturalLanguage += `${index + 1}. ${JSON.stringify(event, null, 2)}\n`;
+                    if (event.name && event.description) {
+                        naturalLanguage += `${index + 1}. ${event.name}：${event.description}`;
+                        if (event.expectedEndTime) {
+                            naturalLanguage += `（预计结束时间：${event.expectedEndTime}）`;
+                        }
+                        naturalLanguage += '\n';
+                    } else if (event.name) {
+                        naturalLanguage += `${index + 1}. ${event.name}\n`;
+                    } else {
+                        naturalLanguage += `${index + 1}. ${JSON.stringify(event)}\n`;
+                    }
                 });
             }
             
@@ -145,7 +155,17 @@ class SemanticInterpreter {
                 naturalLanguage += '===伏笔记录===';
                 naturalLanguage += `\n故事中的伏笔有：\n`;
                 data.foreshadowings.forEach((foreshadowing, index) => {
-                    naturalLanguage += `${index + 1}. ${JSON.stringify(foreshadowing, null, 2)}\n`;
+                    if (foreshadowing.name && foreshadowing.description) {
+                        naturalLanguage += `${index + 1}. ${foreshadowing.name}：${foreshadowing.description}`;
+                        if (foreshadowing.importance) {
+                            naturalLanguage += `（重要程度：${foreshadowing.importance}）`;
+                        }
+                        naturalLanguage += '\n';
+                    } else if (foreshadowing.name) {
+                        naturalLanguage += `${index + 1}. ${foreshadowing.name}\n`;
+                    } else {
+                        naturalLanguage += `${index + 1}. ${JSON.stringify(foreshadowing)}\n`;
+                    }
                 });
             }
             
@@ -189,7 +209,16 @@ class SemanticInterpreter {
                 if (data.assets.items && data.assets.items.length > 0) {
                     naturalLanguage += `\n\n游戏中值得记录的物品有：`;
                     data.assets.items.forEach((item, index) => {
-                        naturalLanguage += `\n  ${index + 1}. ${JSON.stringify(item, null, 2)}`;
+                        if (item.name && item.description) {
+                            naturalLanguage += `\n  ${index + 1}. ${item.name}：${item.description}`;
+                            if (item.quantity) {
+                                naturalLanguage += `（数量：${item.quantity}）`;
+                            }
+                        } else if (item.name) {
+                            naturalLanguage += `\n  ${index + 1}. ${item.name}`;
+                        } else {
+                            naturalLanguage += `\n  ${index + 1}. ${JSON.stringify(item)}`;
+                        }
                     });
                 }
                 
@@ -197,7 +226,13 @@ class SemanticInterpreter {
                 if (data.assets.property && data.assets.property.length > 0) {
                     naturalLanguage += `\n\n游戏中值得记录的财产有：`;
                     data.assets.property.forEach((prop, index) => {
-                        naturalLanguage += `\n  ${index + 1}. ${JSON.stringify(prop, null, 2)}`;
+                        if (prop.name && prop.description) {
+                            naturalLanguage += `\n  ${index + 1}. ${prop.name}：${prop.description}`;
+                        } else if (prop.name) {
+                            naturalLanguage += `\n  ${index + 1}. ${prop.name}`;
+                        } else {
+                            naturalLanguage += `\n  ${index + 1}. ${JSON.stringify(prop)}`;
+                        }
                     });
                 }
                 
@@ -205,7 +240,13 @@ class SemanticInterpreter {
                 if (data.assets.knowledge && data.assets.knowledge.length > 0) {
                     naturalLanguage += `\n\n游戏中值得记录的知识有：`;
                     data.assets.knowledge.forEach((knowledge, index) => {
-                        naturalLanguage += `\n  ${index + 1}. ${JSON.stringify(knowledge, null, 2)}`;
+                        if (knowledge.name && knowledge.description) {
+                            naturalLanguage += `\n  ${index + 1}. ${knowledge.name}：${knowledge.description}`;
+                        } else if (knowledge.name) {
+                            naturalLanguage += `\n  ${index + 1}. ${knowledge.name}`;
+                        } else {
+                            naturalLanguage += `\n  ${index + 1}. ${JSON.stringify(knowledge)}`;
+                        }
                     });
                 }
                 
@@ -213,7 +254,13 @@ class SemanticInterpreter {
                 if (data.assets.locations && data.assets.locations.length > 0) {
                     naturalLanguage += `\n\n游戏中值得记录的地点有：`;
                     data.assets.locations.forEach((location, index) => {
-                        naturalLanguage += `\n  ${index + 1}. ${JSON.stringify(location, null, 2)}`;
+                        if (location.name && location.description) {
+                            naturalLanguage += `\n  ${index + 1}. ${location.name}：${location.description}`;
+                        } else if (location.name) {
+                            naturalLanguage += `\n  ${index + 1}. ${location.name}`;
+                        } else {
+                            naturalLanguage += `\n  ${index + 1}. ${JSON.stringify(location)}`;
+                        }
                     });
                 }
                 
