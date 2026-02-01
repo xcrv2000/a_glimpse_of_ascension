@@ -89,8 +89,13 @@ class SemanticInterpreter {
                 const { achievements, completedAchievements } = data.achievements;
                 
                 // 计算已完成的成就
-                completed = completedAchievements || 
-                    (achievements ? achievements.filter(achievement => achievement.isCompleted).map(a => a.name) : []);
+                completed = (completedAchievements ? 
+                    // 确保completedAchievements中的元素都是字符串
+                    completedAchievements.map(item => typeof item === 'string' ? item : (item.name || '')) : 
+                    (achievements ? achievements.filter(achievement => achievement.isCompleted).map(a => a.name) : []));
+                
+                // 过滤掉空字符串
+                completed = completed.filter(item => typeof item === 'string' && item.trim() !== '');
                 
                 if (completed.length > 0) {
                     naturalLanguage += `\n\n玩家当前已达成的成就有：`;

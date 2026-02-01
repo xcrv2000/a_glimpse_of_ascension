@@ -158,7 +158,7 @@ class PromptBuilder_Storyteller {
                 messages.push({ role: 'user', content: userMessage.trim() });
                 messages.push({
                     role: 'system',
-                    content: '===用户输入结束===\n\n请以故事讲述者的身份开始渲染故事，参考博尔赫斯、卡夫卡和钱德勒的文风。注意不要在故事正文中出现底层的游戏数据。不要忘记在故事结束后添加一段秘密信息，格式为"**秘密信息**：[值得关注的事]"。'
+                    content: '===用户输入结束===\n\n请以故事讲述者的身份开始渲染故事，参考博尔赫斯、卡夫卡和钱德勒的文风。注意不要在故事正文中出现底层的游戏数据。'
                 });
             }
             
