@@ -1704,10 +1704,9 @@
                 const processResult = await GameEngineInstance.processAIResponse(recorderResult);
                 console.log('游戏引擎处理完成:', processResult);
                 
-                // 添加处理后的故事到聊天界面
-                console.log('添加处理后的故事到聊天界面:', processResult.story);
-                await addMessage(processResult.story);
-                console.log('处理后的故事添加完成');
+                // 不添加处理后的故事到聊天界面，因为recorder的消息不应显示在游戏界面
+                console.log('recorder响应已处理，不显示在游戏界面');
+                console.log('处理后的recorder响应:', processResult.story);
                 
                 console.log('两阶段交互完成');
             } catch (error) {
