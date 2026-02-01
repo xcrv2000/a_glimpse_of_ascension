@@ -117,19 +117,22 @@ class SemanticInterpreter {
                 naturalLanguage += `\n\n玩家当前尚未达成任何成就。`;
             }
             
-            // 伟业类成就特殊处理
-            const 伟业Achievements = completed.filter(name => name.includes('伟业'));
-            if (伟业Achievements.length > 0) {
-                naturalLanguage += `\n\n提示：玩家已达成伟业类成就，故事主体可能即将结束，应当开始考虑如何给故事结尾。`;
+            // 检查是否有成就数据
+            if (completed.length > 0) {
+                // 伟业类成就特殊处理
+                const 伟业Achievements = completed.filter(name => name.includes('伟业'));
+                if (伟业Achievements.length > 0) {
+                    naturalLanguage += `\n\n提示：玩家已达成伟业类成就，故事主体可能即将结束，应当开始考虑如何给故事结尾。`;
+                }
+                
+                // 成就系统说明 - 只有当有成就数据时才显示
+                naturalLanguage += `\n\n成就系统说明：`;
+                naturalLanguage += `\n- 成就分为可见和隐藏两种类型，隐藏成就是对玩家自主探索的奖励`;
+                naturalLanguage += `\n- 伟业类成就被完成时，应当设计隆重的叙事反馈，强调成就的重要性`;
+                naturalLanguage += `\n- 成就的本质是一种学位，一种知识的证明，完成伟业的过程是艺术化的答辩过程。注意不要告诉玩家成就的达成标准`;
+                naturalLanguage += `\n- 当玩家达成伟业类成就时，整个故事的主体就结束了，应当开始考虑如何给故事结尾`;
+                naturalLanguage += `\n\n`;
             }
-            
-            // 成就系统说明 - 无论是否有成就数据都显示
-            naturalLanguage += `\n\n成就系统说明：`;
-            naturalLanguage += `\n- 成就分为可见和隐藏两种类型，隐藏成就是对玩家自主探索的奖励`;
-            naturalLanguage += `\n- 伟业类成就被完成时，应当设计隆重的叙事反馈，强调成就的重要性`;
-            naturalLanguage += `\n- 成就的本质是一种学位，一种知识的证明，完成伟业的过程是艺术化的答辩过程。注意不要告诉玩家成就的达成标准`;
-            naturalLanguage += `\n- 当玩家达成伟业类成就时，整个故事的主体就结束了，应当开始考虑如何给故事结尾`;
-            naturalLanguage += `\n\n`;
             
             // 6. 事件列表
             if (data.events && data.events.length > 0) {

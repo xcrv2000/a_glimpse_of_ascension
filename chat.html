@@ -1053,12 +1053,23 @@
                 if (gameData) {
                     // 普通格式化的JSON
                     window.debugData.dataJson = JSON.stringify(gameData, null, 2);
-                    // 转义后的JSON
-                    window.debugData.escapedDataJson = JSON.stringify(JSON.stringify(gameData, null, 2));
+                    // 使用SemanticInterpreter转换为自然语言
+                    if (typeof SemanticInterpreter !== 'undefined') {
+                        try {
+                            const naturalLanguageData = SemanticInterpreter.convertDataToNaturalLanguage(gameData);
+                            window.debugData.escapedDataJson = naturalLanguageData;
+                        } catch (error) {
+                            console.error('转换为自然语言失败:', error);
+                            window.debugData.escapedDataJson = '转换为自然语言失败: ' + error.message;
+                        }
+                    } else {
+                        // 如果SemanticInterpreter未加载，使用转义后的JSON
+                        window.debugData.escapedDataJson = JSON.stringify(JSON.stringify(gameData, null, 2));
+                    }
                 } else {
                     // 如果没有数据，显示提示
                     window.debugData.dataJson = '暂无游戏数据，开始游戏后将显示实时数据';
-                    window.debugData.escapedDataJson = JSON.stringify('暂无游戏数据，开始游戏后将显示实时数据');
+                    window.debugData.escapedDataJson = '暂无游戏数据，开始游戏后将显示实时数据';
                 }
                 
                 if (window.DebugPanelInstance) {
@@ -1068,7 +1079,7 @@
                 console.error('加载游戏数据失败:', error);
                 const errorMsg = '加载失败: ' + error.message;
                 window.debugData.dataJson = errorMsg;
-                window.debugData.escapedDataJson = JSON.stringify(errorMsg);
+                window.debugData.escapedDataJson = errorMsg;
                 if (window.DebugPanelInstance) {
                     window.DebugPanelInstance.updateContent();
                 }
